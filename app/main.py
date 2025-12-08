@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 
 from os import path
-from settings import settings
+from app.core.config import settings
 from fastapi import ( 
     FastAPI, Request, HTTPException,
     status, UploadFile, Depends, Form, File,
@@ -28,15 +28,15 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from openai import AzureOpenAI
 
-from database import SessionLocal, engine
-from auth import auth_manager
-from models import (
+from app.core.auth import auth_manager
+from app.db.database import SessionLocal, engine
+from app.db.models import (
     Base, User, UserContent
 )
 
 
 app = FastAPI(title=settings.APP_NAME)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.add_middleware(
     CORSMiddleware, 
     allow_credentials=True,
@@ -44,7 +44,7 @@ app.add_middleware(
     allow_methods=['*'], 
     allow_headers=['*'])
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 Base.metadata.create_all(bind=engine)
 webpad_storage_text = ""
 aiclient = AzureOpenAI(
@@ -63,7 +63,7 @@ def get_db():
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    return FileResponse("static/favicon.ico")
+    return FileResponse("app/static/favicon.ico")
 
 @app.get("/", response_class=HTMLResponse)
 async def home_page(

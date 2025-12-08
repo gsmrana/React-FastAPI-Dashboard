@@ -1,8 +1,7 @@
-dotenv==0.9.9
-fastapi==0.117.1
-itsdangerous==2.2.0
-openai==1.108.1
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.20
-sqlalchemy==2.0.43
-uvicorn==0.36.0
+fastapi[standard]>=0.124.0
+itsdangerous>=2.2.0
+openai>=2.9.0
+passlib[argon2]>=1.7.4
+python-dotenv>=1.2.1
+sqlalchemy>=2.0.44
+uvicorn[standard]>=0.38.0

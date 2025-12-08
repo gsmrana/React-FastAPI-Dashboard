@@ -2,14 +2,14 @@ from fastapi import Request, Response
 from itsdangerous import URLSafeSerializer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from models import User
-from settings import settings
+from app.db.models import User
+from app.core.config import settings
 
 class AuthManager:
     def __init__(self, cookie_name: str, secret_key: str):
         self.cookie_name = cookie_name
         self.serializer = URLSafeSerializer(secret_key)
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        self.pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
     
     def hash_password(self, password: str):
         return self.pwd_context.hash(password)
