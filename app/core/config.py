@@ -16,7 +16,7 @@ class Settings:
     ENV_PATH = ENV_PATH
     APP_VERSION = APP_VERSION        
     APP_NAME = getenv("APP_NAME", "FastAPI Dashboard")
-    APP_PORT = getenv("APP_PORT", "3000")
+    APP_PORT = getenv("APP_PORT", "8000")
     APP_DEBUG = getenv("APP_DEBUG", "False").lower() == "true"
     LOG_LEVEL = getenv("LOG_LEVEL", "INFO").upper()
     
