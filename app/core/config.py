@@ -1,17 +1,17 @@
 import os
 import logging
-from os import getenv, path
+from os import getenv
 from dotenv import load_dotenv
 
 APP_VERSION = "1.0.0"
 DEFAULT_ENV = ".env"
 
-ENV_PATH = os.getenv("FastAPI_Dashboard_ENV_PATH", DEFAULT_ENV)
-ENV_PATH = ENV_PATH if path.exists(ENV_PATH) else DEFAULT_ENV
+ENV_PATH = os.getenv("FASTAPI_DASHBOARD_ENV_PATH", DEFAULT_ENV)
+ENV_PATH = ENV_PATH if os.path.exists(ENV_PATH) else DEFAULT_ENV
 if not load_dotenv(ENV_PATH):
     logging.warning(f'Failed to load dotenv from path: "{ENV_PATH}"')
 
-class Settings:
+class Config:
     # App Env variables
     ENV_PATH = ENV_PATH
     APP_VERSION = APP_VERSION        
@@ -39,7 +39,7 @@ class Settings:
     @staticmethod
     def to_json():
         json = {}
-        for key, value in Settings.__dict__.items():
+        for key, value in Config.__dict__.items():
             if key.startswith("__") or callable(value):
                 continue
             if "key" in key.lower() and len(value) >= 8:
@@ -48,5 +48,5 @@ class Settings:
             json[key] = value
         return json
 
-settings = Settings()
-os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+config = Config()
+os.makedirs(config.UPLOAD_DIR, exist_ok=True)

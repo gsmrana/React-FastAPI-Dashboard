@@ -1,7 +1,0 @@
-fastapi[standard]>=0.124.0
-itsdangerous>=2.2.0
-openai>=2.9.0
-passlib[argon2]>=1.7.4
-python-dotenv>=1.2.1
-sqlalchemy>=2.0.44
-uvicorn[standard]>=0.38.0

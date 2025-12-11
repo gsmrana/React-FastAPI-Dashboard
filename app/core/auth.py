@@ -3,7 +3,7 @@ from itsdangerous import URLSafeSerializer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app.db.models import User
-from app.core.config import settings
+from app.core.config import config
 
 class AuthManager:
     def __init__(self, cookie_name: str, secret_key: str):
@@ -52,6 +52,6 @@ class AuthManager:
         response.delete_cookie(self.cookie_name)
 
 auth_manager = AuthManager(
-    cookie_name=settings.SESSION_COOKIE, 
-    secret_key=settings.AUTH_SECRET_KEY
+    cookie_name=config.SESSION_COOKIE, 
+    secret_key=config.AUTH_SECRET_KEY
 )

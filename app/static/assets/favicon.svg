@@ -1,0 +1,11 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" rx="48" fill="#2F3338"/>
+  <!-- Bars -->
+  <rect x="48" y="148" width="28" height="60" rx="6" fill="#35C6A8"/>
+  <rect x="90" y="128" width="28" height="80" rx="6" fill="#4BA3FF"/>
+  <rect x="132" y="108" width="28" height="100" rx="6" fill="#FFD55A"/>
+  <!-- Pie Chart -->
+  <path d="M190 60 A60 60 0 1 1 131 119 L190 119 Z" fill="#FF654A"/>
+  <path d="M131 119 A60 60 0 0 1 170 166 L190 119 Z" fill="#47C3FF"/>
+  <path d="M170 166 A60 60 0 0 1 190 119 L190 119 Z" fill="#D9D9D9"/>
+</svg>

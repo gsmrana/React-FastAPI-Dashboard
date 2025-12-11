@@ -13,6 +13,7 @@ Environment setup
 ```
 uv python install
 uv sync
+cp .env.sample .env
 ```
 
 Development Run
@@ -59,7 +60,7 @@ npm run build
 Copy build to backend app
 
 ```
-cp -r dist/* ../app/static/
+cp -r -force dist/* ../app/static/
 ```
 
 ## Linux Web Service

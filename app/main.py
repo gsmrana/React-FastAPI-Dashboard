@@ -2,18 +2,10 @@ import os
 import sys
 import time
 import shutil
-import uvicorn
 import logging
 import platform
-
-logging.basicConfig(
-    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s",
-    level=logging.INFO,
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
-
-from os import path
-from app.core.config import settings
+from pathlib import Path
+from datetime import datetime
 from fastapi import ( 
     FastAPI, Request, HTTPException,
     status, UploadFile, Depends, Form, File,
@@ -28,15 +20,40 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from openai import AzureOpenAI
 
+logging.basicConfig(
+    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s",
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+from app.core.config import config
 from app.core.auth import auth_manager
+from app.models.uimodels import UploadResponse
 from app.db.database import SessionLocal, engine
 from app.db.models import (
     Base, User, UserContent
 )
 
 
-app = FastAPI(title=settings.APP_NAME)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+REACT_BUILD_DIR = Path(__file__).parent / "static"
+JINJA_TEMPLATE_DIR = Path(__file__).parent / "templates"
+
+async def lifespan(app: FastAPI):
+    global vector_store
+    vector_store = True
+    logging.info(f"{config.APP_NAME} {config.APP_VERSION}")
+    logging.info(f"APP_PORT: {config.APP_PORT}, DEBUG: {config.APP_DEBUG}, " + 
+                f"LOG_LEVEL: {config.LOG_LEVEL}, ENV: {config.ENV_PATH}")
+    logging.info(f"Serving React build from: {REACT_BUILD_DIR}")
+    logging.info(f"Serving Jinja templates from: {JINJA_TEMPLATE_DIR}")
+    logging.info(f"✅ FastAPI app started successfully.")
+    logging.getLogger().setLevel(config.LOG_LEVEL)
+    yield
+    print(f"{config.APP_NAME} app exited.")
+
+app = FastAPI(title=config.APP_NAME, version=config.APP_VERSION, lifespan=lifespan)
+app.mount("/assets", StaticFiles(directory=str(REACT_BUILD_DIR / "assets")), name="assets")
+templates = Jinja2Templates(directory=str(JINJA_TEMPLATE_DIR))
 app.add_middleware(
     CORSMiddleware, 
     allow_credentials=True,
@@ -44,13 +61,12 @@ app.add_middleware(
     allow_methods=['*'], 
     allow_headers=['*'])
 
-templates = Jinja2Templates(directory="app/templates")
 Base.metadata.create_all(bind=engine)
 webpad_storage_text = ""
 aiclient = AzureOpenAI(
-    azure_endpoint=settings.AZUREAI_ENDPOINT_URL,
-    api_key=settings.AZUREAI_ENDPOINT_KEY,
-    api_version=settings.AZUREAI_API_VERSION,
+    azure_endpoint=config.AZUREAI_ENDPOINT_URL,
+    api_key=config.AZUREAI_ENDPOINT_KEY,
+    api_version=config.AZUREAI_API_VERSION,
 )
 
 # Dependency to get DB session
@@ -61,9 +77,24 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return FileResponse("app/static/favicon.ico")
+@app.get("/api/health")
+async def health_check():
+    return {
+        "app_name": config.APP_NAME,
+        "app_version": config.APP_VERSION,
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+    }
+
+# serve React frontend app
+# @app.get("/{full_path:path}")
+# async def serve_react_app(full_path: str):
+#     if "." in full_path: # file request 
+#         file_path = REACT_BUILD_DIR / full_path
+#         if file_path.exists():
+#             return FileResponse(file_path)
+#     # serve index.html (for React Router)
+#     return FileResponse(str(REACT_BUILD_DIR / "index.html"))
 
 @app.get("/", response_class=HTMLResponse)
 async def home_page(
@@ -221,7 +252,7 @@ async def settings_page(
         "request": request,
         "user": user,
         "title": "Environment Info",
-        "datatable": settings.to_json()
+        "datatable": config.to_json()
     })
     
 @app.get("/system", response_class=HTMLResponse)
@@ -256,7 +287,10 @@ async def upload_page(
     user = auth_manager.get_current_user(request, db)
     if not user:
         return RedirectResponse(url=f"/login?back_url={request.url.path}")
-    filenames = os.listdir(settings.UPLOAD_DIR)
+    filenames = [
+        p.name for p in Path(config.UPLOAD_DIR).iterdir() 
+        if not p.name.startswith('.')
+    ]
     return templates.TemplateResponse("upload.htm", {
         "request": request,
         "user": user,
@@ -268,13 +302,10 @@ def copy_uploaded_files(files):
     filenames = []
     for file in files:
         # rename if file already exists
-        file_path = path.join(settings.UPLOAD_DIR, file.filename)
-        if path.exists(file_path):
-            timestamp = int(time.time())        
-            filename = path.splitext(file.filename)[0]
-            ext = path.splitext(file.filename)[1]
-            new_filename = f"{filename} - {timestamp}{ext}"
-            file_path = path.join(settings.UPLOAD_DIR, new_filename)
+        file_path = Path(config.UPLOAD_DIR) / file.filename
+        if file_path.exists():
+            newname = f"{file_path.stem} - {int(time.time()) }{file_path.suffix}"      
+            file_path = Path(config.UPLOAD_DIR) / newname
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -291,7 +322,10 @@ async def handle_upload(
     if not user:
         return RedirectResponse(url="/login")
     uploaded_names = copy_uploaded_files(files)
-    files_list = os.listdir(settings.UPLOAD_DIR)
+    files_list = [
+        p.name for p in Path(config.UPLOAD_DIR).iterdir() 
+        if not p.name.startswith('.')
+    ]
     return templates.TemplateResponse("upload.htm", {
         "request": request,
         "user": user,
@@ -318,8 +352,8 @@ async def get_file(
         return JSONResponse(
             content={"detail": "Not Authorized"},
             status_code=status.HTTP_401_UNAUTHORIZED)
-    file_path = path.join(settings.UPLOAD_DIR, filename)
-    if not path.exists(file_path):
+    file_path = Path(config.UPLOAD_DIR) / filename
+    if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path, filename=filename)
 
@@ -334,9 +368,9 @@ async def delete_file(
         return JSONResponse(
             content={"detail": "Not Authorized"},
             status_code=status.HTTP_401_UNAUTHORIZED)
-    file_path = path.join(settings.UPLOAD_DIR, filename)
-    if path.exists(file_path):
-        os.remove(file_path)
+    file_path = Path(config.UPLOAD_DIR) / filename
+    if file_path.exists():
+        file_path.unlink()
     return RedirectResponse(url="/upload", status_code=302)
 
 @app.get("/webpad", response_class=HTMLResponse)
@@ -407,7 +441,7 @@ async def chat_endpoint(
             content={"detail": "Not Authorized"},
             status_code=status.HTTP_401_UNAUTHORIZED)
     response = aiclient.chat.completions.create(
-        model=settings.AZUREAI_DEPLOYMENT,
+        model=config.AZUREAI_DEPLOYMENT,
         messages=[
             { "role": "system", "content": "You are a helpful assistant." },
             { "role": "user", "content": userContent.text }
@@ -439,7 +473,7 @@ async def chat_stream_endpoint(
     
     def chat_stream():
         response = aiclient.chat.completions.create(
-            model=settings.AZUREAI_DEPLOYMENT,
+            model=config.AZUREAI_DEPLOYMENT,
             messages=[
                 { "role": "system", "content": "You are a helpful assistant." },
                 { "role": "user", "content": userContent.text }
@@ -459,11 +493,8 @@ async def chat_stream_endpoint(
         media_type="text/plain")
 
 
-logging.info(f"Application: {settings.APP_NAME} v{settings.APP_VERSION}")
-logging.info(f"APP_PORT: {settings.APP_PORT}, DEBUG: {settings.APP_DEBUG}, " + 
-             f"LOG_LEVEL: {settings.LOG_LEVEL}, ENV: {settings.ENV_PATH}")
-logging.getLogger().setLevel(settings.LOG_LEVEL)
-
+# Entry point of this script run
 if __name__ == "__main__":
-    logging.info(f"{settings.APP_NAME} listening on http://localhost:{settings.APP_PORT}")
-    uvicorn.run("main:app", host="0.0.0.0", port=int(settings.APP_PORT), reload=settings.APP_DEBUG)
+    import uvicorn
+    logging.info(f"{config.APP_NAME} listening on http://localhost:{config.APP_PORT}")
+    uvicorn.run("app.main:app", host="0.0.0.0", port=int(config.APP_PORT), reload=config.APP_DEBUG)

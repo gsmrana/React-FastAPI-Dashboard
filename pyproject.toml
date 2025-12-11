@@ -1,12 +1,11 @@
 [project]
 name = "fastapi-dashboard"
-version = "0.1.0"
+version = "1.0.0"
 description = "A FastAPI based dashboard WebApp"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.124.0",
-    "itsdangerous>=2.2.0",
     "openai>=2.9.0",
     "passlib[argon2]>=1.7.4",
     "python-dotenv>=1.2.1",
