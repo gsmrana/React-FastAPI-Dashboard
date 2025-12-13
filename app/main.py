@@ -478,7 +478,7 @@ async def chat_stream_endpoint(
                 { "role": "system", "content": "You are a helpful assistant." },
                 { "role": "user", "content": userContent.text }
             ],
-            max_tokens=4096,
+            max_completion_tokens =16384,
             temperature=1.0,
             top_p=1.0,
             stream=True
