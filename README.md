@@ -4,16 +4,27 @@ A React and FastAPI based Dashboard Web Application.
 
 ## FastAPI Backend + Jinja2 Frontend
 
-Install UV (Python package manager)
+Install Python and UV Package Manager
 
 https://docs.astral.sh/uv/getting-started/installation
 
-Environment setup
+```
+winget install --id Python.Python.3.12
+winget install --id=astral-sh.uv  -e
+```
+
+Install packages in a virtual environment
 
 ```
-uv python install
 uv sync
 cp .env.sample .env
+```
+
+Upgrade all packages
+
+```
+uv lock --upgrade
+uv sync
 ```
 
 Development Run
@@ -28,7 +39,7 @@ Production Run
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Navigate to: http://localhost:8000
+- Browse: http://localhost:8000
 
 ## React Frontend
 
@@ -49,7 +60,7 @@ Development Run
 npm run dev
 ```
 
-Navigate to: http://localhost:3000
+- Browse: http://localhost:3000
 
 Production Build
 
@@ -63,9 +74,9 @@ Copy build to backend app
 cp -r -force dist/* ../app/static/
 ```
 
-## Linux Web Service
+## Linux Systemd Service
 
-Create a systemd service and run it.
+Create a systemd service
 
 ```
 sudo cp script/dashboard.service /etc/systemd/system/dashboard-daemon.service
