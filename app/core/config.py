@@ -1,15 +1,15 @@
 import os
-import logging
 from os import getenv
 from dotenv import load_dotenv
 
 APP_VERSION = "1.0.0"
 DEFAULT_ENV = ".env"
 
-ENV_PATH = os.getenv("FASTAPI_DASHBOARD_ENV_PATH", DEFAULT_ENV)
+ENV_PATH = getenv("FASTAPI_DASHBOARD_ENV_PATH", DEFAULT_ENV)
 ENV_PATH = ENV_PATH if os.path.exists(ENV_PATH) else DEFAULT_ENV
 if not load_dotenv(ENV_PATH):
-    logging.warning(f'Failed to load dotenv from path: "{ENV_PATH}"')
+    YELLOW_CLR, RESET_CMD = "\x1b[38;5;226m", "\x1b[0m"
+    print(YELLOW_CLR + f'Failed to load .env file from path: "{ENV_PATH}"' + RESET_CMD)
 
 class Config:
     # App Env variables
@@ -17,17 +17,17 @@ class Config:
     APP_VERSION = APP_VERSION        
     APP_NAME = getenv("APP_NAME", "FastAPI Dashboard")
     APP_PORT = getenv("APP_PORT", "8000")
-    APP_DEBUG = getenv("APP_DEBUG", "False").lower() == "true"
+    APP_DEBUG = getenv("APP_DEBUG", "True").lower() == "true"
     LOG_LEVEL = getenv("LOG_LEVEL", "INFO").upper()
     
     # Directory and Database
     UPLOAD_DIR = getenv("UPLOAD_DIR", "uploaded_files")
-    DATABASE_URL = getenv("DATABASE_URL", "sqlite:///./FastAPIApp.db")        
-    
-    # Secret keys
-    SESSION_COOKIE = getenv("SESSION_COOKIE", "user_session")
+    DATABASE_URL = getenv("DATABASE_URL", "sqlite+aiosqlite:///./fastapi_app.db")       
+
+    # Auth Configuration
+    COOKIE_BASED_AUTH = getenv("COOKIE_BASED_AUTH", "True").lower() == "true"
+    JWT_LIFETIME_SEC = getenv("JWT_LIFETIME_SEC", "3600")
     JWT_SECRET_KEY = getenv("JWT_SECRET_KEY", "jwt-dev-secret")
-    AUTH_SECRET_KEY = getenv("AUTH_SECRET_KEY", "auth-dev-secret")
     
     # AzureAI Inferenece API
     AZUREAI_ENDPOINT_URL = getenv("AZUREAI_ENDPOINT_URL", "")

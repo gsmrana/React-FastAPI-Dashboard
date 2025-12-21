@@ -15,7 +15,7 @@
                         <div class="d-flex align-items-center gap-3">
                             <div class="brand-dot"></div>
                                 <div>
-                                    <h5 class="mb-0">Webpad</h5>
+                                    <h5 class="mb-0">Notepad</h5>
                                 </div>
                                 <div>
                                     <label id="noteStatus"></label>
@@ -28,7 +28,7 @@
                     </div>
 
                     <div id="noteWindow" class="card-body overflow-auto chat-window">
-                        <textarea id="noteInput" type="text" name="textarea" class="form-control" placeholder="Enter your text here..." style="height: 520px;">{{ text }}</textarea>
+                        <textarea id="noteInput" type="text" name="textarea" class="form-control" style="height: 520px;"></textarea>
                     </div>
 
                 </div>
@@ -38,5 +38,5 @@
 {% endblock %}
 
 {% block script %}
-    <script src="/assets/js/webpad.js"></script>
+    <script src="/assets/js/notepad.js"></script>
 {% endblock %}

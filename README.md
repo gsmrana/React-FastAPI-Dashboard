@@ -30,13 +30,13 @@ uv sync
 Development Run
 
 ```
-uv run fastapi run app/main.py --reload
+uv run main.py
 ```
 
 Production Run
 
 ```
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+uv run uvicorn app.app:app --host 0.0.0.0 --port 8000
 ```
 
 - Browse: http://localhost:8000

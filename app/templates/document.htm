@@ -1,0 +1,43 @@
+{% extends "base.htm" %}
+{% block title %}Documents - Mediahub{% endblock %}
+
+{% block content %}
+<h2>Documents</h2>
+
+<form method="post" action="/api/v1/document" enctype="multipart/form-data">
+    <div class="mb-3">
+        <input id="fileInput" class="form-control" type="file" name="files" multiple required>
+    </div>
+    <button id="uploadButton" class="btn btn-success" type="submit">Upload</button>
+</form>
+
+{% if filenames %}
+    <h4 class="mt-4">Uploaded Files:</h4>
+    <ul class="list-group">
+        {% for filename in filenames %}
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')) %}
+                            <img src="/api/v1/document/{{ filename }}" style="max-height: 60px; margin-right: 10px;" class="me-2">
+                        {% endif %}                
+                        <a id="downloadButton" href="/api/v1/document/{{ filename }}">{{ filename }}</a>
+                    </div>
+                    <div>
+                        <a id="deleteButton" tag="{{ filename }}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<div>
+    <label id="statusLabel" class="mt-3 text-danger"></label>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    <script src="/assets/js/document.js"></script>
+{% endblock %}

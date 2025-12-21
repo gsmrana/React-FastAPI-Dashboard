@@ -37,10 +37,10 @@ function renderTypingPlaceholder(id) {
 
 async function requestResponse(prompt, placeholderId) {
   try {
-    const response = await fetch("/api/chat", {
+    const response = await fetch("/api/v1/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ "text": prompt }),
+      body: JSON.stringify({ "content": prompt }),
     });
 
     if (!response.ok) throw new Error("Network error");
@@ -67,10 +67,10 @@ async function requestResponse(prompt, placeholderId) {
 
 async function requestStreamResponse(prompt, placeholderId) {
     try {
-    const response = await fetch("/api/chat-stream", {
+    const response = await fetch("/api/v1/chat-stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ "text": prompt }),
+      body: JSON.stringify({ "content": prompt }),
     });
 
     if (!response.ok) throw new Error("Network error");

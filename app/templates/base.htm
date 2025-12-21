@@ -25,8 +25,7 @@
             <li class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">Tools</a>
                 <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="/sites">Sites</a></li>
-                    <li><a class="dropdown-item" href="/webpad">Webpad</a></li>
+                    <li><a class="dropdown-item" href="/pages/sites">Sites</a></li>
                     <li><a class="dropdown-item" href="http://192.168.8.2:8090">qBittorrent</a></li>
                     <li><a class="dropdown-item" href="http://192.168.8.2:5244">Media Manager</a></li>
                     <li><a class="dropdown-item" href="http://192.168.8.2/sites/AriaNg-1.3.10">Download Manager</a></li>
@@ -35,18 +34,20 @@
             
             {% if user %}
             <li class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">{{ user.username }}</a>
+                <a href="#" class="nav-link dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">{{ user }}</a>
                 <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="/users">Users</a></li>                   
-                    <li><a class="dropdown-item" href="/chatbot">Chatbot</a></li>                    
-                    <li><a class="dropdown-item" href="/upload">File Upload</a></li>                    
-                    <li><a class="dropdown-item" href="/system">System Info</a></li>
-                    <li><a class="dropdown-item" href="/environment">Environment</a></li> 
-                    <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                    <li><a class="dropdown-item" href="/pages/login">Login</a></li> 
+                    <li><a class="dropdown-item" href="/pages/document">Document</a></li> 
+                    <li><a class="dropdown-item" href="/pages/chatbot">Chatbot</a></li>
+                    <li><a class="dropdown-item" href="/pages/notepad">Notepad</a></li>                   
+                    <li><a class="dropdown-item" href="/pages/users">Users</a></li>                 
+                    <li><a class="dropdown-item" href="/pages/config">Config</a></li>
+                    <li><a class="dropdown-item" href="/pages/system">System</a></li>
+                    <li><a class="dropdown-item" href="/pages/logout">Logout</a></li>
                 </ul>
             </li>
             {% else %}
-                <li><a href="/login" class="btn btn-primary">Login</a></li>
+                <li><a href="/pages/login" class="btn btn-primary">Login</a></li>
             {% endif %}
         </ul>
         </div>

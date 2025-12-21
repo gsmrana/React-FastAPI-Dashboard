@@ -11,12 +11,26 @@ function escapeHtml(unsafe) {
     .replaceAll(">", "&gt;");
 }
 
-async function webpadSaveText(inputText) {
+async function loadNote() {
   try {
-    const resp = await fetch("/api/webpad", {
+    const resp = await fetch("/api/v1/notepad", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!resp.ok) throw new Error("Network error");
+    const data = await resp.json();
+    noteInput.value = data.content;
+  } catch (err) {
+    noteStatus.textContent = "⚠️ Error: " + escapeHtml(err.message);
+  }
+}
+
+async function saveNote(inputText) {
+  try {
+    const resp = await fetch("/api/v1/notepad", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: inputText }),
+      body: JSON.stringify({ content: inputText }),
     });
     if (!resp.ok) throw new Error("Network error");
     noteStatus.textContent = "✅ Saved";
@@ -30,9 +44,13 @@ async function webpadSaveText(inputText) {
 
 saveBtn.addEventListener("click", () => {
   const inputText = noteInput.value;
-  webpadSaveText(inputText);
+  saveNote(inputText);
 });
 
 clearBtn.addEventListener("click", () => {
   noteInput.value = "";
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  loadNote();
 });
