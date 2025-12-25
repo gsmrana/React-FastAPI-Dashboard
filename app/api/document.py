@@ -47,7 +47,7 @@ async def get_documents(
         documents = []
         for idx, file in enumerate(UPLOAD_DIR.iterdir()):
             filestat = file.stat()
-            created_at = datetime.fromtimestamp(filestat.st_birthtime).strftime(DATE_TIME_FORMAT)
+            created_at = datetime.fromtimestamp(filestat.st_ctime).strftime(DATE_TIME_FORMAT)
             documents.append(DocResponse(
                 id=str(idx+1),
                 filename=file.name,
@@ -84,7 +84,7 @@ async def upload_files(
                 id=str(idx+1),
                 filename=filepath.name,
                 filesize=get_formatted_size(filestat.st_size),
-                created_at=datetime.fromtimestamp(filestat.st_birthtime).
+                created_at=datetime.fromtimestamp(filestat.st_ctime).
                     strftime(DATE_TIME_FORMAT)
             ))
         return response
