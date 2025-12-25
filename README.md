@@ -47,7 +47,12 @@ Install Node.JS v24 LTS and above
 
 https://nodejs.org/en/download
 
-Environment setup
+```
+winget install Volta.Volta
+volta install node@24
+```
+
+Install packages 
 
 ```
 cd frontend

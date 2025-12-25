@@ -1,6 +1,10 @@
 {% extends "base.htm" %}
 {% block title %}{{ title }} - Mediahub{% endblock %}
 
+{% block sidebar %}
+    {% include 'sidebar.htm' %}
+{% endblock %}
+
 {%block content %}
 <h1 class="h4">{{ title }}</h1>
 <div class="table-responsive">

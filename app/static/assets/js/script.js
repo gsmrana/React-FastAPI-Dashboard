@@ -1,30 +1,57 @@
-const menuToggle = document.getElementById("menu-toggle");
-const navLinks = document.getElementById("nav-links");
-const navbar = document.getElementById("navbar");
-const toggleBtn = document.getElementById("theme-toggle");
-const body = document.body;
+import { API_BASE_URL } from './constants.js';
 
-menuToggle.addEventListener("click", () => {
-  navLinks.classList.toggle("show");
+$(document).ready(function() {
+    bindEvents();
+
+    if (localStorage.getItem("theme") === "dark") {
+        $("body").addClass("dark-mode");
+        $("#theme-toggle").text("☀️");
+    } else {
+        $("#theme-toggle").text("🌙");
+    }
 });
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 10) {
-    navbar.classList.add("scrolled");
-  } else {
-    navbar.classList.remove("scrolled");
-  }
-});
+function bindEvents() {
+    $("#sidebar-toggle").on("click", () => {
+        $("#sidebar").toggleClass("closed");
 
-const storedTheme = localStorage.getItem("theme");
-if (storedTheme === "dark") {
-  body.classList.add("dark-mode");
-  toggleBtn.textContent = "☀️";
+        const isClosed = $("#sidebar").hasClass("closed");
+        $("body").toggleClass("has-sidebar-closed", isClosed);        
+    });
+
+    $("#menu-toggle").on("click", () => {
+        $("#nav-links").toggleClass("show");
+    });
+
+    $("#theme-toggle").on("click", () => {
+        $("body").toggleClass("dark-mode");
+        const isDark = $("body").hasClass("dark-mode");
+        $("#theme-toggle").text(isDark ? "☀️" : "🌙");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    });
+
+    $(window).on("scroll", () => {
+        if ($(window).scrollTop() > 10) {
+            $("#navbar").addClass("scrolled");
+        } else {
+            $("#navbar").removeClass("scrolled");
+        }
+    });
+
+    $('#logoutMenu').on('click', function() {
+        logout();
+    });
 }
 
-toggleBtn.addEventListener("click", () => {
-  body.classList.toggle("dark-mode");
-  const isDark = body.classList.contains("dark-mode");
-  toggleBtn.textContent = isDark ? "☀️" : "🌙";
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-});
+function logout() {
+    $.ajax({
+        url: `${API_BASE_URL}/auth/jwt/logout`,
+        method: 'POST',
+        success: function() {
+            window.location.href = '/pages/home';
+        },
+        error: function(xhr, status, error) {
+            console.error('Logout Error: ' + error);
+        }
+    });
+}

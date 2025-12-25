@@ -3,7 +3,7 @@ Description=React FastAPI Dashboard Web App
 After=network.target
 
 [Service]
-ExecStart=/srv/React-FastAPI-Dashboard/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log
+ExecStart=/srv/React-FastAPI-Dashboard/.venv/bin/uvicorn app.app:app --host 0.0.0.0 --port 8000 --no-access-log
 WorkingDirectory=/srv/React-FastAPI-Dashboard
 Restart=on-failure
 User=mega

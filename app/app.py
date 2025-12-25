@@ -1,6 +1,7 @@
 from pathlib import Path
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -10,7 +11,7 @@ from app.core.logger import get_logger
 from app.db.database import create_db_and_tables, dispose_db_engine
 from app.core.users import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.api import health, document, chatbot, notepad
+from app.api import admin, health, document, chatbot, notepad
 from app.pages import jinja_pages
 
 
@@ -57,7 +58,10 @@ app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jw
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
+
+# include admin routers
+app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
+app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=f"{API_PREFIX}/admin/users", tags=["admin"])
 
 # include api routers
 app.include_router(health.router, prefix="/health", tags=["health"])
@@ -80,4 +84,17 @@ async def serve_react_frontend(full_path: str):
     if react_home.exists():
         return FileResponse(str(react_home))
 
-    return RedirectResponse(url="/pages/home", status_code=301)
+    return RedirectResponse(
+        url="/pages/home", 
+        status_code=status.HTTP_301_MOVED_PERMANENTLY,
+    )
+
+# custom HTTP exception handler
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    if exc.status_code == status.HTTP_401_UNAUTHORIZED:
+        return RedirectResponse(
+            url=f"/pages/login?back_url={request.url.path}", 
+            status_code=status.HTTP_302_FOUND,
+        )
+    return await http_exception_handler(request, exc)

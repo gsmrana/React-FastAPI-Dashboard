@@ -21,8 +21,8 @@ llm = AzureOpenAI(
     api_version=config.AZUREAI_API_VERSION,
 )
 
-@router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(
+@router.post("/chat-simple", response_model=ChatResponse)
+async def chat_simple(
     chat_request: ChatRequest,
     user: User = Depends(current_active_user),
 ):
@@ -44,10 +44,10 @@ async def chat_endpoint(
     except Exception as e:
         raise HTTPException(
             status_code=500, 
-            detail=f"Error in chat response: {str(e)}"
+            detail=f"Error in chat-simple response: {str(e)}"
         )
 
-def chat_stream(prompt: str):
+def chat_stream_callback(prompt: str):
     response = llm.chat.completions.create(
         model=config.AZUREAI_DEPLOYMENT,
         messages=[
@@ -65,13 +65,13 @@ def chat_stream(prompt: str):
             yield content   # plain fetch-stream  
 
 @router.post("/chat-stream")
-async def chat_stream_endpoint(
+async def chat_stream(
     chat_request: ChatRequest,
     user: User = Depends(current_active_user),
 ):    
     try:
         return StreamingResponse(
-            chat_stream(chat_request.content),
+            chat_stream_callback(chat_request.content),
             media_type="text/plain"
         )
     except Exception as e:

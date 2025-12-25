@@ -1,56 +1,67 @@
-const noteWindow = document.getElementById("noteWindow");
-const saveBtn = document.getElementById("saveBtn");
-const clearBtn = document.getElementById("clearBtn");
-const noteInput = document.getElementById("noteInput");
-const noteStatus = document.getElementById("noteStatus");
+import { API_BASE_V1_URL } from './constants.js';
 
-function escapeHtml(unsafe) {
-  return unsafe
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
+$(document).ready(function() {
+    bindEvents();  
+    loadNote();
+});
 
-async function loadNote() {
-  try {
-    const resp = await fetch("/api/v1/notepad", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+function bindEvents() {
+    $('#clearBtn').on('click', function() {
+        $('#noteInput').val('');
+    });    
+    
+    $('#saveBtn').on('click', function() {
+        const inputText = $('#noteInput').val();
+        saveNote(inputText);
     });
-    if (!resp.ok) throw new Error("Network error");
-    const data = await resp.json();
-    noteInput.value = data.content;
-  } catch (err) {
-    noteStatus.textContent = "⚠️ Error: " + escapeHtml(err.message);
-  }
 }
 
-async function saveNote(inputText) {
-  try {
-    const resp = await fetch("/api/v1/notepad", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: inputText }),
+// load note from API
+function loadNote() {
+    showLoadingStatus();
+
+    $.ajax({
+        url: `${API_BASE_V1_URL}/notepad`,
+        method: 'GET',
+        success: function(data) {
+            hideStatusMessage();
+            $('#noteInput').val(data.content);
+        },
+        error: function(xhr, status, error) {
+            showStatusMessage('⚠️ Error: ' + error);
+        }
     });
-    if (!resp.ok) throw new Error("Network error");
-    noteStatus.textContent = "✅ Saved";
-    setTimeout(() => {
-      noteStatus.textContent = "";
-    }, 3000);
-  } catch (err) {
-    noteStatus.textContent = "⚠️ Error: " + escapeHtml(err.message);
-  }
 }
 
-saveBtn.addEventListener("click", () => {
-  const inputText = noteInput.value;
-  saveNote(inputText);
-});
+// save note to API
+function saveNote(inputText) {
+    showLoadingStatus();
 
-clearBtn.addEventListener("click", () => {
-  noteInput.value = "";
-});
+    $.ajax({
+        url: `${API_BASE_V1_URL}/notepad`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ content: inputText }),
+        success: function() {
+            showStatusMessage('✅ Saved');
+            setTimeout(() => {
+                hideStatusMessage();
+            }, 3000);
+        },
+        error: function(xhr, status, error) {
+            showStatusMessage('⚠️ Error: ' + error);
+        }
+    });
+}
 
-document.addEventListener("DOMContentLoaded", function() {
-  loadNote();
-});
+function showStatusMessage(message) {
+    $('#statusMessage').text(message);
+}
+
+function showLoadingStatus() {
+    showStatusMessage('⏳ Loading...');
+}
+
+function hideStatusMessage() {
+    showStatusMessage('');
+}
