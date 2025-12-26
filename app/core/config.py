@@ -26,7 +26,7 @@ class Config:
 
     # Auth Configuration
     COOKIE_BASED_AUTH = getenv("COOKIE_BASED_AUTH", "True").lower() == "true"
-    JWT_LIFETIME_SEC = getenv("JWT_LIFETIME_SEC", "3600")
+    JWT_LIFETIME_SEC = getenv("JWT_LIFETIME_SEC", "86400") # 1 day
     JWT_SECRET_KEY = getenv("JWT_SECRET_KEY", "jwt-dev-secret")
     
     # AzureAI Inferenece API

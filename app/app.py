@@ -1,10 +1,10 @@
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, status
-from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.exception_handlers import http_exception_handler
 
 from app.core.config import config
 from app.core.logger import get_logger
@@ -93,8 +93,9 @@ async def serve_react_frontend(full_path: str):
 @app.exception_handler(HTTPException)
 async def custom_http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code == status.HTTP_401_UNAUTHORIZED:
-        return RedirectResponse(
-            url=f"/pages/login?back_url={request.url.path}", 
-            status_code=status.HTTP_302_FOUND,
-        )
+        if request.url.path.startswith("/pages/"):
+            return RedirectResponse(
+                url=f"/pages/login?back_url={request.url.path}", 
+                status_code=status.HTTP_302_FOUND,
+            )
     return await http_exception_handler(request, exc)
