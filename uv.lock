@@ -142,6 +142,25 @@ wheels = [
 ]
 
 [[package]]
+name = "anthropic"
+version = "0.75.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "docstring-parser" },
+    { name = "httpx" },
+    { name = "jiter" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/04/1f/08e95f4b7e2d35205ae5dcbb4ae97e7d477fc521c275c02609e2931ece2d/anthropic-0.75.0.tar.gz", hash = "sha256:e8607422f4ab616db2ea5baacc215dd5f028da99ce2f022e33c7c535b29f3dfb", size = 439565, upload-time = "2025-11-24T20:41:45.28Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/1c/1cd02b7ae64302a6e06724bf80a96401d5313708651d277b1458504a1730/anthropic-0.75.0-py3-none-any.whl", hash = "sha256:ea8317271b6c15d80225a9f3c670152746e88805a7a61e14d4a374577164965b", size = 388164, upload-time = "2025-11-24T20:41:43.587Z" },
+]
+
+[[package]]
 name = "anyio"
 version = "4.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -504,6 +523,15 @@ wheels = [
 ]
 
 [[package]]
+name = "docstring-parser"
+version = "0.17.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/9d/c3b43da9515bd270df0f80548d9944e389870713cc1fe2b8fb35fe2bcefd/docstring_parser-0.17.0.tar.gz", hash = "sha256:583de4a309722b3315439bb31d64ba3eebada841f2e2cee23b99df001434c912", size = 27442, upload-time = "2025-07-21T07:35:01.868Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/e2/2537ebcff11c1ee1ff17d8d0b6f4db75873e3b0fb32c2d4a2ee31ecb310a/docstring_parser-0.17.0-py3-none-any.whl", hash = "sha256:cf2569abd23dce8099b300f9b4fa8191e9582dda731fd533daf54c4551658708", size = 36896, upload-time = "2025-07-21T07:35:00.684Z" },
+]
+
+[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -527,7 +555,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.127.0"
+version = "0.128.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -535,9 +563,9 @@ dependencies = [
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/02/2cbbecf6551e0c1a06f9b9765eb8f7ae126362fbba43babbb11b0e3b7db3/fastapi-0.127.0.tar.gz", hash = "sha256:5a9246e03dcd1fdb19f1396db30894867c1d630f5107dc167dcbc5ed1ea7d259", size = 369269, upload-time = "2025-12-21T16:47:16.393Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/08/8c8508db6c7b9aae8f7175046af41baad690771c9bcde676419965e338c7/fastapi-0.128.0.tar.gz", hash = "sha256:1cc179e1cef10a6be60ffe429f79b829dce99d8de32d7acb7e6c8dfdf7f2645a", size = 365682, upload-time = "2025-12-27T15:21:13.714Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/fa/6a27e2ef789eb03060abb43b952a7f0bd39e6feaa3805362b48785bcedc5/fastapi-0.127.0-py3-none-any.whl", hash = "sha256:725aa2bb904e2eff8031557cf4b9b77459bfedd63cae8427634744fd199f6a49", size = 112055, upload-time = "2025-12-21T16:47:14.757Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/05/5cbb59154b093548acd0f4c7c474a118eda06da25aa75c616b72d8fcd92a/fastapi-0.128.0-py3-none-any.whl", hash = "sha256:aebd93f9716ee3b4f4fcfe13ffb7cf308d99c9f3ab5622d8877441072561582d", size = 103094, upload-time = "2025-12-27T15:21:12.154Z" },
 ]
 
 [package.optional-dependencies]
@@ -600,9 +628,10 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "fastapi-users", extra = ["sqlalchemy"] },
     { name = "langchain" },
+    { name = "langchain-anthropic" },
     { name = "langchain-community" },
+    { name = "langchain-core" },
     { name = "langchain-openai" },
-    { name = "openai" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "python-dotenv" },
@@ -613,12 +642,13 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiosqlite", specifier = ">=0.22.1" },
-    { name = "fastapi", extras = ["standard"], specifier = ">=0.127.0" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.128.0" },
     { name = "fastapi-users", extras = ["sqlalchemy"], specifier = ">=15.0.1" },
     { name = "langchain", specifier = ">=1.2.0" },
+    { name = "langchain-anthropic", specifier = ">=1.3.0" },
     { name = "langchain-community", specifier = ">=0.4.1" },
+    { name = "langchain-core", specifier = ">=1.2.5" },
     { name = "langchain-openai", specifier = ">=1.1.4" },
-    { name = "openai", specifier = ">=2.11.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
@@ -1054,6 +1084,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/12/3a74c22abdfddd877dfc2ee666d516f9132877fcd25eb4dd694835c59c79/langchain-1.2.0.tar.gz", hash = "sha256:a087d1e2b2969819e29a91a6d5f98302aafe31bd49ba377ecee3bf5a5dcfe14a", size = 536126, upload-time = "2025-12-15T14:51:42.24Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/23/00/4e3fa0d90f5a5c376ccb8ca983d0f0f7287783dfac48702e18f01d24673b/langchain-1.2.0-py3-none-any.whl", hash = "sha256:82f0d17aa4fbb11560b30e1e7d4aeb75e3ad71ce09b85c90ab208b181a24ffac", size = 102828, upload-time = "2025-12-15T14:51:40.802Z" },
+]
+
+[[package]]
+name = "langchain-anthropic"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anthropic" },
+    { name = "langchain-core" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/de/50/cc3b3e0410d86de457d7a100dde763fc1c33c4ce884e883659aa4cf95538/langchain_anthropic-1.3.0.tar.gz", hash = "sha256:497a937ee0310c588196bff37f39f02d43d87bff3a12d16278bdbc3bd0e9a80b", size = 707207, upload-time = "2025-12-12T20:20:57.417Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/ca/0725bc347a9c226da9d76f85bf7d03115caec7dbc87876af68579c4ab24e/langchain_anthropic-1.3.0-py3-none-any.whl", hash = "sha256:3823560e1df15d6082636baa04f87cb59052ba70aada0eba381c4679b1ce0eba", size = 45724, upload-time = "2025-12-12T20:20:56.287Z" },
 ]
 
 [[package]]

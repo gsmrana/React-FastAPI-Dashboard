@@ -29,12 +29,14 @@ class Config:
     JWT_LIFETIME_SEC = getenv("JWT_LIFETIME_SEC", "86400") # 1 day
     JWT_SECRET_KEY = getenv("JWT_SECRET_KEY", "jwt-dev-secret")
     
-    # AzureAI Inferenece API
-    AZUREAI_ENDPOINT_URL = getenv("AZUREAI_ENDPOINT_URL", "")
-    AZUREAI_ENDPOINT_KEY = getenv("AZUREAI_ENDPOINT_KEY", "")
-    AZUREAI_API_VERSION = getenv("AZUREAI_API_VERSION", "")
-    AZUREAI_DEPLOYMENT = getenv("AZUREAI_DEPLOYMENT", "")
-    AZUREAI_EMBEDDING_DEPLOYMENT = getenv("AZUREAI_EMBEDDING_DEPLOYMENT", "")
+    # OpenAI Compatible API
+    OPENAI_ENDPOINT = getenv("OPENAI_ENDPOINT", "")
+    OPENAI_API_KEY = getenv("OPENAI_API_KEY", "")
+    OPENAI_LLM_MODEL = getenv("OPENAI_LLM_MODEL", "")
+
+    # Anthropic API
+    ANTHROPIC_ENDPOINT = getenv("ANTHROPIC_ENDPOINT", "")
+    ANTHROPIC_LLM_MODEL = getenv("ANTHROPIC_LLM_MODEL", "")
     
     @staticmethod
     def to_json():
