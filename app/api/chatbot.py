@@ -53,7 +53,7 @@ async def chat_simple(
     return ChatResponse(content=resp.content)
 
 @router.post("/chat-stream")
-async def chat_stream_plain(
+async def chat_plain_stream(
     req: ChatRequest,
     user: User = Depends(current_active_user),
 ):    
@@ -63,7 +63,7 @@ async def chat_stream_plain(
     )
 
 @router.post("/chat-event-stream")
-async def chat_stream_sse(
+async def chat_event_stream(
     req: ChatRequest,
     user: User = Depends(current_active_user),
 ):

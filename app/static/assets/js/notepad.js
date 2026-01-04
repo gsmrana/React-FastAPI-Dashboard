@@ -8,7 +8,11 @@ $(document).ready(function() {
 function bindEvents() {
     $('#clearBtn').on('click', function() {
         $('#noteInput').val('');
-    });    
+    });
+
+    $('#reloadBtn').on('click', function() {
+        loadNote();
+    }); 
     
     $('#saveBtn').on('click', function() {
         const inputText = $('#noteInput').val();

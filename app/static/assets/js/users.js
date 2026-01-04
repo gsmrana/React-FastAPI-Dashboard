@@ -1,4 +1,4 @@
-import { API_BASE_URL, API_BASE_V1_URL } from './constants.js';
+import { API_BASE_V1_URL } from './constants.js';
 
 let dataTable;
 let currentEntryId = null;
@@ -26,13 +26,13 @@ function initDataTable() {
                 render: function(data, type, row) {
                     return `
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-info view-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-warning edit-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-warning edit-btn" title="Edit" data-id="${row.id}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-danger delete-btn" title="Remove" data-id="${row.id}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -54,7 +54,7 @@ function loadEntries() {
     showLoading();
     
     $.ajax({
-        url: `${API_BASE_V1_URL}/admin/user_list`,
+        url: `${API_BASE_V1_URL}/admin/users`,
         method: 'GET',
         success: function(data) {
             users = data;
@@ -170,7 +170,7 @@ function saveEntry() {
     };
 
     const method = id ? 'PATCH' : 'POST';
-    const url = id ? `${API_BASE_V1_URL}/admin/users/${id}` : `${API_BASE_URL}/auth/register`;
+    const url = id ? `${API_BASE_V1_URL}/admin/users/${id}` : `${API_BASE_V1_URL}/admin/users`;
 
     showLoading();
 

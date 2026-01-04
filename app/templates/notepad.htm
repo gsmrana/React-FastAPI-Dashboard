@@ -10,31 +10,40 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-10 col-lg-12">
-                <div class="card shadow-sm chat-card">
-                    
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="blue-dot"></div>
+    <div class="container mt-4">
+        <div class="main-content">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10 col-lg-12">
+                    <div class="card shadow-sm chat-card">
+                        
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="blue-dot"></div>
+                                    <div>
+                                        <h5 class="mb-0">Notepad</h5>
+                                    </div>
+                                    <div>
+                                        <label id="statusMessage"></label>
+                                    </div>
+                            </div>
                                 <div>
-                                    <h5 class="mb-0">Notepad</h5>
-                                </div>
-                                <div>
-                                    <label id="statusMessage"></label>
+                                    <button id="clearBtn" class="btn btn-secondary">
+                                        <i class="fas fa-trash" title="Clear"></i>
+                                    </button>
+                                    <button id="reloadBtn" class="btn btn-primary">
+                                        <i class="fas fa-rotate" title="Reload"></i>
+                                    </button>
+                                    <button id="saveBtn" class="btn btn-success">
+                                        <i class="fas fa-cloud-arrow-up" title="Save"></i>
+                                    </button>
                                 </div>
                         </div>
-                            <div>
-                                <button id="saveBtn" class="btn btn-primary">Save</button>
-                                <button id="clearBtn" class="btn btn-secondary">Clear</button>
-                            </div>
-                    </div>
 
-                    <div id="noteWindow" class="card-body overflow-auto chat-window">
-                        <textarea id="noteInput" type="text" name="textarea" class="form-control" style="height: 520px;"></textarea>
-                    </div>
+                        <div id="noteWindow" class="card-body overflow-auto chat-window">
+                            <textarea id="noteInput" type="text" name="textarea" class="form-control" style="height: 520px;"></textarea>
+                        </div>
 
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,5 +51,5 @@
 {% endblock %}
 
 {% block script %}
-    <script src="/assets/js/notepad.js" type="module"></script>
+        <script src="/assets/js/notepad.js" type="module"></script>
 {% endblock %}

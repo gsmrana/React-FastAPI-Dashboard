@@ -40,6 +40,8 @@ def get_unique_filename(file_path):
 
 @router.get("/documents", response_model=List[DocResponse])
 async def get_documents(
+    offset: int = None,
+    limit: int = None,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
 ):

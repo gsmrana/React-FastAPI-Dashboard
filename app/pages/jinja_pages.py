@@ -1,10 +1,6 @@
-import sys
-import platform
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
-from app.core.config import config
 from app.core.users import current_active_user
 from app.models.tables import User
 
@@ -94,26 +90,15 @@ async def config_page(
         "datatable.htm", {
         "request": request,
         "title": "Configurations",
-        "datatable": config.to_json()
     })
     
 @router.get("/system", response_class=HTMLResponse)
 async def system_page(
     request: Request, 
     user: User = Depends(current_active_user),
-):
-    sys_info = {
-        "Node": platform.node(),
-        "Platform": sys.platform,
-        "OS": platform.platform(),
-        "Version": platform.version(),
-        "Arch": platform.machine(),
-        "CPU": platform.processor(),  
-        "Python": platform.python_version(),
-    }    
+):  
     return templates.TemplateResponse(
         "datatable.htm", {
         "request": request,
         "title": "System Info",
-        "datatable": sys_info
     })

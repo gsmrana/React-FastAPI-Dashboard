@@ -33,7 +33,11 @@ def get_jwt_strategy():
 
 transport_type = None
 if config.COOKIE_BASED_AUTH:
-    transport_type = CookieTransport(cookie_max_age=int(config.JWT_LIFETIME_SEC))
+    transport_type = CookieTransport(
+        cookie_max_age=int(config.JWT_LIFETIME_SEC),
+        cookie_secure=False,   # allow cookie in http domain
+        cookie_samesite='lax', # not allow in cross-origin request, 'none' requires secure=True
+    )
 else:
     transport_type = BearerTransport(tokenUrl="auth/jwt/login")
 

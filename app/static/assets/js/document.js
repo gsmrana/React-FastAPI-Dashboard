@@ -25,16 +25,16 @@ function initDataTable() {
                 render: function(data, type, row) {
                     return `
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-view view-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-success download-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-success download-btn" title="Download" data-id="${row.id}">
                                 <i class="fas fa-download"></i>
                             </button>
-                            <button class="btn btn-sm btn-warning edit-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-warning edit-btn" title="Rename" data-id="${row.id}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${row.id}">
+                            <button class="btn btn-sm btn-danger delete-btn" title="Delete" data-id="${row.id}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>

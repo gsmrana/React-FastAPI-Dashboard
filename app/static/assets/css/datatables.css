@@ -58,6 +58,7 @@
 
 .btn-view:hover {
     background: #0288D1;
+    color: white;
 }
 
 .btn-info {
@@ -68,6 +69,7 @@
 
 .btn-info:hover {
     background: #1976D2;
+    color: white;
 }
 
 .btn-success {
