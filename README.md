@@ -33,13 +33,26 @@ Development Run
 uv run main.py
 ```
 
-Production Run
+- Browse: http://localhost:8000
+
+Production Run - uvicorn
 
 ```
 uv run uvicorn app.app:app --host 0.0.0.0 --port 8000
 ```
 
-- Browse: http://localhost:8000
+Production Run - Docker
+
+```
+docker build -t fastapi-dashboard .
+docker run -d -p 8000:8000 --env-file .env --name fastapi-dashboard fastapi-dashboard
+```
+
+Production Run - Docker Compose
+
+```
+docker compose up
+```
 
 ## React Frontend
 
