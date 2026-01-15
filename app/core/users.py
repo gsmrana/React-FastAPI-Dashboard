@@ -10,8 +10,8 @@ from app.models.tables import User, get_user_db
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
-    reset_password_token_secret = config.JWT_SECRET_KEY
-    verification_token_secret = config.JWT_SECRET_KEY
+    reset_password_token_secret = config.jwt_secret_key
+    verification_token_secret = config.jwt_secret_key
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"New user with id: {user.id} has registered.")
@@ -27,14 +27,14 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 def get_jwt_strategy():
     return JWTStrategy(
-        secret=config.JWT_SECRET_KEY, 
-        lifetime_seconds=int(config.JWT_LIFETIME_SEC),
+        secret=config.jwt_secret_key, 
+        lifetime_seconds=int(config.jwt_lifetime_sec),
     )
 
 transport_type = None
-if config.COOKIE_BASED_AUTH:
+if config.cookie_based_auth:
     transport_type = CookieTransport(
-        cookie_max_age=int(config.JWT_LIFETIME_SEC),
+        cookie_max_age=int(config.jwt_lifetime_sec),
         cookie_secure=False,   # allow cookie in http domain
         cookie_samesite='lax', # not allow in cross-origin request, 'none' requires secure=True
     )

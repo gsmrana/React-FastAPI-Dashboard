@@ -17,15 +17,15 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 openai_llm = ChatOpenAI(
-    base_url=config.OPENAI_ENDPOINT,
-    api_key=config.OPENAI_API_KEY,
-    model=config.OPENAI_LLM_MODEL,
+    base_url=config.openai_endpoint,
+    api_key=config.openai_api_key,
+    model=config.openai_llm_model,
 )
 
 antropic_llm = ChatAnthropic(
-    base_url=config.ANTHROPIC_ENDPOINT,
-    api_key=config.OPENAI_API_KEY,
-    model_name=config.ANTHROPIC_LLM_MODEL,
+    base_url=config.anthropic_endpoint,
+    api_key=config.openai_api_key,
+    model_name=config.anthropic_llm_model,
 )
 
 def get_prompt(human_query: str):

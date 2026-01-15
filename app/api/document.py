@@ -21,7 +21,7 @@ from app.schemas.document import (
 
 router = APIRouter()
 logger = get_logger(__name__)
-UPLOAD_DIR = Path(config.UPLOAD_DIR)
+UPLOAD_DIR = Path(config.upload_dir)
 DATE_TIME_FORMAT = '%d-%b-%Y %I:%M %p'
 
 def get_formatted_size(size_bytes):   

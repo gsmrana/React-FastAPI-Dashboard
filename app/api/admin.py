@@ -28,7 +28,7 @@ async def get_app_config(
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
 ):
-    return config.to_json()
+    return config.model_dump()
 
 @router.get("/admin/system", response_class=JSONResponse)
 async def get_sysem_info(

@@ -131,4 +131,4 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 # Init logging before anything else
-setup_logging(log_level=config.LOG_LEVEL)
+setup_logging(log_level=config.log_level)

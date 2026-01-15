@@ -4,7 +4,7 @@ from app.core.config import config
 
 
 engine = create_async_engine(
-    config.DATABASE_URL,
+    config.database_url,
     echo=False, # enable to SQL queries in console
     connect_args={"check_same_thread": False} # required for SQLite
 )

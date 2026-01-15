@@ -22,19 +22,19 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info(f"{config.APP_NAME} {config.APP_VERSION}")
-    logger.info(f"APP_PORT: {config.APP_PORT}, DEBUG: {config.APP_DEBUG}, " + 
-                f"LOG_LEVEL: {config.LOG_LEVEL}, ENV: {config.ENV_PATH}")
+    logger.info(f"{config.app_name} {config.APP_VERSION}")
+    logger.info(f"APP_PORT: {config.app_port}, DEBUG: {config.app_debug}, " + 
+                f"LOG_LEVEL: {config.log_level}, ENV: {config.ENV_PATH}")
     logger.info(f"Serving React build from: {REACT_BUILD_DIR}")
-    if not Path(config.DATABASE_URL.split("./")[1]).exists():
+    if not Path(config.database_url.split("./")[1]).exists():
         logger.warning("Creating new Database and Tables...")
         await create_db_and_tables()
     yield
     await dispose_db_engine()
-    logger.warning(f"{config.APP_NAME} app exited")
+    logger.warning(f"{config.app_name} app exited")
 
 app = FastAPI(
-    title=config.APP_NAME, 
+    title=config.app_name, 
     version=config.APP_VERSION, 
     lifespan=lifespan
 )
@@ -48,7 +48,7 @@ app.mount(
 app.add_middleware(
     CORSMiddleware, 
     allow_credentials=True,
-    allow_origins=['*'], 
+    allow_origins=config.allowed_origins, 
     allow_methods=['*'], 
     allow_headers=['*']
 )

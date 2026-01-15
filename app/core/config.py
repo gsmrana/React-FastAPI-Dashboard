@@ -1,54 +1,61 @@
 import os
-from os import getenv
-from dotenv import load_dotenv
+from typing import List, Any, Dict
+from pydantic import model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 APP_VERSION = "1.0.0"
 DEFAULT_ENV = ".env"
 
-ENV_PATH = getenv("FASTAPI_DASHBOARD_ENV_PATH", DEFAULT_ENV)
+ENV_PATH = os.getenv("FASTAPI_DASHBOARD_ENV_PATH", DEFAULT_ENV)
 ENV_PATH = ENV_PATH if os.path.exists(ENV_PATH) else DEFAULT_ENV
-if not load_dotenv(ENV_PATH):
+if not os.path.exists(ENV_PATH):
     YELLOW_CLR, RESET_CMD = "\x1b[38;5;226m", "\x1b[0m"
     print(YELLOW_CLR + f'Failed to load .env file from path: "{ENV_PATH}"' + RESET_CMD)
 
-class Config:
-    # App Env variables
-    ENV_PATH = ENV_PATH
-    APP_VERSION = APP_VERSION        
-    APP_NAME = getenv("APP_NAME", "FastAPI Dashboard")
-    APP_PORT = getenv("APP_PORT", "8000")
-    APP_DEBUG = getenv("APP_DEBUG", "True").lower() == "true"
-    LOG_LEVEL = getenv("LOG_LEVEL", "INFO").upper()
+class Config(BaseSettings):
+    # pydantic model config
+    model_config = SettingsConfigDict(
+        env_file=ENV_PATH,            # Read from .env if present
+        env_file_encoding="utf-8",
+        case_sensitive=False,         # Allows APP_PORT or app_port
+        extra="ignore"                # Ignores extra vars
+    )
     
-    # Directory and Database
-    UPLOAD_DIR = getenv("UPLOAD_DIR", "uploaded_files")
-    DATABASE_URL = getenv("DATABASE_URL", "sqlite+aiosqlite:///./fastapi_app.db")       
+    # app configs
+    app_name: str = "FastAPI Dashboard"
+    APP_VERSION: str = APP_VERSION
+    app_port: int = 8000
+    ENV_PATH: str = ENV_PATH
+    app_debug: bool = False
+    log_level: str = "INFO"
+    allowed_origins: List[str] = ["*"]
+    
+    # dir and db and configs
+    upload_dir: str = "uploaded_files"
+    database_url: str = "sqlite+aiosqlite:///./fastapi_app.db"
 
-    # Auth Configuration
-    COOKIE_BASED_AUTH = getenv("COOKIE_BASED_AUTH", "True").lower() == "true"
-    JWT_LIFETIME_SEC = getenv("JWT_LIFETIME_SEC", "86400") # 1 day
-    JWT_SECRET_KEY = getenv("JWT_SECRET_KEY", "jwt-dev-secret")
+    # auth configs
+    cookie_based_auth: bool = True
+    jwt_lifetime_sec: int = 86400 # 1 day
+    jwt_secret_key: str = "jwt-dev-secret"
     
-    # OpenAI Compatible API
-    OPENAI_ENDPOINT = getenv("OPENAI_ENDPOINT", "")
-    OPENAI_API_KEY = getenv("OPENAI_API_KEY", "")
-    OPENAI_LLM_MODEL = getenv("OPENAI_LLM_MODEL", "")
+    # OpenAI compatible API
+    openai_endpoint: str
+    openai_api_key: str
+    openai_llm_model: str
 
-    # Anthropic API
-    ANTHROPIC_ENDPOINT = getenv("ANTHROPIC_ENDPOINT", "")
-    ANTHROPIC_LLM_MODEL = getenv("ANTHROPIC_LLM_MODEL", "")
-    
-    @staticmethod
-    def to_json():
-        json = {}
-        for key, value in Config.__dict__.items():
-            if key.startswith("__") or callable(value):
-                continue
-            if "key" in key.lower() and len(value) >= 8:
-                masked = value[:4] + "*"*8 + value[-4:]
-                value = f"[{len(value)}] {masked}"
-            json[key] = value
-        return json
+    # anthropic API
+    anthropic_endpoint: str
+    anthropic_llm_model: str 
+
+    @classmethod
+    @model_validator(mode='before')
+    def strip_quotes(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        for key, value in values.items():
+            if isinstance(value, str):
+                values[key] = value.strip('"').strip("'")
+        return values
 
 config = Config()
-os.makedirs(config.UPLOAD_DIR, exist_ok=True)
+os.makedirs(config.upload_dir, exist_ok=True)

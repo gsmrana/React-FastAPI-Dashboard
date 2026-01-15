@@ -3,10 +3,10 @@ from app.core.config import config
 
 # quick development run
 if __name__ == "__main__":
-    print(f"App listening on http://localhost:{config.APP_PORT}")
+    print(f"App listening on http://localhost:{config.app_port}")
     uvicorn.run("app.app:app", 
                 host="0.0.0.0", 
-                port=int(config.APP_PORT), 
-                reload=config.APP_DEBUG, 
+                port=int(config.app_port), 
+                reload=config.app_debug, 
                 reload_dirs=["app"],
     )
