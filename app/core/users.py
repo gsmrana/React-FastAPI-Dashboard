@@ -28,13 +28,13 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 def get_jwt_strategy():
     return JWTStrategy(
         secret=config.jwt_secret_key, 
-        lifetime_seconds=int(config.jwt_lifetime_sec),
+        lifetime_seconds=config.jwt_lifetime_sec,
     )
 
 transport_type = None
 if config.cookie_based_auth:
     transport_type = CookieTransport(
-        cookie_max_age=int(config.jwt_lifetime_sec),
+        cookie_max_age=config.jwt_lifetime_sec,
         cookie_secure=False,   # allow cookie in http domain
         cookie_samesite='lax', # not allow in cross-origin request, 'none' requires secure=True
     )

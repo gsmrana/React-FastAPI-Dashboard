@@ -1,7 +1,7 @@
 services:
   web:
-    build: . # use Dockerfile in current dir
-    container_name: protocol-parser
+    build: . # Dockerfile from current dir
+    container_name: fastapi-dashboard
     ports:
       - "8000:8000"
     env_file:

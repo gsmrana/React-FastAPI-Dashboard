@@ -6,7 +6,7 @@ if __name__ == "__main__":
     print(f"App listening on http://localhost:{config.app_port}")
     uvicorn.run("app.app:app", 
                 host="0.0.0.0", 
-                port=int(config.app_port), 
+                port=config.app_port, 
                 reload=config.app_debug, 
                 reload_dirs=["app"],
     )

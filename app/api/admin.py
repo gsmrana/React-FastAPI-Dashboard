@@ -15,7 +15,6 @@ from app.schemas.user import UserCreate, UserRead
 from app.db.database import get_db
 from app.core.users import (
     UserManager,
-    current_active_user,
     current_active_superuser,
     get_user_manager,
 )
@@ -25,15 +24,13 @@ router = APIRouter()
 
 @router.get("/admin/config", response_class=JSONResponse)
 async def get_app_config(
-    user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_active_superuser),
 ):
     return config.model_dump()
 
 @router.get("/admin/system", response_class=JSONResponse)
 async def get_sysem_info(
-    user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_active_superuser),
 ):
     sys_info = {
         "Node": platform.node(),
