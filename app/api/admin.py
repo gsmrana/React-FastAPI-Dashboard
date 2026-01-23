@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import config
-from app.models.tables import User
+from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
 from app.db.database import get_db
 from app.core.users import (

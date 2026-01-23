@@ -6,7 +6,7 @@ from fastapi_users.authentication import BearerTransport, CookieTransport
 from fastapi_users.authentication import AuthenticationBackend, JWTStrategy
 from fastapi_users.db import SQLAlchemyUserDatabase
 from app.core.config import config
-from app.models.tables import User, get_user_db
+from app.models.user import User, get_user_db
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

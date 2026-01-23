@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.core.users import current_active_user
-from app.models.tables import User
+from app.models.user import User
 
 
 router = APIRouter()

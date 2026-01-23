@@ -11,7 +11,7 @@ from app.core.config import config
 from app.core.logger import get_logger
 from app.core.users import current_active_user
 from app.db.database import get_db
-from app.models.tables import User
+from app.models.user import User
 from app.schemas.document import (
     DocRequest,
     DocResponse, 

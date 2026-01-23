@@ -9,7 +9,7 @@ from app.core.config import config
 from app.core.logger import get_logger
 from app.core.users import current_active_user
 from app.db.database import get_db
-from app.models.tables import User
+from app.models.user import User
 from app.schemas.chatbot import ChatRequest, ChatResponse
 
 
@@ -17,15 +17,17 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 openai_llm = ChatOpenAI(
-    base_url=config.openai_endpoint,
+    base_url=config.openai_api_endpoint,
     api_key=config.openai_api_key,
     model=config.openai_llm_model,
+    temperature=config.openai_llm_temperature,
 )
 
 antropic_llm = ChatAnthropic(
-    base_url=config.anthropic_endpoint,
-    api_key=config.openai_api_key,
+    base_url=config.anthropic_api_endpoint,
+    api_key=config.anthropic_api_key,
     model_name=config.anthropic_llm_model,
+    temperature=config.anthropic_llm_temperature,
 )
 
 def get_prompt(human_query: str):

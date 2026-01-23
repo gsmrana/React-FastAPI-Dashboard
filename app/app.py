@@ -22,14 +22,17 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # on startup
     logger.info(f"{config.app_name} {config.APP_VERSION}")
-    logger.info(f"APP_PORT: {config.app_port}, DEBUG: {config.app_debug}, " + 
-                f"LOG_LEVEL: {config.log_level}, ENV: {config.ENV_PATH}")
+    logger.info(f"APP_PORT: {config.app_port}, " +
+                f"DEBUG: {config.app_debug}, " + 
+                f"LOG_LEVEL: {config.log_level}, " +
+                f"ENV_FILE: {config.ENV_FILE}")
     logger.info(f"Serving React build from: {REACT_BUILD_DIR}")
-    if not Path(config.database_url.split("./")[1]).exists():
-        logger.warning("Creating new Database and Tables...")
-        await create_db_and_tables()
+    await create_db_and_tables()
     yield
+    
+    # on shutdown
     await dispose_db_engine()
     logger.warning(f"{config.app_name} app exited")
 
@@ -53,21 +56,21 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-# include auth routers
+# include health routers
+app.include_router(health.router, prefix="/health", tags=["health"])
+
+# include auth and users routers
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jwt', tags=["auth"])
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
-
-# include admin routers
-app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
-app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=f"{API_PREFIX}/admin/users", tags=["admin"])
+app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
 
 # include api routers
-app.include_router(health.router, prefix="/health", tags=["health"])
+app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
 app.include_router(document.router, prefix=API_PREFIX, tags=["document"])
-app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 app.include_router(notepad.router, prefix=API_PREFIX, tags=["notepad"])
+app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 
 # include jinja pages routers
 app.include_router(jinja_pages.router, prefix='/pages', tags=["pages"])
