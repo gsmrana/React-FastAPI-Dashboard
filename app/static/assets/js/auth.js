@@ -2,6 +2,7 @@ import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
     bindEvents();
+    validateLogin();
 });
 
 function bindEvents() {
@@ -13,6 +14,23 @@ function bindEvents() {
     $('#registerForm').on('submit', function(e) {
         e.preventDefault();
         register();
+    });
+}
+
+function validateLogin() {
+    $.ajax({
+        url: `${API_BASE_URL}/users/me`,
+        method: 'GET',
+        success: function(data) {            
+            console.log('Login User: ' + data.email);
+            // redirect to back_url if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const backUrl = urlParams.get('back_url');
+            window.location.href = backUrl ? backUrl : '/pages/document';
+        },
+        error: function(xhr, status, error) {
+            console.error('Login check Error: ' + error);
+        }
     });
 }
 

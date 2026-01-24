@@ -143,7 +143,7 @@ function uploadFiles() {
     $('#progressContainer').show();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/document-upload`,
+        url: `${API_BASE_V1_URL}/documents/upload`,
         method: 'POST',
         data: formData,
         contentType: false,
@@ -183,7 +183,7 @@ function uploadFiles() {
 function dowbloadFile(id) {
     const entry = documents.find(u => u.id == id);
     const filename = entry ? entry.filename : '';
-    const url = `${API_BASE_V1_URL}/document-download/${filename}`;
+    const url = `${API_BASE_V1_URL}/documents/download/${filename}`;
     
     const link = document.createElement('a');
     link.href = url;
@@ -197,7 +197,7 @@ function dowbloadFile(id) {
 function viewFile(id) {
     const entry = documents.find(u => u.id == id);
     const filename = entry ? entry.filename : '';
-    const url = `${API_BASE_V1_URL}/document-view/${filename}`;
+    const url = `${API_BASE_V1_URL}/documents/view/${filename}`;
     
     const newTab = window.open(url, '_blank');
     if (newTab) {
@@ -236,7 +236,7 @@ function updateFile() {
 
     $.ajax({
         //url: `${API_BASE_V1_URL}/document/${id}`,
-        url: `${API_BASE_V1_URL}/document`,
+        url: `${API_BASE_V1_URL}/documents`,
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify(userData),
@@ -273,7 +273,7 @@ function deleteFile(id) {
 
     $.ajax({
         //url: `${API_BASE_V1_URL}/document/${id}`,
-        url: `${API_BASE_V1_URL}/document`,
+        url: `${API_BASE_V1_URL}/documents`,
         method: 'DELETE',
         contentType: 'application/json',
         data: JSON.stringify(userData),

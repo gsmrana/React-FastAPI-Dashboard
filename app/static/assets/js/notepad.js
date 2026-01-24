@@ -16,7 +16,7 @@ function bindEvents() {
     
     $('#saveBtn').on('click', function() {
         const inputText = $('#noteInput').val();
-        saveNote(inputText);
+        updateNote(inputText);
     });
 }
 
@@ -25,7 +25,7 @@ function loadNote() {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/notepad`,
+        url: `${API_BASE_V1_URL}/notepads/1`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
@@ -37,15 +37,18 @@ function loadNote() {
     });
 }
 
-// save note to API
-function saveNote(inputText) {
+// create note to API
+function createNote(inputText) {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/notepad`,
+        url: `${API_BASE_V1_URL}/notepads`,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ content: inputText }),
+        data: JSON.stringify({ 
+            title: 'default',
+            content: inputText 
+        }),
         success: function() {
             showStatusMessage('✅ Saved');
             setTimeout(() => {
@@ -54,6 +57,31 @@ function saveNote(inputText) {
         },
         error: function(xhr, status, error) {
             showStatusMessage('⚠️ Error: ' + error);
+        }
+    });
+}
+
+// update note to API
+function updateNote(inputText) {
+    showLoadingStatus();
+
+    $.ajax({
+        url: `${API_BASE_V1_URL}/notepads/1`,
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+            title: 'default',
+            content: inputText 
+        }),
+        success: function() {
+            showStatusMessage('✅ Saved');
+            setTimeout(() => {
+                hideStatusMessage();
+            }, 3000);
+        },
+        error: function(xhr, status, error) {
+            showStatusMessage('⚠️ Error: ' + error);
+            createNote(inputText);
         }
     });
 }

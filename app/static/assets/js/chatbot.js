@@ -37,17 +37,17 @@ function chatRequest(streaming=false) {
     showUserPrompt("user", escapeHtml(prompt));
     showThinkingStatus();
     
-    // show bot meassage
+    // show bot message
     const botMessageId = "bot-" + Date.now();
     showBotTypingPlaceholder(botMessageId);
 
-    const url = streaming ? `${API_BASE_V1_URL}/chat-stream` : `${API_BASE_V1_URL}/chat-simple`;
+    const url = streaming ? `${API_BASE_V1_URL}/chat/stream` : `${API_BASE_V1_URL}/chat/simple`;
 
     $.ajax({
         url: url,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ content: prompt }),
+        data: JSON.stringify({ prompt: prompt }),
         xhrFields: {
             onloadstart: function() {
                 console.log('Stream started');
