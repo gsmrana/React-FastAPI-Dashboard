@@ -1,6 +1,6 @@
 import time
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, status
 from sqlalchemy import text
 from app.db.database import engine
@@ -24,7 +24,7 @@ async def liveness_check():
     return HealthLiveResponse(
         status="alive",
         uptime_seconds=round(time.time() - START_TIME, 2),
-        server_time=datetime.utcnow().isoformat(),
+        server_time=datetime.now(timezone.utc).isoformat(),
     )
 
 @router.get(

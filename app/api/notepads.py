@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -87,8 +87,9 @@ async def delete_note(
         raise HTTPException(404, f"Note id {note_id} not found")
     if not hard_delete:
         notepad.deleted_by = user.id
-        notepad.deleted_at = datetime.utcnow()
+        notepad.deleted_at = datetime.now(timezone.utc)
     else:
         await db.delete(notepad)
     await db.commit()
+    await db.refresh(notepad)
     return NoteSchema.model_validate(notepad)

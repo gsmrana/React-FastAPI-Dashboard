@@ -1,10 +1,10 @@
-import uuid
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+from app.schemas.audit import AuditSchema
 
 
-class ExpenseSchema(BaseModel):
+class ExpenseSchema(BaseModel, AuditSchema):
     id: int
     title: str
     description: str
@@ -12,13 +12,6 @@ class ExpenseSchema(BaseModel):
     category: int
     payment_method: int
     amount: float
-
-    created_at: datetime
-    updated_at: Optional[datetime]
-    deleted_at: Optional[datetime]
-    created_by: uuid.UUID
-    updated_by: Optional[uuid.UUID]
-    deleted_by: Optional[uuid.UUID]
 
     model_config = ConfigDict(from_attributes=True)
 

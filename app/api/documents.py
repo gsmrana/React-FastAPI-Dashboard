@@ -22,7 +22,6 @@ from app.schemas.document import (
 router = APIRouter()
 logger = get_logger(__name__)
 UPLOAD_DIR = Path(config.upload_dir)
-DATE_TIME_FORMAT = '%d-%b-%Y %I:%M %p'
 
 def get_formatted_size(size_bytes):   
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -40,8 +39,6 @@ def get_unique_filename(file_path):
 
 @router.get("/documents", response_model=List[DocResponse])
 async def document_list(
-    offset: int = None,
-    limit: int = None,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
 ):
@@ -49,7 +46,7 @@ async def document_list(
         documents = []
         for idx, file in enumerate(UPLOAD_DIR.iterdir()):
             filestat = file.stat()
-            created_at = datetime.fromtimestamp(filestat.st_ctime).strftime(DATE_TIME_FORMAT)
+            created_at = datetime.fromtimestamp(filestat.st_ctime).isoformat()
             documents.append(DocResponse(
                 id=str(idx+1),
                 filename=file.name,
@@ -86,8 +83,7 @@ async def upload_files(
                 id=str(idx+1),
                 filename=filepath.name,
                 filesize=get_formatted_size(filestat.st_size),
-                created_at=datetime.fromtimestamp(filestat.st_ctime).
-                    strftime(DATE_TIME_FORMAT)
+                created_at=datetime.fromtimestamp(filestat.st_ctime).isoformat(),
             ))
         return response
     except Exception as e:

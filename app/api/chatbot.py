@@ -59,7 +59,7 @@ async def chat_stream_callback(prompt, event_stream=False):
                 yield chunk.content # plain fetch-stream
         await asyncio.sleep(0)  # allows other awaiting tasks to run
 
-@router.post("/llms", response_model=List[LLM_Info])
+@router.get("/llms", response_model=List[LLM_Info])
 async def llm_list(
     user: User = Depends(current_active_user),
 ):

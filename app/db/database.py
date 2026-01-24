@@ -9,27 +9,23 @@ logger = get_logger(__name__)
 engine = create_async_engine(
     config.database_url,
     echo=config.database_debug, # echo SQL queries to console
-    connect_args={"check_same_thread": False} # required for SQLite
 )
 
-async_session_maker = async_sessionmaker(
+AsyncSessionLocal = async_sessionmaker(
     bind=engine, 
     class_=AsyncSession,
     expire_on_commit=False,
     autoflush=False,
 )
 
-# base class for all Db models (tables)
-class DbBase(DeclarativeBase):
-    pass
-
 # dependency to get DB session - defined BEFORE model imports to avoid circular import
 async def get_db():
-    async with async_session_maker() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    async with AsyncSessionLocal() as session:
+        yield session
+
+# need to use as base class for all Db models
+class DbBase(DeclarativeBase):
+    pass
 
 # Import all DB models AFTER DbBase and get_db are defined to avoid circular import
 # These must be imported for SQLAlchemy to discover them for create all tables
@@ -39,7 +35,7 @@ from app.models.notepad import Notepad
 from app.models.todo import Todo
 from app.models.expense import Expense
 
-async def create_db_and_tables(rebuild: bool = False):
+async def create_db_and_tables(rebuild: bool=False):
     async with engine.begin() as conn:
         if rebuild:
             logger.warning(f"Dropping all database tables (schema changes will be applied, existing data will be lost)")

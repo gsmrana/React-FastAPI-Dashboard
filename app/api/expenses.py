@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -93,8 +93,9 @@ async def delete_expense(
         raise HTTPException(404, f"Expense id {expense_id} not found")
     if not hard_delete:
         expense.deleted_by = user.id
-        expense.deleted_at = datetime.utcnow()
+        expense.deleted_at = datetime.now(timezone.utc)
     else:
         await db.delete(expense)
     await db.commit()
+    await db.refresh(expense)
     return ExpenseSchema.model_validate(expense)

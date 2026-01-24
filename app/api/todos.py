@@ -1,5 +1,5 @@
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,8 +90,9 @@ async def delete_todo(
         raise HTTPException(404, f"Todo id {todo_id} not found")
     if not hard_delete:
         todo.deleted_by = user.id
-        todo.deleted_at = datetime.utcnow()
+        todo.deleted_at = datetime.now(timezone.utc)
     else:
         await db.delete(todo)
     await db.commit()
+    await db.refresh(todo)
     return TodoSchema.model_validate(todo)
