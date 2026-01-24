@@ -23,7 +23,7 @@ async_session_maker = async_sessionmaker(
 class DbBase(DeclarativeBase):
     pass
 
-# dependency to get DB session - defined before model imports to avoid circular import
+# dependency to get DB session - defined BEFORE model imports to avoid circular import
 async def get_db():
     async with async_session_maker() as session:
         try:
@@ -31,7 +31,7 @@ async def get_db():
         finally:
             await session.close()
 
-# Import all DB models after DbBase and get_db are defined to avoid circular import
+# Import all DB models AFTER DbBase and get_db are defined to avoid circular import
 # These must be imported for SQLAlchemy to discover them for create all tables
 from app.models.user import User
 from app.models.document import Document
@@ -39,9 +39,9 @@ from app.models.notepad import Notepad
 from app.models.todo import Todo
 from app.models.expense import Expense
 
-async def create_db_and_tables():
+async def create_db_and_tables(rebuild: bool = False):
     async with engine.begin() as conn:
-        if config.database_rebuild:
+        if rebuild:
             logger.warning(f"Dropping all database tables (schema changes will be applied, existing data will be lost)")
             await conn.run_sync(DbBase.metadata.drop_all)
 

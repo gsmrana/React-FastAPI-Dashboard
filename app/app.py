@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
                 f"LOG_LEVEL: {config.log_level}, " +
                 f"ENV_FILE: {config.ENV_FILE}")
     logger.info(f"Serving React build from: {REACT_BUILD_DIR}")
-    await create_db_and_tables()
+    await create_db_and_tables(config.database_rebuild)
     yield
     
     # on shutdown

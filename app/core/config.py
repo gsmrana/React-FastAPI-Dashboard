@@ -37,7 +37,7 @@ class Config(BaseSettings):
     upload_dir: str = "uploaded_files"
 
     # DB configs
-    database_debug: bool = True
+    database_debug: bool = False
     database_rebuild: bool = False
     database_url: str = "sqlite+aiosqlite:///./fastapi_app.db"
 
