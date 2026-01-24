@@ -1,5 +1,5 @@
-from datetime import datetime
 from typing import List
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 @router.get("/notepads", response_model=List[NoteSchema])
-async def get_note_list(
+async def note_list(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):

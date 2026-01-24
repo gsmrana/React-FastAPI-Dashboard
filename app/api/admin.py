@@ -23,13 +23,13 @@ from app.core.users import (
 router = APIRouter()
 
 @router.get("/admin/config", response_class=JSONResponse)
-async def get_app_config(
+async def app_config(
     user: User = Depends(current_active_superuser),
 ):
     return config.model_dump()
 
 @router.get("/admin/system", response_class=JSONResponse)
-async def get_sysem_info(
+async def system_info(
     user: User = Depends(current_active_superuser),
 ):
     sys_info = {
@@ -44,7 +44,7 @@ async def get_sysem_info(
     return sys_info
 
 @router.get("/admin/users", response_model=List[UserRead])
-async def get_users(
+async def user_list(
     offset: int = None,
     limit: int = None,
     admin: User = Depends(current_active_superuser),

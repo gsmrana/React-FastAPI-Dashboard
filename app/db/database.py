@@ -36,6 +36,8 @@ async def get_db():
 from app.models.user import User
 from app.models.document import Document
 from app.models.notepad import Notepad
+from app.models.todo import Todo
+from app.models.expense import Expense
 
 async def create_db_and_tables():
     async with engine.begin() as conn:

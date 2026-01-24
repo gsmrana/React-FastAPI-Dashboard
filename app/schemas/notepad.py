@@ -1,7 +1,8 @@
 import uuid
-from datetime import datetime
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+
 
 class NoteSchema(BaseModel):
     id: int
@@ -20,5 +21,6 @@ class UpdateNoteSchema(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
 
-class CreateNoteSchema(UpdateNoteSchema):
-    pass
+class CreateNoteSchema(BaseModel):
+    title: str
+    content: str

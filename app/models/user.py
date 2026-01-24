@@ -12,5 +12,11 @@ class User(SQLAlchemyBaseUserTableUUID, DbBase):
     # Relationship with notepads table
     notepads = relationship("Notepad", back_populates="user")
 
+    # Relationship with todos table
+    todos = relationship("Todo", back_populates="user")
+
+    # Relationship with expenses table
+    expenses = relationship("Expense", back_populates="user")
+
 async def get_user_db(db: AsyncSession = Depends(get_db)):
     yield SQLAlchemyUserDatabase(db, User)

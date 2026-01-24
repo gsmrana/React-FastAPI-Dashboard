@@ -11,7 +11,8 @@ from app.core.logger import get_logger
 from app.db.database import create_db_and_tables, dispose_db_engine
 from app.core.users import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.api import admin, health, document, chatbot, notepad
+from app.api import admin, health, document, notepad
+from app.api import todo, expense, chatbot
 from app.pages import jinja_pages
 
 
@@ -70,6 +71,8 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
 app.include_router(document.router, prefix=API_PREFIX, tags=["document"])
 app.include_router(notepad.router, prefix=API_PREFIX, tags=["notepad"])
+app.include_router(todo.router, prefix=API_PREFIX, tags=["todo"])
+app.include_router(expense.router, prefix=API_PREFIX, tags=["expense"])
 app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 
 # include jinja pages routers

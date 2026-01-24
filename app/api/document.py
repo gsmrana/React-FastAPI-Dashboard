@@ -39,7 +39,7 @@ def get_unique_filename(file_path):
     return unique_filename
 
 @router.get("/documents", response_model=List[DocResponse])
-async def get_documents(
+async def document_list(
     offset: int = None,
     limit: int = None,
     user: User = Depends(current_active_user),
@@ -63,7 +63,7 @@ async def get_documents(
             detail=f"Error in getting document list: {str(e)}"
         )
 
-@router.post("/document-upload", response_model=List[DocResponse])
+@router.post("/documents/upload", response_model=List[DocResponse])
 async def upload_files(
     files: list[UploadFile] = File(...),
     # user: User = Depends(current_active_user), # excluding user auth for external use
@@ -96,7 +96,7 @@ async def upload_files(
             detail=f"Error in uploading files: {str(e)}"
         )
 
-@router.get("/document-download/{filename}", response_class=FileResponse)
+@router.get("/documents/download/{filename}", response_class=FileResponse)
 async def download_file(
     filename: str,
     user: User = Depends(current_active_user),
@@ -119,7 +119,7 @@ async def download_file(
             detail=f"Error in downloading file: {str(e)}"
         )
 
-@router.get("/document-view/{filename}", response_class=FileResponse)
+@router.get("/documents/view/{filename}", response_class=FileResponse)
 async def view_file(
     filename: str,
     user: User = Depends(current_active_user),
@@ -150,7 +150,7 @@ async def view_file(
             detail=f"Error in viewing file: {str(e)}"
         )
 
-@router.put("/document", response_model=DocResponse)
+@router.put("/documents", response_model=DocResponse)
 async def update_file(
     request: UpdateRequest,
     user: User = Depends(current_active_user),
@@ -170,7 +170,7 @@ async def update_file(
             detail=f"Error in renaming file: {str(e)}"
         )
 
-@router.delete("/document", response_model=DocResponse)
+@router.delete("/documents", response_model=DocResponse)
 async def delete_file(
     request: DocRequest,
     user: User = Depends(current_active_user),

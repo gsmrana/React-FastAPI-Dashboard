@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from langchain_openai import ChatOpenAI
@@ -10,11 +11,24 @@ from app.core.logger import get_logger
 from app.core.users import current_active_user
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.chatbot import ChatRequest, ChatResponse
+from app.schemas.chatbot import LLM_Info, ChatRequest, ChatResponse
 
 
 router = APIRouter()
 logger = get_logger(__name__)
+
+available_llms = [
+    LLM_Info(
+        provider="OpenAI", 
+        model_name=config.openai_llm_model,
+        temperature=config.openai_llm_temperature,
+    ),
+    LLM_Info(
+        provider="Anthropic", 
+        model_name=config.anthropic_llm_model,
+        temperature=config.anthropic_llm_temperature,
+    ),
+]
 
 openai_llm = ChatOpenAI(
     base_url=config.openai_api_endpoint,
@@ -30,7 +44,7 @@ antropic_llm = ChatAnthropic(
     temperature=config.anthropic_llm_temperature,
 )
 
-def get_prompt(human_query: str):
+def generate_prompt(human_query: str):
     return [
         SystemMessage(content="You are a helpful and concise AI assistant."),
         HumanMessage(content=human_query),
@@ -45,31 +59,36 @@ async def chat_stream_callback(prompt, event_stream=False):
                 yield chunk.content # plain fetch-stream
         await asyncio.sleep(0)  # allows other awaiting tasks to run
 
-
-@router.post("/chat-simple", response_model=ChatResponse)
-async def chat_simple(
-    req: ChatRequest,
+@router.post("/llms", response_model=List[LLM_Info])
+async def llm_list(
     user: User = Depends(current_active_user),
 ):
-    resp = openai_llm.invoke(get_prompt(req.content))
-    return ChatResponse(content=resp.content)
+    return available_llms
 
-@router.post("/chat-stream")
+@router.post("/chat/simple", response_model=ChatResponse)
+async def chat_simple(
+    chatRequest: ChatRequest,
+    user: User = Depends(current_active_user),
+):
+    resp = openai_llm.invoke(generate_prompt(chatRequest.prompt))
+    return ChatResponse(content=resp.content, llm_info=available_llms[0])
+
+@router.post("/chat/stream")
 async def chat_plain_stream(
-    req: ChatRequest,
+    chatRequest: ChatRequest,
     user: User = Depends(current_active_user),
 ):    
     return StreamingResponse(
-        chat_stream_callback(get_prompt(req.content)),
+        chat_stream_callback(generate_prompt(chatRequest.prompt)),
         media_type="text/plain",
     )
 
-@router.post("/chat-event-stream")
+@router.post("/chat/event-stream")
 async def chat_event_stream(
-    req: ChatRequest,
+    chatRequest: ChatRequest,
     user: User = Depends(current_active_user),
 ):
     return StreamingResponse(
-        chat_stream_callback(get_prompt(req.content), True),
+        chat_stream_callback(generate_prompt(chatRequest.prompt), True),
         media_type="text/event-stream",
     )
