@@ -16,16 +16,26 @@ from app.models.expense import Expense
 router = APIRouter()
 logger = get_logger(__name__)
 
-@router.get("/expense", response_model=List[ExpenseSchema])
+@router.get("/expenses", response_model=List[ExpenseSchema])
 async def expense_list(
+    from_date: datetime = None,
+    to_date: datetime = None,
+    include_deleted: bool = False,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Expense).filter(Expense.deleted_at == None))
+    query = select(Expense)
+    if from_date:
+        query = query.filter(Expense.date >= from_date)
+    if to_date:
+        query = query.filter(Expense.date <= to_date)
+    if not include_deleted:
+        query = query.filter(Expense.deleted_at == None)
+    result = await db.execute(query)
     expenses = result.scalars().all()
     return [ExpenseSchema.model_validate(item) for item in expenses]
 
-@router.post("/expense", response_model=ExpenseSchema)
+@router.post("/expenses", response_model=ExpenseSchema)
 async def create_expense(
     create_expense: CreateExpenseSchema,
     user: User = Depends(current_active_user),
@@ -40,7 +50,7 @@ async def create_expense(
     await db.refresh(new_expense)
     return ExpenseSchema.model_validate(new_expense)
 
-@router.get("/expense/{expense_id}", response_model=ExpenseSchema)
+@router.get("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def get_expense(
     expense_id: int,
     user: User = Depends(current_active_user),
@@ -52,7 +62,7 @@ async def get_expense(
         raise HTTPException(404, f"Expense id {expense_id} not found")
     return ExpenseSchema.model_validate(expense)
 
-@router.put("/expense/{expense_id}", response_model=ExpenseSchema)
+@router.put("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def update_expense(
     expense_id: int,
     updates: UpdateExpenseSchema,
@@ -70,7 +80,7 @@ async def update_expense(
     await db.refresh(expense)
     return ExpenseSchema.model_validate(expense)
 
-@router.delete("/expense/{expense_id}", response_model=ExpenseSchema)
+@router.delete("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def delete_expense(
     expense_id: int,
     hard_delete: bool = False,

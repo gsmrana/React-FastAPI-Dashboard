@@ -18,10 +18,17 @@ logger = get_logger(__name__)
 
 @router.get("/todos", response_model=List[TodoSchema])
 async def get_todo_list(
+    include_completed: bool = False,
+    include_deleted: bool = False,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Todo).filter(Todo.deleted_at == None))
+    query = select(Todo)
+    if not include_deleted:
+        query = query.filter(Todo.deleted_at == None)
+    if not include_completed:
+        query = query.filter(Todo.completed == False)
+    result = await db.execute(query)
     todos = result.scalars().all()
     return [TodoSchema.model_validate(item) for item in todos]
 

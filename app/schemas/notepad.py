@@ -8,6 +8,7 @@ class NoteSchema(BaseModel):
     id: int
     title: str
     content: str
+    
     created_at: datetime
     updated_at: Optional[datetime]
     deleted_at: Optional[datetime]

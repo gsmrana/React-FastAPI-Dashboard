@@ -86,7 +86,7 @@ async def admin_user_create(
     return created_user
 
 @router.post("/admin/user-by-email", response_model=UserRead)
-async def get_user_by_email(
+async def find_user_by_email(
     email: str,
     admin: User = Depends(current_active_superuser),
     user_manager: UserManager = Depends(get_user_manager),

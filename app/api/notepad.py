@@ -18,10 +18,14 @@ logger = get_logger(__name__)
 
 @router.get("/notepads", response_model=List[NoteSchema])
 async def note_list(
+    include_deleted: bool = False,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Notepad).filter(Notepad.deleted_at == None))
+    query = select(Notepad)
+    if not include_deleted:
+        query = query.filter(Notepad.deleted_at == None)
+    result = await db.execute(query)
     notepads = result.scalars().all()
     return [NoteSchema.model_validate(item) for item in notepads]
 
