@@ -27,7 +27,7 @@ async def get_todo_list(
     if not include_deleted:
         query = query.filter(Todo.deleted_at == None)
     if not include_completed:
-        query = query.filter(Todo.completed == False)
+        query = query.filter(Todo.is_completed == False)
     result = await db.execute(query)
     todos = result.scalars().all()
     return [TodoSchema.model_validate(item) for item in todos]
