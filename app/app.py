@@ -8,7 +8,7 @@ from fastapi.exception_handlers import http_exception_handler
 
 from app.core.config import config
 from app.core.logger import get_logger
-from app.db.database import create_db_and_tables, dispose_db_engine
+from app.db.async_db import create_db_tables, dispose_sync_db_engine
 from app.core.users import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.api import health, admin, documents, chatbot
@@ -30,11 +30,11 @@ async def lifespan(app: FastAPI):
                 f"LOG_LEVEL: {config.log_level}, " +
                 f"ENV_FILE: {config.ENV_FILE}")
     logger.info(f"Serving React build from: {REACT_BUILD_DIR}")
-    await create_db_and_tables(rebuild=config.database_rebuild)
+    await create_db_tables(rebuild=config.database_rebuild)
     yield
     
     # on shutdown
-    await dispose_db_engine()
+    await dispose_sync_db_engine()
     logger.warning(f"{config.app_name} app exited")
 
 app = FastAPI(

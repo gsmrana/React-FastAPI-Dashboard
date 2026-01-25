@@ -8,7 +8,7 @@ from app.core.config import config
 from app.core.logger import get_logger
 from app.schemas.expense import ExpenseSchema, UpdateExpenseSchema, CreateExpenseSchema
 from app.core.users import current_active_user
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.models.user import User
 from app.models.expense import Expense
 
@@ -22,7 +22,7 @@ async def expense_list(
     to_date: datetime = None,
     include_deleted: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Expense)
     if from_date:
@@ -39,7 +39,7 @@ async def expense_list(
 async def create_expense(
     create_expense: CreateExpenseSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     new_expense = Expense(
         **create_expense.model_dump(),
@@ -54,7 +54,7 @@ async def create_expense(
 async def get_expense(
     expense_id: int,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
@@ -67,7 +67,7 @@ async def update_expense(
     expense_id: int,
     updates: UpdateExpenseSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
@@ -85,7 +85,7 @@ async def delete_expense(
     expense_id: int,
     hard_delete: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()

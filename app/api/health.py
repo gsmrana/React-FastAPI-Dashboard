@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime, timezone
 from fastapi import APIRouter, status
 from sqlalchemy import text
-from app.db.database import engine
+from app.db.async_db import async_engine
 from app.schemas.health import (
     HealthLiveResponse, 
     HealthReadyResponse
@@ -38,7 +38,7 @@ async def readiness_check():
     """
     try:
         async with asyncio.timeout(5.0):
-            async with engine.connect() as conn:
+            async with async_engine.connect() as conn:
                 await conn.execute(text("SELECT 1;"))
         return HealthReadyResponse(
             status="ready", 

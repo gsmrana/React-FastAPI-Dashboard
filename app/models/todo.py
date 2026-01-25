@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Boolean, Integer, String, Text, DateTime
-from app.db.database import DbBase
+from app.db.async_db import DbBase
 from app.models.audit_mixin import AuditMixin
 
 

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import config
 from app.core.logger import get_logger
 from app.core.users import current_active_user
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.models.user import User
 from app.schemas.document import (
     DocumentRequest,
@@ -112,6 +112,8 @@ async def download_file(
             filename=file_path.name,
             media_type=media_type or "application/octet-stream"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500, 
@@ -143,6 +145,8 @@ async def view_file(
             headers=headers,
             media_type=media_type or "application/octet-stream",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500, 
@@ -166,8 +170,8 @@ async def rename_file(
             filename=doc.new_filename,
             filepath=str(UPLOAD_DIR / doc.new_filename),
         )
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500, 
@@ -191,8 +195,8 @@ async def delete_file(
             filename=doc.filename,
             filepath=str(file_path),
         )
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500, 

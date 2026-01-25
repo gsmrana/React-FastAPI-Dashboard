@@ -13,16 +13,16 @@ class NoteContent(BaseModel):
 class NoteSchema(AuditSchema, NoteContent):
     model_config = ConfigDict(from_attributes=True)
 
-class UpdateNoteSchema(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    category: Optional[int] = None
-    is_starred: Optional[int] = None
-    tags: Optional[str] = None
-
 class CreateNoteSchema(BaseModel):
     title: str
     content: str
     category: Optional[int] = 0
     is_starred: Optional[int] = 0
     tags: Optional[str] = ""
+
+class UpdateNoteSchema(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[int] = None
+    is_starred: Optional[int] = None
+    tags: Optional[str] = None

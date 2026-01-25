@@ -6,20 +6,21 @@ from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
-engine = create_async_engine(
+# --- Async DB engine setup for FastAPI ---
+async_engine = create_async_engine(
     config.database_url,
     echo=config.database_debug, # echo SQL queries to console
 )
 
 AsyncSessionLocal = async_sessionmaker(
-    bind=engine, 
+    bind=async_engine, 
     class_=AsyncSession,
     expire_on_commit=False,
     autoflush=False,
 )
 
 # dependency to get DB session - defined BEFORE model imports to avoid circular import
-async def get_db():
+async def get_async_db():
     async with AsyncSessionLocal() as session:
         yield session
 
@@ -35,8 +36,8 @@ from app.models.notepad import Notepad
 from app.models.todo import Todo
 from app.models.expense import Expense
 
-async def create_db_and_tables(rebuild: bool=False):
-    async with engine.begin() as conn:
+async def create_db_tables(rebuild: bool=False):
+    async with async_engine.begin() as conn:
         if rebuild:
             logger.warning(f"Dropping all database tables (schema changes will be applied, existing data will be lost)")
             await conn.run_sync(DbBase.metadata.drop_all)
@@ -44,6 +45,6 @@ async def create_db_and_tables(rebuild: bool=False):
         logger.warning(f"Syncing database tables (creating new tables, existing data will be preserved)")
         await conn.run_sync(DbBase.metadata.create_all)
 
-async def dispose_db_engine():
-    logger.info(f"Disposing database engine")
-    await engine.dispose()
+async def dispose_sync_db_engine():
+    logger.info(f"Disposing async database engine")
+    await async_engine.dispose()

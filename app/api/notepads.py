@@ -8,7 +8,7 @@ from app.core.config import config
 from app.core.logger import get_logger
 from app.schemas.notepad import NoteSchema, UpdateNoteSchema, CreateNoteSchema
 from app.core.users import current_active_user
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.models.user import User
 from app.models.notepad import Notepad
 
@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 async def note_list(
     include_deleted: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Notepad)
     if not include_deleted:
@@ -33,7 +33,7 @@ async def note_list(
 async def create_note(
     create_note: CreateNoteSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     new_note = Notepad(
         **create_note.model_dump(),
@@ -48,7 +48,7 @@ async def create_note(
 async def get_note(
     note_id: int,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()
@@ -61,7 +61,7 @@ async def update_note(
     note_id: int,
     updates: UpdateNoteSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()
@@ -79,7 +79,7 @@ async def delete_note(
     note_id: int,
     hard_delete: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()

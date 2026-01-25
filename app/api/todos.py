@@ -8,7 +8,7 @@ from app.core.config import config
 from app.core.logger import get_logger
 from app.schemas.todo import TodoSchema, UpdateTodoSchema, CreateTodoSchema
 from app.core.users import current_active_user
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.models.user import User
 from app.models.todo import Todo
 
@@ -21,7 +21,7 @@ async def get_todo_list(
     include_completed: bool = False,
     include_deleted: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Todo)
     if not include_deleted:
@@ -36,7 +36,7 @@ async def get_todo_list(
 async def create_todo(
     create_todo: CreateTodoSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     new_todo = Todo(
         **create_todo.model_dump(),
@@ -51,7 +51,7 @@ async def create_todo(
 async def get_todo(
     todo_id: int,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()
@@ -64,7 +64,7 @@ async def update_todo(
     todo_id: int,
     updates: UpdateTodoSchema,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()
@@ -82,7 +82,7 @@ async def delete_todo(
     todo_id: int,
     hard_delete: bool = False,
     user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()

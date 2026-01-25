@@ -19,6 +19,18 @@ class ExpenseContent(BaseModel):
 class ExpenseSchema(AuditSchema, ExpenseContent):
     model_config = ConfigDict(from_attributes=True)
 
+class CreateExpenseSchema(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    transaction_datetime: DbDatetime
+    category: int
+    tags: Optional[str] = ""
+    location: Optional[str] = ""
+    
+    payment_method: int
+    amount: float
+    currency: Optional[str] = "BDT"
+
 class UpdateExpenseSchema(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -31,14 +43,3 @@ class UpdateExpenseSchema(BaseModel):
     amount: Optional[float] = None
     currency: Optional[str] = None
 
-class CreateExpenseSchema(BaseModel):
-    title: str
-    description: Optional[str] = ""
-    transaction_datetime: DbDatetime
-    category: int
-    tags: Optional[str] = ""
-    location: Optional[str] = ""
-    
-    payment_method: int
-    amount: float
-    currency: Optional[str] = "BDT"

@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from app.core.config import config
 from app.core.logger import get_logger
 from app.core.users import current_active_user
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.models.user import User
 from app.schemas.chatbot import LLM_Info, ChatRequest, ChatResponse
 

@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import config
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
-from app.db.database import get_db
+from app.db.async_db import get_async_db
 from app.core.users import (
     UserManager,
     current_active_superuser,
@@ -48,7 +48,7 @@ async def user_list(
     offset: int = None,
     limit: int = None,
     admin: User = Depends(current_active_superuser),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
     query = (
         select(User)
