@@ -65,7 +65,7 @@ function register() {
     statusMessage('');
     
     const userData = {
-        username: $('#username').val(),
+        full_name: $('#username').val(),
         email: $('#email').val(),
         password: $('#password').val(),
     };

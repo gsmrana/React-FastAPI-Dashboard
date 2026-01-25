@@ -13,9 +13,9 @@ from app.core.users import current_active_user
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.document import (
-    DocRequest,
-    DocResponse, 
-    UpdateRequest,
+    DocumentRequest,
+    DocumentSchema, 
+    RenameRequest,
 )
 
 
@@ -37,7 +37,7 @@ def get_unique_filename(file_path):
         count += 1
     return unique_filename
 
-@router.get("/documents", response_model=List[DocResponse])
+@router.get("/documents", response_model=List[DocumentSchema])
 async def document_list(
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
@@ -46,12 +46,13 @@ async def document_list(
         documents = []
         for idx, file in enumerate(UPLOAD_DIR.iterdir()):
             filestat = file.stat()
-            created_at = datetime.fromtimestamp(filestat.st_ctime).isoformat()
-            documents.append(DocResponse(
+            documents.append(DocumentSchema(
                 id=str(idx+1),
                 filename=file.name,
+                filepath=str(file),
                 filesize=get_formatted_size(filestat.st_size),
-                created_at=created_at,
+                created_at=datetime.fromtimestamp(filestat.st_ctime),
+                modified_at=datetime.fromtimestamp(filestat.st_mtime),
             ))
         return documents
     except Exception as e:
@@ -60,30 +61,32 @@ async def document_list(
             detail=f"Error in getting document list: {str(e)}"
         )
 
-@router.post("/documents/upload", response_model=List[DocResponse])
+@router.post("/documents/upload", response_model=List[DocumentSchema])
 async def upload_files(
     files: list[UploadFile] = File(...),
     # user: User = Depends(current_active_user), # excluding user auth for external use
     # db: AsyncSession = Depends(get_db),
 ):
     try:
-        filenames = []
+        stored_files = []
         for file in files:
-            store_filename = UPLOAD_DIR / file.filename
-            store_filename = get_unique_filename(store_filename)
+            store_filepath = UPLOAD_DIR / file.filename
+            store_filepath = get_unique_filename(store_filepath)
 
-            with open(store_filename, "wb") as buffer:
+            with open(store_filepath, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
-            filenames.append(store_filename)
+            stored_files.append(store_filepath)
 
         response = []
-        for idx, filepath in enumerate(filenames):
+        for idx, filepath in enumerate(stored_files):
             filestat = filepath.stat()
-            response.append(DocResponse(
+            response.append(DocumentSchema(
                 id=str(idx+1),
                 filename=filepath.name,
+                filepath=str(filepath),
                 filesize=get_formatted_size(filestat.st_size),
-                created_at=datetime.fromtimestamp(filestat.st_ctime).isoformat(),
+                created_at=datetime.fromtimestamp(filestat.st_ctime),
+                modified_at=datetime.fromtimestamp(filestat.st_mtime),
             ))
         return response
     except Exception as e:
@@ -146,40 +149,50 @@ async def view_file(
             detail=f"Error in viewing file: {str(e)}"
         )
 
-@router.put("/documents", response_model=DocResponse)
-async def update_file(
-    request: UpdateRequest,
+@router.put("/documents", response_model=DocumentSchema)
+async def rename_file(
+    doc: RenameRequest,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
 ):
     try:
-        file_path = UPLOAD_DIR / request.filename
-        if file_path.exists():
-            file_path.rename(UPLOAD_DIR / request.new_filename)
-        return DocResponse(
-            id=request.id,
-            filename=request.new_filename,
+        file_path = UPLOAD_DIR / doc.filename
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")        
+        
+        file_path.rename(UPLOAD_DIR / doc.new_filename)
+        return DocumentSchema(
+            id=0,
+            filename=doc.new_filename,
+            filepath=str(UPLOAD_DIR / doc.new_filename),
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(
             status_code=500, 
             detail=f"Error in renaming file: {str(e)}"
         )
 
-@router.delete("/documents", response_model=DocResponse)
+@router.delete("/documents", response_model=DocumentSchema)
 async def delete_file(
-    request: DocRequest,
+    doc: DocumentRequest,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_db),
 ):
     try:
-        file_path = UPLOAD_DIR / request.filename
-        if file_path.exists():
-            file_path.unlink()
-        return DocResponse(
-            id=request.id,
-            filename=request.filename,
+        file_path = UPLOAD_DIR / doc.filename
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found") 
+
+        file_path.unlink()
+        return DocumentSchema(
+            id=0,
+            filename=doc.filename,
+            filepath=str(file_path),
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(
             status_code=500, 

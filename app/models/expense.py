@@ -8,8 +8,11 @@ class Expense(DbBase, AuditMixin):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False, index=True)
     description = Column(Text, default="", nullable=False)
-    date = Column(DateTime, nullable=False)
+    transaction_datetime = Column(DateTime(timezone=True), nullable=False)
     category = Column(Integer, nullable=False, index=True) # e.g., 0: food, 1: transport, etc.
+    tags = Column(String, default="", nullable=False)  # Comma-separated tags
+    location = Column(String, default="", nullable=False)
+    
     payment_method = Column(Integer, nullable=False, index=True) # e.g., 0: cash, 1: credit card, etc.
     amount = Column(Float, nullable=False)
-
+    currency = Column(String(3), nullable=False, default="BDT")  # ISO currency code
