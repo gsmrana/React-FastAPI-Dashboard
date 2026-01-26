@@ -117,12 +117,12 @@ async def global_exception_handler(request: Request, exc: Exception):
     """
     # exc_info=True adds the full traceback/stack trace to the log
     logger.error(
-        f"Exception occurred at {request.method} {request.url}\nError: {exc}",
+        f"Exception occurred at {request.method} {request.url}, Error: {exc}",
         exc_info=False 
     )
 
     # return a response to the user
     return JSONResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": str(exc) if config.app_debug else "Internal Server Error"},
     )

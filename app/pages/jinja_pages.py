@@ -81,7 +81,7 @@ async def user_list_page(
         "request": request,
     })
 
-@router.get("/config", response_class=HTMLResponse)
+@router.get("/appconfig", response_class=HTMLResponse)
 async def config_page(
     request: Request, 
     user: User = Depends(current_active_user),
@@ -92,7 +92,7 @@ async def config_page(
         "title": "Configurations",
     })
     
-@router.get("/system", response_class=HTMLResponse)
+@router.get("/sysinfo", response_class=HTMLResponse)
 async def system_page(
     request: Request, 
     user: User = Depends(current_active_user),

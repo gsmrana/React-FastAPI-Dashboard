@@ -1,9 +1,10 @@
 import sys
 import platform
 from typing import List
+from pathlib import Path
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi_users import exceptions
 from fastapi_users.router.common import ErrorCode
 from sqlalchemy import select
@@ -19,29 +20,65 @@ from app.core.users import (
     get_user_manager,
 )
 
-
+LOG_FILE_PATH = "logs/app.log"
 router = APIRouter()
 
-@router.get("/admin/config", response_class=JSONResponse)
-async def app_config(
-    user: User = Depends(current_active_superuser),
+@router.get("/admin/sysinfo", response_class=JSONResponse)
+async def get_system_info(
+    admin: User = Depends(current_active_superuser)
+):
+    return {
+        "Python": platform.python_version(),
+        "Node": platform.node(),
+        "Arch": platform.machine(),
+        "Platform": sys.platform,
+        "CPU": platform.processor(),
+        "OS Name": platform.platform(),
+        "OS Version": platform.version(),
+    }
+
+@router.get("/admin/appconfig", response_class=JSONResponse)
+async def get_app_config(
+    admin: User = Depends(current_active_superuser)
 ):
     return config.model_dump()
 
-@router.get("/admin/system", response_class=JSONResponse)
-async def system_info(
-    user: User = Depends(current_active_superuser),
+@router.get("/admin/applog/view", response_class=FileResponse)
+async def view_applog(
+    admin: User = Depends(current_active_superuser)
 ):
-    sys_info = {
-        "Node": platform.node(),
-        "Platform": sys.platform,
-        "OS": platform.platform(),
-        "Version": platform.version(),
-        "Arch": platform.machine(),
-        "CPU": platform.processor(),  
-        "Python": platform.python_version(),
-    } 
-    return sys_info
+    log_file = Path(LOG_FILE_PATH)
+    if not log_file.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Log file not found"
+        )
+    # 'inline' tells the browser: "Try to show this inside the window"
+    headers = {
+        "Content-Disposition": f"inline; filename={log_file.name}"
+    }
+    return FileResponse(
+        path=log_file,
+        filename=log_file.name,
+        headers=headers,
+        media_type='text/plain'
+    )
+
+@router.get("/admin/applog/download", response_class=FileResponse)
+async def download_applog(
+    admin: User = Depends(current_active_superuser)
+):
+    log_file = Path(LOG_FILE_PATH)
+    if not log_file.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Log file not found"
+        )
+    return FileResponse(
+        path=log_file,
+        filename=log_file.name,
+        media_type='text/plain'
+    )
 
 @router.get("/admin/users", response_model=List[UserRead])
 async def user_list(
@@ -60,7 +97,7 @@ async def user_list(
     return users
 
 @router.post("/admin/users", response_model=UserRead)
-async def admin_user_create(
+async def user_create(
     user_create: UserCreate,
     admin: User = Depends(current_active_superuser),
     user_manager: UserManager = Depends(get_user_manager),
