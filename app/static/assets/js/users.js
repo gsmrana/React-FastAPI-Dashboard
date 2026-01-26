@@ -1,4 +1,4 @@
-import { API_BASE_V1_URL } from './constants.js';
+import { API_BASE_URL, API_BASE_V1_URL } from './constants.js';
 
 let dataTable;
 let currentEntryId = null;
@@ -15,7 +15,7 @@ function initDataTable() {
     dataTable = $('#dataTable').DataTable({
         data: [],
         columns: [
-            { data: 'id', width: "360px" },
+            { data: 'full_name', width: "360px" },
             { data: 'email', width: "30%" },
             { data: 'is_active' },
             { data: 'is_superuser' },
@@ -116,12 +116,12 @@ function viewEntity(id) {
     showLoading();
     
     $.ajax({
-        url: `${API_BASE_V1_URL}/admin/users/${id}`,
+        url: `${API_BASE_URL}/users/${id}`,
         method: 'GET',
         success: function(user) {
             hideLoading();
             $('#userId').val(user.id);
-            $('#userName').val(user.name);
+            $('#userName').val(user.full_name);
             $('#userEmail').val(user.email);
             $('#userPassword').val('dummy_password');
             $('#userActive').val(user.is_active);
@@ -144,7 +144,7 @@ function editEntry(id) {
     const user = users.find(u => u.id === id);
     if (user) {
         $('#userId').val(user.id);
-        $('#userName').val(user.name);
+        $('#userName').val(user.full_name);
         $('#userEmail').val(user.email);
         $('#userPassword').val('dummy_password');
         $('#userActive').val(user.is_active);
@@ -161,16 +161,21 @@ function editEntry(id) {
 function saveEntry() {
     const id = $('#userId').val();
     const userData = {
-        name: $('#userName').val(),
+        full_name: $('#userName').val(),
         email: $('#userEmail').val(),
-        password: $('#userPassword').val(),
         is_active: $('#userActive').val(),
         is_superuser: $('#userSuperUser').val(),
         is_verified: $('#userVerified').val(),
     };
 
+    // check if password is entered
+    const new_password = $('#userPassword').val();
+    if (new_password !== 'dummy_password') {
+        userData.password = new_password;
+    }
+
     const method = id ? 'PATCH' : 'POST';
-    const url = id ? `${API_BASE_V1_URL}/admin/users/${id}` : `${API_BASE_V1_URL}/admin/users`;
+    const url = id ? `${API_BASE_URL}/users/${id}` : `${API_BASE_V1_URL}/admin/users`;
 
     showLoading();
 
@@ -210,7 +215,7 @@ function deleteEntry(id) {
     showLoading();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/admin/users/${id}`,
+        url: `${API_BASE_URL}/users/${id}`,
         method: 'DELETE',
         success: function() {
             hideLoading();

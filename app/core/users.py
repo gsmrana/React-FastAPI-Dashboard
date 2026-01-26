@@ -4,23 +4,33 @@ from fastapi import Request, Depends
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import BearerTransport, CookieTransport
 from fastapi_users.authentication import AuthenticationBackend, JWTStrategy
+from fastapi_users.exceptions import InvalidPasswordException
 from fastapi_users.db import SQLAlchemyUserDatabase
-from app.core.config import config
-from app.models.user import User, get_user_db
 
+from app.core.config import config
+from app.core.logger import get_logger
+from app.models.user import User, get_user_db
+from app.schemas.user import UserCreate, UserUpdate
+
+
+logger = get_logger(__name__)
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = config.jwt_secret_key
     verification_token_secret = config.jwt_secret_key
 
+    async def validate_password(self, password: str, user: UserCreate | UserUpdate):
+        if len(password) < 4:
+            raise InvalidPasswordException(reason="Password must be at least 4 characters long")
+
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        print(f"New user with id: {user.id} has registered.")
+        logger.info(f"New user registered email: {user.email}, id: {user.id}")
 
     async def on_after_forgot_password(self, user: User, token: str, request: Optional[Request] = None):
-        print(f"Forgot password requested for user id: {user.id}, Reset token: {token}")
+        logger.info(f"Forgot password requested by user: {user.email}, Reset token: {token}")
 
     async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
-        print(f"Verification requested for user id: {user.id}, Verification token: {token}")
+        logger.info(f"Verification requested by user: {user.email}, Verification token: {token}")
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)

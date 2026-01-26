@@ -62,7 +62,7 @@ async def get_expense(
         raise HTTPException(404, f"Expense id {expense_id} not found")
     return ExpenseSchema.model_validate(expense)
 
-@router.put("/expenses/{expense_id}", response_model=ExpenseSchema)
+@router.patch("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def update_expense(
     expense_id: int,
     updates: UpdateExpenseSchema,

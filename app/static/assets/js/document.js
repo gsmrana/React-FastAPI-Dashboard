@@ -237,7 +237,7 @@ function updateFile() {
     $.ajax({
         //url: `${API_BASE_V1_URL}/document/${id}`,
         url: `${API_BASE_V1_URL}/documents`,
-        method: 'PUT',
+        method: 'PATCH',
         contentType: 'application/json',
         data: JSON.stringify(userData),
         success: function(response) {

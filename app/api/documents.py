@@ -40,7 +40,7 @@ def get_unique_filename(file_path):
 @router.get("/documents", response_model=List[DocumentSchema])
 async def document_list(
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     documents = []
     for idx, file in enumerate(UPLOAD_DIR.iterdir()):
@@ -59,7 +59,7 @@ async def document_list(
 async def upload_files(
     files: list[UploadFile] = File(...),
     # user: User = Depends(current_active_user), # excluding user auth for external use
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     stored_files = []
     for file in files:
@@ -87,7 +87,7 @@ async def upload_files(
 async def download_file(
     filename: str,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     file_path = UPLOAD_DIR / filename
     if not file_path.exists():
@@ -104,7 +104,7 @@ async def download_file(
 async def view_file(
     filename: str,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     file_path = UPLOAD_DIR / filename
     if not file_path.exists():
@@ -125,11 +125,11 @@ async def view_file(
         media_type=media_type or "application/octet-stream",
     )
 
-@router.put("/documents", response_model=DocumentSchema)
-async def rename_file(
+@router.patch("/documents", response_model=DocumentSchema)
+async def update_filename(
     doc: RenameRequest,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     file_path = UPLOAD_DIR / doc.filename
     if not file_path.exists():
@@ -146,7 +146,7 @@ async def rename_file(
 async def delete_file(
     doc: DocumentRequest,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_db),
+    # db: AsyncSession = Depends(get_async_db),
 ):
     file_path = UPLOAD_DIR / doc.filename
     if not file_path.exists():

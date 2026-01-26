@@ -80,19 +80,27 @@ app.include_router(jinja_pages.router, prefix='/pages', tags=["pages"])
 
 # serve React frontend
 @app.get("/{full_path:path}")
-async def serve_react_frontend(full_path: str):
+async def serve_react_frontend(request: Request, full_path: str):
     if "." in full_path: # file request 
         file_path = REACT_BUILD_DIR / full_path
         if file_path.exists():
             return FileResponse(file_path)
 
+    # look for react build
     react_home = REACT_BUILD_DIR / "index.html"
     if react_home.exists():
         return FileResponse(str(react_home))
 
-    return RedirectResponse(
-        url="/pages/home", 
-        status_code=status.HTTP_301_MOVED_PERMANENTLY,
+    # redirect to jinja home
+    if request.url.path.startswith("/pages/"):
+        return RedirectResponse(
+            url="/pages/home", 
+            status_code=status.HTTP_301_MOVED_PERMANENTLY,
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, 
+        detail="Not found"
     )
 
 # --- http exception handler ---

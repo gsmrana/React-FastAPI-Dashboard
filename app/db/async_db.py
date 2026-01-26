@@ -28,7 +28,7 @@ async def get_async_db():
 class DbBase(DeclarativeBase):
     pass
 
-# Import all DB models AFTER DbBase and get_db are defined to avoid circular import
+# Import all DB models AFTER DbBase and get_async_db are defined to avoid circular import
 # These must be imported for SQLAlchemy to discover them for create all tables
 from app.models.user import User
 from app.models.document import Document

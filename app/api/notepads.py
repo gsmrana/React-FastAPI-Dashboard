@@ -56,7 +56,7 @@ async def get_note(
         raise HTTPException(404, f"Note id {note_id} not found")
     return NoteSchema.model_validate(notepad)
 
-@router.put("/notepads/{note_id}", response_model=NoteSchema)
+@router.patch("/notepads/{note_id}", response_model=NoteSchema)
 async def update_note(
     note_id: int,
     updates: UpdateNoteSchema,

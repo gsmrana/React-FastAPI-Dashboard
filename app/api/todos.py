@@ -59,7 +59,7 @@ async def get_todo(
         raise HTTPException(404, f"Todo id {todo_id} not found")
     return TodoSchema.model_validate(todo)
 
-@router.put("/todos/{todo_id}", response_model=TodoSchema)
+@router.patch("/todos/{todo_id}", response_model=TodoSchema)
 async def update_todo(
     todo_id: int,
     updates: UpdateTodoSchema,
