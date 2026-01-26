@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.config import config
 
-sync_db_url = config.database_url.replace("+aiosqlite", "").replace("+asyncpg", "+psycopg2")
+sync_db_url = config.database_url.replace("+aiosqlite", "").replace("+asyncpg", "+psycopg")
 
 # --- Sync DB engine setup for Celery like tasks ---
 sync_engine = create_engine(

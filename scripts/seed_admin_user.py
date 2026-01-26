@@ -16,9 +16,6 @@ from app.schemas.user import UserCreate
 
 logger = get_logger(Path(__file__).name)
 
-ADMIN_EMAIL = "admin@gmail.com"
-ADMIN_PASSWORD = "Admin1234"
-
 async def create_superuser(email: str, password: str):
     logger.info("--- Seeding Admin User ---")
     logger.info(f"Database URL: {config.database_url}") 
@@ -38,9 +35,11 @@ async def create_superuser(email: str, password: str):
             created_user = await user_manager.create(user_create, safe=False, request=None)
             logger.warning(f"Superuser created successfully -> email: {created_user.email}, id: {created_user.id}")
         except exceptions.UserAlreadyExists:
-            logger.warning(f"User already exists with email: {user_create.email}")
+            logger.error(f"User already exists with email: {user_create.email}")
         except Exception as e:
             logger.error(f"Exception: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(create_superuser(ADMIN_EMAIL, ADMIN_PASSWORD))
+    email = input("Enter email: ")
+    password = input("Enter password: ")
+    asyncio.run(create_superuser(email, password))

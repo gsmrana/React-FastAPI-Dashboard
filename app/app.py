@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.exception_handlers import http_exception_handler
 
 from app.core.config import config
@@ -95,9 +95,12 @@ async def serve_react_frontend(full_path: str):
         status_code=status.HTTP_301_MOVED_PERMANENTLY,
     )
 
-# custom HTTP exception handler
+# --- http exception handler ---
 @app.exception_handler(HTTPException)
 async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    """
+    catches standard errors like 401 Unauthorized, 404 Not Found, 403 Forbidden
+    """
     if exc.status_code == status.HTTP_401_UNAUTHORIZED:
         if request.url.path.startswith("/pages/"):
             return RedirectResponse(
@@ -105,3 +108,21 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
                 status_code=status.HTTP_302_FOUND,
             )
     return await http_exception_handler(request, exc)
+
+# --- python exception handler ---
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Catches any unhandled error (bug, db crash, division by zero).
+    """
+    # exc_info=True adds the full traceback/stack trace to the log
+    logger.error(
+        f"Exception occurred at {request.method} {request.url}\nError: {exc}",
+        exc_info=False 
+    )
+
+    # return a response to the user
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc) if config.app_debug else "Internal Server Error"},
+    )

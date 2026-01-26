@@ -11,11 +11,13 @@ from app.db.async_db import create_db_tables
 
 logger = get_logger(Path(__file__).name)
 
-async def create_database_tables():
+async def create_database_tables(rebuild: bool=False):
     logger.info("--- Creating Database Tables ---")
     logger.info(f"Database URL: {config.database_url}")
-    await create_db_tables(rebuild=True)
+    await create_db_tables(rebuild=rebuild)
     logger.info("Database tables created succesffuly.")
 
 if __name__ == "__main__":
-    asyncio.run(create_database_tables())
+    user_option = input("Do you want to drop and rebuilt current tables (Y/N)?: ")
+    rebuild = True if user_option == "Y" else False
+    asyncio.run(create_database_tables(rebuild))
