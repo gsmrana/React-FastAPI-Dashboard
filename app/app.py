@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI):
                 f"DEBUG: {config.app_debug}, " + 
                 f"LOG_LEVEL: {config.log_level}, " +
                 f"ENV_FILE: {config.ENV_FILE}")
+    logger.info(f"Database URL: {config.database_url}")
     logger.info(f"Serving React build from: {REACT_BUILD_DIR}")
     await create_db_tables(rebuild=config.database_rebuild)
     yield
@@ -98,6 +99,7 @@ async def serve_react_frontend(request: Request, full_path: str):
             status_code=status.HTTP_301_MOVED_PERMANENTLY,
         )
 
+    # default response for all unknown path
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, 
         detail="Not found"

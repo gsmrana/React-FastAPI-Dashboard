@@ -1,5 +1,5 @@
 {% extends "base.htm" %}
-{% block title %}Register - Mediahub{% endblock %}
+{% block title %}User Registration - Mediahub{% endblock %}
 
 {% block content %}
     <div class="container mt-4">
@@ -12,6 +12,10 @@
                     </div>
                     
                     <form method="post" id="registerForm">
+                        
+                        <div class="alert alert-danger mt-3 d-none" id="statusMessage" role="alert"></div>
+                        <div class="alert alert-success mt-3 d-none" id="successMessage" role="alert"></div>
+                        
                         <div class="mb-3">
                             <label for="username" class="form-label fw-500 text-dark">Full Name</label>
                             <div class="input-group">
@@ -22,9 +26,7 @@
                                     id="username"
                                     name="username" 
                                     class="form-control border-start-0" 
-                                    placeholder="Enter your full name" 
-                                    minlength="3"
-                                    pattern="[a-zA-Z0-9_]+"
+                                    placeholder="Enter your full name"
                                     required
                                     style="border-color: #e0e0e0;">
                             </div>
@@ -58,7 +60,7 @@
                                     name="password" 
                                     type="password" 
                                     class="form-control border-start-0" 
-                                    placeholder="Create a strong password" 
+                                    placeholder="Create a strong password"
                                     required
                                     style="border-color: #e0e0e0;">
                                 <span class="input-group-text bg-light border-start-0 cursor-pointer" style="border-color: #e0e0e0;" id="togglePassword">
@@ -95,9 +97,6 @@
                             Create Account
                         </button>
                     </form>
-
-                    <div class="alert alert-danger mt-3 d-none" id="statusMessage" role="alert"></div>
-                    <div class="alert alert-success mt-3 d-none" id="successMessage" role="alert"></div>
                     
                     <p class="text-center text-muted mt-4 small">
                         Already have an account? 
@@ -144,20 +143,6 @@
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
             }
-        });
-
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const statusMessage = document.getElementById('statusMessage');
-            
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                statusMessage.textContent = 'Passwords do not match!';
-                statusMessage.classList.remove('d-none');
-                return false;
-            }
-            statusMessage.classList.add('d-none');
         });
     </script>
 {% endblock %}

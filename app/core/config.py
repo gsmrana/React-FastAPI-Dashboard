@@ -6,6 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 APP_VERSION = "1.0.0"
 DEFAULT_ENV = ".env"
+DEFAULT_APP_NAME = "FastAPI Dashboard"
+DEFAULT_APP_DOMAIN = "http://localhost:8000"
 
 ENV_FILE = os.getenv("FASTAPI_DASHBOARD_ENV_FILE", DEFAULT_ENV)
 ENV_FILE = ENV_FILE if os.path.exists(ENV_FILE) else DEFAULT_ENV
@@ -23,7 +25,8 @@ class Config(BaseSettings):
     )
     
     # app info
-    app_name: str = "FastAPI Dashboard"
+    app_name: str = DEFAULT_APP_NAME
+    app_domain: str = DEFAULT_APP_DOMAIN
     APP_VERSION: str = APP_VERSION
     ENV_FILE: str = ENV_FILE
 
@@ -45,6 +48,14 @@ class Config(BaseSettings):
     cookie_based_auth: bool = True
     jwt_lifetime_sec: int = 86400 # 1 day
     jwt_secret_key: str = "jwt-dev-secret"
+
+    # email Configs
+    email_support_enable: bool = False
+    email_from_name: str = DEFAULT_APP_NAME
+    smtp_user: str
+    smtp_password: str
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
     
     # OpenAI compatible API
     openai_api_endpoint: str

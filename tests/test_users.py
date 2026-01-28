@@ -1,8 +1,15 @@
+import sys
 import pytest
-from httpx import AsyncClient
+from pathlib import Path
 from fastapi import status
-from app.main import app
+from httpx import AsyncClient
 
+# Add project root to Python path
+sys.path.append(str(Path(__file__).parent.parent))
+from app.app import app
+
+
+API_BASE_URL="http://localhost:8000"
 
 @pytest.mark.asyncio
 async def test_get_users():
@@ -14,7 +21,7 @@ async def test_get_users():
       - Each user has id and name fields
     """
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(app=app, base_url=API_BASE_URL) as ac:
         response = await ac.get("/api/v1/users/")
 
     assert response.status_code == status.HTTP_200_OK
@@ -36,8 +43,8 @@ async def test_user_content():
     (Based on your implementation)
     """
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/api/v1/users/")
+    async with AsyncClient(app=app, base_url=API_BASE_URL) as ac:
+        response = await ac.get("/api/v1/users/1")
 
     users = response.json()
 

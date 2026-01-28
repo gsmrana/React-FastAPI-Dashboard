@@ -18,6 +18,6 @@ async def create_database_tables(rebuild: bool=False):
     logger.info("Database tables created succesffuly.")
 
 if __name__ == "__main__":
-    user_option = input("Do you want to drop and rebuilt current tables (Y/N)?: ")
-    rebuild = True if user_option == "Y" else False
+    user_option = input("Do you want to include drop (clear data) and rebuilt all tables? (y/N): ")
+    rebuild = True if user_option and user_option.lower() == "y" else False
     asyncio.run(create_database_tables(rebuild))

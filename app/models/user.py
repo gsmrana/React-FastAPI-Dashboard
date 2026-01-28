@@ -8,6 +8,7 @@ from app.db.async_db import DbBase, get_async_db
 class UserInfo():
     full_name = Column(String, default="", nullable=False)
 
+# add extended user info at last
 class User(SQLAlchemyBaseUserTableUUID, UserInfo, DbBase):
     __tablename__ = "users"
     

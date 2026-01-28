@@ -38,6 +38,32 @@ async def register_page(
         "request": request,
     })
 
+@router.get("/user-verify", response_class=HTMLResponse)
+async def register_page(
+    request: Request
+):
+    return templates.TemplateResponse(
+        "user-verify.htm", {
+        "request": request,
+    })
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+async def register_page(
+    request: Request
+):
+    return templates.TemplateResponse(
+        "forgot-password.htm", {
+        "request": request,
+    })
+
+@router.get("/reset-password", response_class=HTMLResponse)
+async def register_page(
+    request: Request
+):
+    return templates.TemplateResponse(
+        "reset-password.htm", {
+        "request": request,
+    })
 
 # ---------------- Protected Pages ----------------
 
