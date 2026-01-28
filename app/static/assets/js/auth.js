@@ -164,7 +164,10 @@ function request_email_verification(email) {
         contentType: 'application/json',
         data: JSON.stringify(userData),
         success: function(data) {            
-            successMessage('Check your inbox for verification email.');
+            successMessage('Check your inbox for verification email.\r\nRedirecting to login...');
+            setTimeout(() => {
+                window.location.href = '/pages/login';
+            }, 3000);
         },
         error: function(xhr, status, error) {
             errorMessage(`Email verification request error, ${error}`);
@@ -189,7 +192,7 @@ function request_email_token_verify() {
             successMessage('User Verification successful.\r\nRedirecting to login...');
             setTimeout(() => {
                 window.location.href = '/pages/login';
-            }, 2000);
+            }, 3000);
         },
         error: function(xhr, status, error) {
             errorMessage(`User verification request error, ${error}`);
@@ -227,7 +230,7 @@ function request_register() {
             // successMessage('Registration successful.\r\nRedirecting to login...');
             // setTimeout(() => {
             //     window.location.href = '/pages/login';
-            // }, 2000);
+            // }, 3000);
         },
         error: function(xhr, status, error) {
             errorMessage(`Registration request error, ${error}`);
