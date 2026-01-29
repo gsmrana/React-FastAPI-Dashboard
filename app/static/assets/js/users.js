@@ -1,4 +1,4 @@
-import { API_BASE_URL, API_BASE_V1_URL } from './constants.js';
+import { API_BASE_URL } from './constants.js';
 
 let dataTable;
 let currentEntryId = null;
@@ -54,7 +54,7 @@ function loadEntries() {
     showLoading();
     
     $.ajax({
-        url: `${API_BASE_V1_URL}/admin/users`,
+        url: `${API_BASE_URL}/admin/users`,
         method: 'GET',
         success: function(data) {
             users = data;
@@ -175,7 +175,7 @@ function saveEntry() {
     }
 
     const method = id ? 'PATCH' : 'POST';
-    const url = id ? `${API_BASE_URL}/users/${id}` : `${API_BASE_V1_URL}/admin/users`;
+    const url = id ? `${API_BASE_URL}/users/${id}` : `${API_BASE_URL}/admin/users`;
 
     showLoading();
 

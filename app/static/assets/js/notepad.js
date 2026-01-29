@@ -1,4 +1,4 @@
-import { API_BASE_V1_URL } from './constants.js';
+import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
     bindEvents();  
@@ -25,7 +25,7 @@ function loadNote() {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/notepads/1`,
+        url: `${API_BASE_URL}/notepads/1`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
@@ -42,7 +42,7 @@ function createNote(inputText) {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/notepads`,
+        url: `${API_BASE_URL}/notepads`,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ 
@@ -66,8 +66,8 @@ function updateNote(inputText) {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_V1_URL}/notepads/1`,
-        method: 'PUT',
+        url: `${API_BASE_URL}/notepads/1`,
+        method: 'PATCH',
         contentType: 'application/json',
         data: JSON.stringify({ 
             title: 'default',

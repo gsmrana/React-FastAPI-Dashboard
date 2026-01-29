@@ -9,7 +9,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from app.app import app
 
 
-API_BASE_URL="http://localhost:8000"
+API_BASE_URL="http://localhost:8000/api/v1"
 
 @pytest.mark.asyncio
 async def test_get_users():

@@ -1,4 +1,4 @@
-import { API_BASE_V1_URL } from './constants.js';
+import { API_BASE_URL } from './constants.js';
 
 let dataTable;
 let dataRows = [];
@@ -33,7 +33,7 @@ function loadEntries() {
     const endpoint = window.location.pathname.split('/')[2]
     
     $.ajax({
-        url: `${API_BASE_V1_URL}/admin/${endpoint}`,
+        url: `${API_BASE_URL}/admin/${endpoint}`,
         method: 'GET',
         success: function(data) {
             dataRows = []           

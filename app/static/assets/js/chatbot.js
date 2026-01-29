@@ -1,4 +1,4 @@
-import { API_BASE_V1_URL } from './constants.js';
+import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
     bindEvents();
@@ -41,7 +41,7 @@ function chatRequest(streaming=false) {
     const botMessageId = "bot-" + Date.now();
     showBotTypingPlaceholder(botMessageId);
 
-    const url = streaming ? `${API_BASE_V1_URL}/chat/stream` : `${API_BASE_V1_URL}/chat/simple`;
+    const url = streaming ? `${API_BASE_URL}/chat/stream` : `${API_BASE_URL}/chat/simple`;
 
     $.ajax({
         url: url,

@@ -1,2 +1,2 @@
-export const API_BASE_URL = ''; // keep empty for relative paths
-export const API_BASE_V1_URL = `${API_BASE_URL}/api/v1`;
+export const API_DOMAIN = ''; // keep empty for relative paths
+export const API_BASE_URL = `${API_DOMAIN}/api/v1`;

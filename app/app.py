@@ -62,11 +62,11 @@ app.add_middleware(
 app.include_router(health.router, prefix="/health", tags=["health"])
 
 # include auth and users routers
-app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jwt', tags=["auth"])
-app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_reset_password_router(), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_verify_router(UserRead), prefix="/auth", tags=["auth"])
-app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["user"])
+app.include_router(fastapi_users.get_auth_router(auth_backend), prefix=f"{API_PREFIX}/auth/jwt", tags=["auth"])
+app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix=f"{API_PREFIX}/auth", tags=["auth"])
+app.include_router(fastapi_users.get_reset_password_router(), prefix=f"{API_PREFIX}/auth", tags=["auth"])
+app.include_router(fastapi_users.get_verify_router(UserRead), prefix=f"{API_PREFIX}/auth", tags=["auth"])
+app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=f"{API_PREFIX}/users", tags=["user"])
 
 # include api routers
 app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
@@ -82,21 +82,34 @@ app.include_router(jinja_pages.router, prefix='/pages', tags=["pages"])
 # serve React frontend
 @app.get("/{full_path:path}")
 async def serve_react_frontend(request: Request, full_path: str):
-    if "." in full_path: # file request 
-        file_path = REACT_BUILD_DIR / full_path
+    # no registered API route matched
+    if request.url.path.startswith(API_PREFIX):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="API endpoint not found"
+        )
+    
+    # handle static file requests (css, js, images)
+    file_path = REACT_BUILD_DIR / full_path
+    if "." in full_path:
         if file_path.exists():
             return FileResponse(file_path)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Static file not found"
+            )
 
-    # look for react home page
+    # handle React Routes (SPA Pattern)
     react_home = REACT_BUILD_DIR / "index.html"
     if react_home.exists():
         return FileResponse(str(react_home))
 
-    # look for jinja home page
+    # default to jinja home page
     if request.url.path == "/":
         return await jinja_pages.home_page(request)
 
-    # default response for all unknown path
+    # failsafe response if nothing matches
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, 
         detail="Not found"
