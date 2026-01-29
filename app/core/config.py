@@ -52,22 +52,22 @@ class Config(BaseSettings):
     # email Configs
     email_support_enable: bool = False
     email_from_name: str = DEFAULT_APP_NAME
-    smtp_user: str
-    smtp_password: str
+    smtp_user: str = ""
+    smtp_password: str = ""
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     
     # OpenAI compatible API
-    openai_api_endpoint: str
-    openai_api_key: str
-    openai_llm_model: str
-    openai_llm_temperature: float
+    openai_api_endpoint: str = ""
+    openai_api_key: str = ""
+    openai_llm_model: str = ""
+    openai_llm_temperature: float = 0.5
 
     # anthropic compatible API
-    anthropic_api_endpoint: str
-    anthropic_api_key: str
-    anthropic_llm_model: str 
-    anthropic_llm_temperature: float
+    anthropic_api_endpoint: str = ""
+    anthropic_api_key: str = ""
+    anthropic_llm_model: str  = ""
+    anthropic_llm_temperature: float = 0.5
 
     # docker --env_file support - strip quotes from env vars
     @classmethod

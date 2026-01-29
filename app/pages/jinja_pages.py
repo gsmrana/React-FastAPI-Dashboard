@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="app/templates")
 # ---------------- Public Pages ----------------
 
 @router.get("/home", response_class=HTMLResponse)
-async def register_page(
+async def home_page(
     request: Request
 ):
     return templates.TemplateResponse(
@@ -39,7 +39,7 @@ async def register_page(
     })
 
 @router.get("/user-verify", response_class=HTMLResponse)
-async def register_page(
+async def user_verify_page(
     request: Request
 ):
     return templates.TemplateResponse(
@@ -48,7 +48,7 @@ async def register_page(
     })
 
 @router.get("/forgot-password", response_class=HTMLResponse)
-async def register_page(
+async def forgot_password_page(
     request: Request
 ):
     return templates.TemplateResponse(
@@ -57,7 +57,7 @@ async def register_page(
     })
 
 @router.get("/reset-password", response_class=HTMLResponse)
-async def register_page(
+async def reset_password_page(
     request: Request
 ):
     return templates.TemplateResponse(
@@ -108,7 +108,7 @@ async def user_list_page(
     })
 
 @router.get("/appconfig", response_class=HTMLResponse)
-async def config_page(
+async def appconfig_page(
     request: Request, 
     user: User = Depends(current_active_user),
 ):
@@ -119,7 +119,7 @@ async def config_page(
     })
     
 @router.get("/sysinfo", response_class=HTMLResponse)
-async def system_page(
+async def sysinfo_page(
     request: Request, 
     user: User = Depends(current_active_user),
 ):  
