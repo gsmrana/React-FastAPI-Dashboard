@@ -87,17 +87,14 @@ async def serve_react_frontend(request: Request, full_path: str):
         if file_path.exists():
             return FileResponse(file_path)
 
-    # look for react build
+    # look for react home page
     react_home = REACT_BUILD_DIR / "index.html"
     if react_home.exists():
         return FileResponse(str(react_home))
 
-    # redirect to jinja home
-    if request.url.path.startswith("/pages/"):
-        return RedirectResponse(
-            url="/pages/home", 
-            status_code=status.HTTP_301_MOVED_PERMANENTLY,
-        )
+    # look for jinja home page
+    if request.url.path == "/":
+        return await jinja_pages.home_page(request)
 
     # default response for all unknown path
     raise HTTPException(
