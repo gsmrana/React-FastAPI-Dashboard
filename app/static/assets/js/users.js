@@ -10,16 +10,13 @@ $(document).ready(function() {
     bindEvents();
 });
 
-// Bind event handlers
 function bindEvents() {
-    // Add new entry button
     $('#addNewBtn').on('click', function() {
         resetForm();
         $('#modalTitle').text('Add New User');
         $('#userModal').modal('show');
     });
 
-    // Save button
     $('#saveBtn').on('click', function() {
         if ($('#userForm')[0].checkValidity()) {
             saveEntry();
@@ -28,50 +25,57 @@ function bindEvents() {
         }
     });
 
-    // View button
     $('#dataTable').on('click', '.view-btn', function() {
         const id = $(this).data('id');
         viewEntity(id);
     });
 
-    // Edit button
     $('#dataTable').on('click', '.edit-btn', function() {
         const id = $(this).data('id');
         editEntry(id);
     });
 
-    // Delete button
     $('#dataTable').on('click', '.delete-btn', function() {
         const id = $(this).data('id');
         currentEntryId = id;
         $('#deleteModal').modal('show');
     });
 
-    // Confirm delete button
     $('#confirmDeleteBtn').on('click', function() {
         deleteEntry(currentEntryId);
     });
 }
 
-// Initialize DataTable
 function initDataTable() {
     dataTable = $('#dataTable').DataTable({
         data: [],
         columns: [
-            { data: 'full_name', width: "260px" },
-            { data: 'email', width: "30%" },
+            { data: 'full_name', width: "20%" },
+            { 
+                data: 'null', 
+                width: "30%",
+                "render": function(data, type, row) {
+                    return `
+                        <a href="javascript:void(0)" 
+                            class="view-btn" 
+                            style="text-decoration: none; color: #007bff;" 
+                            data-id="${row.id}">
+                            ${row.email}
+                        </a>
+                    `;
+                }
+            },
             { data: 'is_active' },
             { data: 'is_superuser' },
             { data: 'is_verified' },
             {
+                // buttons
                 data: null,
+                width: "15%",
                 orderable: false,
                 render: function(data, type, row) {
                     return `
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
-                                <i class="fas fa-eye"></i>
-                            </button>
                             <button class="btn btn-sm btn-warning edit-btn" title="Edit" data-id="${row.id}">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -128,8 +132,9 @@ function viewEntity(id) {
             $('#userSuperUser').val(user.is_superuser);
             $('#userVerified').val(user.is_verified);
             $('#userForm :input').prop('disabled', true);
+            $('#closeBtn').text('Close');
             $('#saveBtn').hide();
-            $('#modalTitle').text('View User Details');
+            $('#modalTitle').text('View User');
             $('#userModal').modal('show');
         },
         error: function(xhr, status, error) {
@@ -151,6 +156,7 @@ function editEntry(id) {
         $('#userSuperUser').val(user.is_superuser);
         $('#userVerified').val(user.is_verified);
         $('#userForm :input').prop('disabled', false);
+        $('#closeBtn').text('Cancel');
         $('#saveBtn').show();
         $('#modalTitle').text('Edit User');
         $('#userModal').modal('show');

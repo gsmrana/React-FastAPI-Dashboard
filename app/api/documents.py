@@ -20,9 +20,15 @@ from app.schemas.document import (
     RenameRequest,
 )
 
-SOURCE_FILES = [".c",".cpp",".py",".cs"]
-IMAGE_FILES = [".jpg",".jpeg",".png",".webp"]
-VIDEO_FILES = [".avi",".mp3",".mp4",".m3u"]
+ICON_MAP = [
+    [".pdf","file-pdf.svg"],
+    [".xml",".html","file-xml.svg"],
+    ["dir","file-dir.svg"],
+    [".bin",".exe","file-bin.svg"],
+    [".c",".cpp",".py",".cs",".js",".ts","file-code.svg"],
+    [".jpg",".jpeg",".png",".webp","file-image.svg"],
+    [".avi",".mp3",".mp4",".m3u","file-video.svg"],
+]
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -30,19 +36,11 @@ ICON_DIR = Path("app/static/icons")
 UPLOAD_DIR = Path(config.upload_dir)
 FILE_NOT_FOUND_EXC = HTTPException(status_code=404, detail="File not found")
 
-def get_icon_file(ext):
-    icon_file = "file-text.svg"
-    if ext in ".pdf":
-        icon_file = "file-pdf.svg"
-    elif ext in ".exe":
-        icon_file = "file-bin.svg"
-    elif ext in SOURCE_FILES:
-        icon_file = "file-code.svg"
-    elif ext in IMAGE_FILES:
-        icon_file = "file-image.svg"
-    elif ext in VIDEO_FILES:
-        icon_file = "file-video.svg"
-    return ICON_DIR / icon_file
+def icon_filename(ext):
+    for ext_list in ICON_MAP:
+        if ext in ext_list:
+            return ext_list[-1]
+    return "file-text.svg"
 
 def get_formatted_size(size_bytes):   
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -107,6 +105,8 @@ async def upload_files(
 @router.get("/documents/thumbnail/{filename}")
 async def get_thumbnail(
     filename: str,
+    width: int = 100,
+    height: int = 100,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_async_db),
 ):
@@ -116,15 +116,17 @@ async def get_thumbnail(
     
     ext = file_path.suffix.lower()
     if ext in [".jpg", ".jpeg", ".png", ".webp"]:
+        width = width if width > 10 else 10
+        height = height if height > 10 else 10
         with Image.open(file_path) as img:
-            img.thumbnail((50, 50)) # Datatable row height
+            img.thumbnail((width, height))
             buf = io.BytesIO()
             img.save(buf, format="WEBP")
             return Response(
                 content=buf.getvalue(), 
                 media_type="image/webp",
             )
-    return FileResponse(get_icon_file(ext))
+    return FileResponse(ICON_DIR / icon_filename(ext))
 
 @router.get("/documents/view/{filename}", response_class=FileResponse)
 async def view_file(

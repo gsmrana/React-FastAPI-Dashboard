@@ -12,6 +12,7 @@ $(document).ready(function() {
 function initDataTable() {
     dataTable = $('#dataTable').DataTable({
         data: [],
+        order: [],
         columns: [
             { data: 'key', width: "250px" },
             { data: 'value' },

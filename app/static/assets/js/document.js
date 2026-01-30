@@ -10,16 +10,13 @@ $(document).ready(function() {
     bindEvents();
 });
 
-// Bind event handlers
 function bindEvents() {
-    // Add new entry button
     $('#addNewBtn').on('click', function() {
         resetForm();
         $('#modalTitle').text('Upload File(s)');
         $('#uploadModal').modal('show');
     });
 
-    // Upload button
     $('#uploadBtn').on('click', function() {
         if ($('#uploadForm')[0].checkValidity()) {
             requestUploadFiles();
@@ -28,35 +25,29 @@ function bindEvents() {
         }
     });
 
-    // Save button
     $('#saveBtn').on('click', function() {
         if ($('#fileForm')[0].checkValidity()) {
-            // saveEntry();
             requestUpdateFilename();
         } else {
             $('#fileForm')[0].reportValidity();
         }
     });
 
-    // View button
     $('#dataTable').on('click', '.view-btn', function() {
         const id = $(this).data('id');
         requestViewFile(id);
     });
 
-    // Download button
     $('#dataTable').on('click', '.download-btn', function() {
         const id = $(this).data('id');
         requestDowbloadFile(id);
     });
 
-    // Edit button
     $('#dataTable').on('click', '.edit-btn', function() {
         const id = $(this).data('id');
         editEntry(id);
     });
 
-    // Delete button
     $('#dataTable').on('click', '.delete-btn', function() {
         const id = $(this).data('id');
         currentEntryId = id;
@@ -64,17 +55,15 @@ function bindEvents() {
         requestDeleteFile(currentEntryId);
     });
 
-    // Confirm delete button
     $('#confirmDeleteBtn').on('click', function() {
         requestDeleteFile(currentEntryId);
     });
 
-    // Modal Close on clicking 'X'
     $('.close-modal-btn').on('click', function() {
         closeModal();
     });
 
-    // Modal Close on clicking outside the white box (the dark background)
+    // Modal Close on clicking outside the viewer
     $('#fileViewerModal').on('click', function(e) {
         if (e.target.id === 'fileViewerModal') {
             closeModal();
@@ -82,17 +71,17 @@ function bindEvents() {
     });
 }
 
-// Initialize DataTable
 function initDataTable() {
     dataTable = $('#dataTable').DataTable({
         data: [],
+        order: [[3, 'desc']], // sort by date new first
         columns: [
-            { data: 'id', width: "10px" },
             {
+                // thumbnail
                 data: null,
                 orderable: false,
                 render: function(data, type, row) {
-                    const previewUrl = `${API_BASE_URL}/documents/thumbnail/${row.filename}`;
+                    const previewUrl = `${API_BASE_URL}/documents/thumbnail/${row.filename}?width=100&height=100`;
                     return `
                         <div style="text-align: center;">
                             <img src="${previewUrl}" 
@@ -105,6 +94,7 @@ function initDataTable() {
                 }
             },
             {   
+                // filename
                 data: null,
                 "render": function(data, type, row) {
                     return `
@@ -117,18 +107,16 @@ function initDataTable() {
                     `;
                 }
             },
-            { data: 'filesize', width: "120px" },
-            { data: 'created_at', width: "200px" },
+            { data: 'filesize', width: "10%" },
+            { data: 'modified_at', width: "15%" },
             {
+                // buttons
                 data: null,
+                width: "15%",
                 orderable: false,
-                width: "220px",
                 render: function(data, type, row) {
                     return `
                         <div class="table-actions">
-                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
-                                <i class="fas fa-eye"></i>
-                            </button>
                             <button class="btn btn-sm btn-success download-btn" title="Download" data-id="${row.id}">
                                 <i class="fas fa-download"></i>
                             </button>
