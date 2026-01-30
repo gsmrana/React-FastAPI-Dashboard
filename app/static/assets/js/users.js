@@ -6,67 +6,9 @@ let users = [];
 
 $(document).ready(function() {
     initDataTable();
-    loadEntries();
+    requestGetEntries();
     bindEvents();
 });
-
-// Initialize DataTable
-function initDataTable() {
-    dataTable = $('#dataTable').DataTable({
-        data: [],
-        columns: [
-            { data: 'full_name', width: "360px" },
-            { data: 'email', width: "30%" },
-            { data: 'is_active' },
-            { data: 'is_superuser' },
-            { data: 'is_verified' },
-            {
-                data: null,
-                orderable: false,
-                render: function(data, type, row) {
-                    return `
-                        <div class="table-actions">
-                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning edit-btn" title="Edit" data-id="${row.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-btn" title="Remove" data-id="${row.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        ],
-        pageLength: 10,
-        responsive: true,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search users..."
-        }
-    });
-}
-
-// Load data rows from API
-function loadEntries() {
-    showLoading();
-    
-    $.ajax({
-        url: `${API_BASE_URL}/admin/users`,
-        method: 'GET',
-        success: function(data) {
-            users = data;
-            dataTable.clear().rows.add(users).draw();
-            hideLoading();
-        },
-        error: function(xhr, status, error) {
-            hideLoading();
-            showAlert('Error loading users: ' + error, 'danger');
-        }
-    });
-}
 
 // Bind event handlers
 function bindEvents() {
@@ -111,6 +53,64 @@ function bindEvents() {
     });
 }
 
+// Initialize DataTable
+function initDataTable() {
+    dataTable = $('#dataTable').DataTable({
+        data: [],
+        columns: [
+            { data: 'full_name', width: "260px" },
+            { data: 'email', width: "30%" },
+            { data: 'is_active' },
+            { data: 'is_superuser' },
+            { data: 'is_verified' },
+            {
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    return `
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-view view-btn" title="View" data-id="${row.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning edit-btn" title="Edit" data-id="${row.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-btn" title="Remove" data-id="${row.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        ],
+        pageLength: 10,
+        responsive: true,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search users..."
+        }
+    });
+}
+
+// Load data rows from API
+function requestGetEntries() {
+    showLoading();
+    
+    $.ajax({
+        url: `${API_BASE_URL}/admin/users`,
+        method: 'GET',
+        success: function(data) {
+            users = data;
+            dataTable.clear().rows.add(users).draw();
+            hideLoading();
+        },
+        error: function(xhr, status, error) {
+            hideLoading();
+            showRequestError(xhr, status);
+        }
+    });
+}
+
 // View entry details
 function viewEntity(id) {
     showLoading();
@@ -134,7 +134,7 @@ function viewEntity(id) {
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error loading user details: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
@@ -194,18 +194,16 @@ function saveEntry() {
                 if (index !== -1) {
                     users[index] = { ...users[index], ...userData };
                 }
-                showAlert('User updated successfully!', 'success');
             } else {
                 // Add new user
                 users.push(response);
-                showAlert('User created successfully!', 'success');
             }
             
             dataTable.clear().rows.add(users).draw();
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error saving user: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
@@ -223,12 +221,10 @@ function deleteEntry(id) {
             
             users = users.filter(u => u.id !== id);
             dataTable.clear().rows.add(users).draw();
-            
-            showAlert('User deleted successfully!', 'success');
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error deleting user: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
@@ -241,10 +237,18 @@ function resetForm() {
     $('#saveBtn').show();
 }
 
-// Show alert message
-function showAlert(message, type) {
+function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    showErrorMessage(`${status.toUpperCase()}: ${msg}`);
+}
+
+function showErrorMessage(message) {
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

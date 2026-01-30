@@ -2,7 +2,7 @@ import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
     bindEvents();  
-    loadNote();
+    requestLoadNote();
 });
 
 function bindEvents() {
@@ -11,7 +11,7 @@ function bindEvents() {
     });
 
     $('#reloadBtn').on('click', function() {
-        loadNote();
+        requestLoadNote();
     }); 
     
     $('#saveBtn').on('click', function() {
@@ -21,7 +21,7 @@ function bindEvents() {
 }
 
 // load note from API
-function loadNote() {
+function requestLoadNote() {
     showLoadingStatus();
 
     $.ajax({
@@ -32,13 +32,13 @@ function loadNote() {
             $('#noteInput').val(data.content);
         },
         error: function(xhr, status, error) {
-            showStatusMessage('⚠️ Error: ' + error);
+            showRequestError(xhr, status);
         }
     });
 }
 
 // create note to API
-function createNote(inputText) {
+function requestCreateNote(inputText) {
     showLoadingStatus();
 
     $.ajax({
@@ -56,7 +56,7 @@ function createNote(inputText) {
             }, 3000);
         },
         error: function(xhr, status, error) {
-            showStatusMessage('⚠️ Error: ' + error);
+            showRequestError(xhr, status);
         }
     });
 }
@@ -80,10 +80,19 @@ function updateNote(inputText) {
             }, 3000);
         },
         error: function(xhr, status, error) {
-            showStatusMessage('⚠️ Error: ' + error);
-            createNote(inputText);
+            showRequestError(xhr, status);
+            requestCreateNote(inputText);
         }
     });
+}
+
+function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    showStatusMessage(`${status.toUpperCase()}: ${msg}`, 'danger');
 }
 
 function showStatusMessage(message) {

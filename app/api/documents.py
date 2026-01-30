@@ -1,10 +1,12 @@
+import io
 import shutil
 import mimetypes
+from PIL import Image
 from typing import List
 from pathlib import Path
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, UploadFile, Depends, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import config
@@ -18,10 +20,29 @@ from app.schemas.document import (
     RenameRequest,
 )
 
+SOURCE_FILES = [".c",".cpp",".py",".cs"]
+IMAGE_FILES = [".jpg",".jpeg",".png",".webp"]
+VIDEO_FILES = [".avi",".mp3",".mp4",".m3u"]
 
 router = APIRouter()
 logger = get_logger(__name__)
+ICON_DIR = Path("app/static/icons")
 UPLOAD_DIR = Path(config.upload_dir)
+FILE_NOT_FOUND_EXC = HTTPException(status_code=404, detail="File not found")
+
+def get_icon_file(ext):
+    icon_file = "file-text.svg"
+    if ext in ".pdf":
+        icon_file = "file-pdf.svg"
+    elif ext in ".exe":
+        icon_file = "file-bin.svg"
+    elif ext in SOURCE_FILES:
+        icon_file = "file-code.svg"
+    elif ext in IMAGE_FILES:
+        icon_file = "file-image.svg"
+    elif ext in VIDEO_FILES:
+        icon_file = "file-video.svg"
+    return ICON_DIR / icon_file
 
 def get_formatted_size(size_bytes):   
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -83,22 +104,27 @@ async def upload_files(
         ))
     return response
 
-@router.get("/documents/download/{filename}", response_class=FileResponse)
-async def download_file(
+@router.get("/documents/thumbnail/{filename}")
+async def get_thumbnail(
     filename: str,
     user: User = Depends(current_active_user),
     # db: AsyncSession = Depends(get_async_db),
 ):
     file_path = UPLOAD_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-
-    media_type, _ = mimetypes.guess_type(file_path)
-    return FileResponse(
-        path=file_path,
-        filename=file_path.name,
-        media_type=media_type or "application/octet-stream"
-    )
+        raise FILE_NOT_FOUND_EXC
+    
+    ext = file_path.suffix.lower()
+    if ext in [".jpg", ".jpeg", ".png", ".webp"]:
+        with Image.open(file_path) as img:
+            img.thumbnail((50, 50)) # Datatable row height
+            buf = io.BytesIO()
+            img.save(buf, format="WEBP")
+            return Response(
+                content=buf.getvalue(), 
+                media_type="image/webp",
+            )
+    return FileResponse(get_icon_file(ext))
 
 @router.get("/documents/view/{filename}", response_class=FileResponse)
 async def view_file(
@@ -108,7 +134,7 @@ async def view_file(
 ):
     file_path = UPLOAD_DIR / filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
+        raise FILE_NOT_FOUND_EXC
     
     # media_type helps the browser understand how to render it
     media_type, _ = mimetypes.guess_type(file_path)
@@ -125,6 +151,23 @@ async def view_file(
         media_type=media_type or "application/octet-stream",
     )
 
+@router.get("/documents/download/{filename}", response_class=FileResponse)
+async def download_file(
+    filename: str,
+    user: User = Depends(current_active_user),
+    # db: AsyncSession = Depends(get_async_db),
+):
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        raise FILE_NOT_FOUND_EXC
+
+    media_type, _ = mimetypes.guess_type(file_path)
+    return FileResponse(
+        path=file_path,
+        filename=file_path.name,
+        media_type=media_type or "application/octet-stream"
+    )
+
 @router.patch("/documents", response_model=DocumentSchema)
 async def update_filename(
     doc: RenameRequest,
@@ -133,7 +176,7 @@ async def update_filename(
 ):
     file_path = UPLOAD_DIR / doc.filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")        
+        raise FILE_NOT_FOUND_EXC    
     
     file_path.rename(UPLOAD_DIR / doc.new_filename)
     return DocumentSchema(
@@ -150,7 +193,7 @@ async def delete_file(
 ):
     file_path = UPLOAD_DIR / doc.filename
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found") 
+        raise FILE_NOT_FOUND_EXC
 
     file_path.unlink()
     return DocumentSchema(

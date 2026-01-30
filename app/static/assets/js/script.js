@@ -39,11 +39,28 @@ function bindEvents() {
     });
 
     $('#logoutMenu').on('click', function() {
-        logout();
+        requestLogout();
     });
 }
 
-function logout() {
+export function loginCheck() {   
+    $.ajax({
+        url: `${API_BASE_URL}/users/me`,
+        method: 'GET',
+        success: function(data) {            
+            // redirect to back_url if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const backUrl = urlParams.get('back_url');
+            window.location.href = backUrl ? backUrl : '/pages/document';
+        },
+        error: function(xhr, status, error) {
+            logRequestError('Login check...', xhr, status);
+            requestLogout(); // ensure discard old token
+        }
+    });
+}
+
+export function requestLogout() {
     $.ajax({
         url: `${API_BASE_URL}/auth/jwt/logout`,
         method: 'POST',
@@ -51,7 +68,45 @@ function logout() {
             window.location.href = '/pages/home';
         },
         error: function(xhr, status, error) {
-            console.error('Logout Error: ' + error);
+            logRequestError('Logout...', xhr, status);
         }
     });
+}
+
+export function logRequestError(title, xhr, status)
+{
+    let msg = xhr.statusText;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    console.log(`${title} ${status.toUpperCase()}: ${xhr.status} ${msg}`);
+}
+
+export function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    errorMessage(`${status.toUpperCase()}: ${msg}`);
+}
+
+export function errorMessage(message) {
+    $("#statusMessage").text(message);
+    if (message === '') {
+        $("#statusMessage").addClass('d-none');
+    }
+    else {
+        $("#statusMessage").removeClass('d-none');
+    }
+}
+
+export function successMessage(message) {
+    $("#successMessage").text(message);
+    if (message === '') {
+        $("#successMessage").addClass('d-none');
+    }
+    else {
+        $("#successMessage").removeClass('d-none');
+    }
 }

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200">
+  <!-- Folder tab -->
+  <path d="M 20 40 L 20 30 Q 20 20 30 20 L 90 20 L 110 40 Z" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+  
+  <!-- Main folder body -->
+  <path d="M 20 40 L 20 170 Q 20 180 30 180 L 210 180 Q 220 180 220 170 L 220 50 Q 220 40 210 40 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="2"/>
+  
+  <!-- Folder front face (slight 3D effect) -->
+  <path d="M 20 50 L 20 170 Q 20 180 30 180 L 210 180 Q 220 180 220 170 L 220 60 Q 220 50 210 50 Z" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+  
+  <!-- Highlight for depth -->
+  <path d="M 30 60 L 200 60 Q 210 60 210 70 L 210 160" fill="none" stroke="#93c5fd" stroke-width="2" opacity="0.5"/>
+</svg>

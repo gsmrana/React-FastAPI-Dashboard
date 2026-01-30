@@ -6,9 +6,81 @@ let documents = [];
 
 $(document).ready(function() {
     initDataTable();
-    loadEntries();
+    requestGetEntries();
     bindEvents();
 });
+
+// Bind event handlers
+function bindEvents() {
+    // Add new entry button
+    $('#addNewBtn').on('click', function() {
+        resetForm();
+        $('#modalTitle').text('Upload File(s)');
+        $('#uploadModal').modal('show');
+    });
+
+    // Upload button
+    $('#uploadBtn').on('click', function() {
+        if ($('#uploadForm')[0].checkValidity()) {
+            requestUploadFiles();
+        } else {
+            $('#uploadForm')[0].reportValidity();
+        }
+    });
+
+    // Save button
+    $('#saveBtn').on('click', function() {
+        if ($('#fileForm')[0].checkValidity()) {
+            // saveEntry();
+            requestUpdateFilename();
+        } else {
+            $('#fileForm')[0].reportValidity();
+        }
+    });
+
+    // View button
+    $('#dataTable').on('click', '.view-btn', function() {
+        const id = $(this).data('id');
+        requestViewFile(id);
+    });
+
+    // Download button
+    $('#dataTable').on('click', '.download-btn', function() {
+        const id = $(this).data('id');
+        requestDowbloadFile(id);
+    });
+
+    // Edit button
+    $('#dataTable').on('click', '.edit-btn', function() {
+        const id = $(this).data('id');
+        editEntry(id);
+    });
+
+    // Delete button
+    $('#dataTable').on('click', '.delete-btn', function() {
+        const id = $(this).data('id');
+        currentEntryId = id;
+        // $('#deleteModal').modal('show');
+        requestDeleteFile(currentEntryId);
+    });
+
+    // Confirm delete button
+    $('#confirmDeleteBtn').on('click', function() {
+        requestDeleteFile(currentEntryId);
+    });
+
+    // Modal Close on clicking 'X'
+    $('.close-modal-btn').on('click', function() {
+        closeModal();
+    });
+
+    // Modal Close on clicking outside the white box (the dark background)
+    $('#fileViewerModal').on('click', function(e) {
+        if (e.target.id === 'fileViewerModal') {
+            closeModal();
+        }
+    });
+}
 
 // Initialize DataTable
 function initDataTable() {
@@ -16,12 +88,41 @@ function initDataTable() {
         data: [],
         columns: [
             { data: 'id', width: "10px" },
-            { data: 'filename' },
-            { data: 'filesize', width: "120px" },
-            { data: 'created_at', width: "220px" },
             {
                 data: null,
                 orderable: false,
+                render: function(data, type, row) {
+                    const previewUrl = `${API_BASE_URL}/documents/thumbnail/${row.filename}`;
+                    return `
+                        <div style="text-align: center;">
+                            <img src="${previewUrl}" 
+                            class="view-btn" 
+                            loading="lazy" 
+                            style="cursor: pointer; width: 50px; height: 50px; object-fit: contain;" 
+                            data-id="${row.id}">
+                        </div>
+                    `;
+                }
+            },
+            {   
+                data: null,
+                "render": function(data, type, row) {
+                    return `
+                        <a href="javascript:void(0)" 
+                            class="view-btn" 
+                            style="text-decoration: none; color: #007bff;" 
+                            data-id="${row.id}">
+                            ${row.filename}
+                        </a>
+                    `;
+                }
+            },
+            { data: 'filesize', width: "120px" },
+            { data: 'created_at', width: "200px" },
+            {
+                data: null,
+                orderable: false,
+                width: "220px",
                 render: function(data, type, row) {
                     return `
                         <div class="table-actions">
@@ -52,7 +153,7 @@ function initDataTable() {
 }
 
 // Load data rows from API
-function loadEntries() {
+function requestGetEntries() {
     showLoading();
     
     $.ajax({
@@ -65,73 +166,13 @@ function loadEntries() {
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error loading users: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
-    });
-}
-
-// Bind event handlers
-function bindEvents() {
-    // Add new entry button
-    $('#addNewBtn').on('click', function() {
-        resetForm();
-        $('#modalTitle').text('Upload File(s)');
-        $('#uploadModal').modal('show');
-    });
-
-    // Upload button
-    $('#uploadBtn').on('click', function() {
-        if ($('#uploadForm')[0].checkValidity()) {
-            uploadFiles();
-        } else {
-            $('#uploadForm')[0].reportValidity();
-        }
-    });
-
-    // Save button
-    $('#saveBtn').on('click', function() {
-        if ($('#fileForm')[0].checkValidity()) {
-            // saveEntry();
-            updateFile();
-        } else {
-            $('#fileForm')[0].reportValidity();
-        }
-    });
-
-    // View button
-    $('#dataTable').on('click', '.view-btn', function() {
-        const id = $(this).data('id');
-        viewFile(id);
-    });
-
-    // Download button
-    $('#dataTable').on('click', '.download-btn', function() {
-        const id = $(this).data('id');
-        dowbloadFile(id);
-    });
-
-    // Edit button
-    $('#dataTable').on('click', '.edit-btn', function() {
-        const id = $(this).data('id');
-        editEntry(id);
-    });
-
-    // Delete button
-    $('#dataTable').on('click', '.delete-btn', function() {
-        const id = $(this).data('id');
-        currentEntryId = id;
-        // $('#deleteModal').modal('show');
-        deleteFile(currentEntryId);
-    });
-
-    // Confirm delete button
-    $('#confirmDeleteBtn').on('click', function() {
-        deleteFile(currentEntryId);
     });
 }
 
 // Upload files
-function uploadFiles() {
+function requestUploadFiles() {
     const files = $('#fileInput')[0].files;
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) {
@@ -161,26 +202,43 @@ function uploadFiles() {
         },
         success: function(response) {
             $('#status').html('<p style="color:green;">Upload Successful!</p>');
-           
             for (let i = 0; i < response.length; i++) {
                 response[i].id = documents.length + 1;
                 documents.push(response[i]);
             }
             dataTable.clear().rows.add(documents).draw();
-
             $('#uploadModal').modal('hide');
-            showAlert(`${response.length} files uploaded successfully!`, 'success');
         },
         error: function(xhr, status, error) {
+            showRequestError(xhr, status);
             $('#progressBar').css('width', '0%').text('0%');
             $('#status').html('<p style="color:red;">Upload Failed: ' + error + '</p>');
-            showAlert('Error uploading File: ' + error, 'danger');
         }
     });
 }
 
+function requestViewFile(id) {
+    const entry = documents.find(u => u.id == id);
+    const filename = entry ? entry.filename : '';
+    const url = `${API_BASE_URL}/documents/view/${filename}`;
+    
+    // View file in a modal
+    const image_exts = [".jpg",".jpeg",".png",".bmp",".webp",".svg"];
+    const lowerCaseFilename = filename.toLowerCase();
+    const isImage = image_exts.some(ext => lowerCaseFilename.endsWith(ext)) ? true : false;
+    openFileModal(url, isImage);
+
+    // View file in new tab
+    // const newTab = window.open(url, '_blank');
+    // if (newTab) {
+    //     newTab.focus();
+    // } else {
+    //     alert('Please allow popups for this website');
+    // }
+}
+
 // Download file
-function dowbloadFile(id) {
+function requestDowbloadFile(id) {
     const entry = documents.find(u => u.id == id);
     const filename = entry ? entry.filename : '';
     const url = `${API_BASE_URL}/documents/download/${filename}`;
@@ -193,18 +251,39 @@ function dowbloadFile(id) {
     document.body.removeChild(link);
 }
 
-// View file in new tab
-function viewFile(id) {
-    const entry = documents.find(u => u.id == id);
-    const filename = entry ? entry.filename : '';
-    const url = `${API_BASE_URL}/documents/view/${filename}`;
+function openFileModal(fileSource, isImage) {
+    var $modalOverlay = $('#fileViewerModal');
+    var $modalContent = $modalOverlay.find('.file-modal-content');
+    var $modalBody = $('#modalBody');
     
-    const newTab = window.open(url, '_blank');
-    if (newTab) {
-        newTab.focus();
+    var url = (fileSource instanceof Blob) ? URL.createObjectURL(fileSource) : fileSource;
+    var contentHtml = '';
+
+    // RESET: Remove PDF specific class initially
+    $modalContent.removeClass('pdf-mode');
+
+    if (isImage) {
+        // IMAGE: We want the box to shrink to fit the image
+        // We use max-height: 90vh in CSS to prevent it from being too tall
+        contentHtml = `<img src="${url}" style="max-width: 100%; max-height: 90vh; object-fit: contain; display: block;">`;
     } else {
-        alert('Please allow popups for this website');
+        // PDF: We need the box to be BIG (Full Screen)
+        $modalContent.addClass('pdf-mode');
+        contentHtml = `<iframe src="${url}"></iframe>`;
     }
+
+    $modalBody.html(contentHtml);
+    
+    // Show using Flex to maintain centering
+    $modalOverlay.css('display', 'flex').hide().fadeIn(200);
+}
+
+function closeModal() {
+    $('#fileViewerModal').fadeOut(200, function() {
+        $('#modalBody').empty(); 
+        // Reset display to none after fadeOut (important for flexbox)
+        $(this).css('display', 'none'); 
+    });
 }
 
 // Edit entry
@@ -221,7 +300,7 @@ function editEntry(id) {
 }
 
 // Update entry
-function updateFile() {
+function requestUpdateFilename() {
     const id = $('#fileId').val();
     const entry = documents.find(u => u.id == id);
     const filename = entry ? entry.filename : '';
@@ -254,13 +333,13 @@ function updateFile() {
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error renaming file: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
 
 // Delete entry
-function deleteFile(id) {
+function requestDeleteFile(id) {
     const entry = documents.find(u => u.id == id);
     const filename = entry ? entry.filename : '';
     
@@ -286,7 +365,7 @@ function deleteFile(id) {
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error deleting file: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
@@ -302,10 +381,18 @@ function resetForm() {
     $('#saveBtn').show();
 }
 
-// Show alert message
-function showAlert(message, type) {
+function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    showErrorMessage(`${status.toUpperCase()}: ${msg}`);
+}
+
+function showErrorMessage(message) {
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

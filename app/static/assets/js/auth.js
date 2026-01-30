@@ -1,70 +1,66 @@
 import { API_BASE_URL } from './constants.js';
+import { 
+    loginCheck, 
+    showRequestError,
+    errorMessage,
+    successMessage,
+} from './script.js';
+
 
 $(document).ready(function() {
     bindEvents();
-    on_pageload_check();
+    onPageloadCheck();
 });
 
 function bindEvents() {
     $('#loginForm').on('submit', function(e) {
         e.preventDefault();
-        request_login();
+        requestLogin();
     });
 
     $('#registerForm').on('submit', function(e) {
         e.preventDefault();
-        request_register();
+        requestRegister();
     });
 
     $('#forgotPasswordForm').on('submit', function(e) {
         e.preventDefault();
-        request_forgot_password();
+        requestForgotPassword();
     });
 
     $('#resetPasswordForm').on('submit', function(e) {
         e.preventDefault();
-        request_reset_password();
+        requestResetPassword();
     });
 
     $('#tokenVerifyForm').on('submit', function(e) {
         e.preventDefault();
-        request_email_token_verify();
+        requestEmailTokenVerify();
     });
 }
 
-function on_pageload_check() {
-    // check if its a url from email
+function onPageloadCheck() {
+    // spcific page condition check
     const path = window.location.pathname
     if (path.includes("user-verify")) {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         if (token) {
             $('#token').val(token) // set to ui
-            request_email_token_verify();
+            requestEmailTokenVerify();
         }
-        return
+        return;
     }
     else if(path.includes("reset-password")) {
-        return
+        // nothing to do
+        return;
     }
-    
-    // user login check
-    $.ajax({
-        url: `${API_BASE_URL}/users/me`,
-        method: 'GET',
-        success: function(data) {            
-            // redirect to back_url if present
-            const urlParams = new URLSearchParams(window.location.search);
-            const backUrl = urlParams.get('back_url');
-            window.location.href = backUrl ? backUrl : '/pages/document';
-        },
-        error: function(xhr, status, error) {
-            console.error(`Login check error, ${error}`);
-        }
-    });
+
+    // run on all other page 
+    loginCheck();
 }
 
-function request_login() {
+function requestLogin() {
     errorMessage('');
     successMessage('');
     
@@ -84,12 +80,12 @@ function request_login() {
             window.location.href = backUrl ? backUrl : '/pages/document';
         },
         error: function(xhr, status, error) {
-            errorMessage(`Login error, check your credential, ${error}`);
+            showRequestError(xhr, status);
         }
     });
 }
 
-function request_forgot_password() {  
+function requestForgotPassword() {  
     errorMessage('');
     successMessage('');
     
@@ -109,12 +105,12 @@ function request_forgot_password() {
             }, 5000);
         },
         error: function(xhr, status, error) {
-            errorMessage(`Password reset request error, ${error}`);
+            showRequestError(xhr, status);
         }
     });
 }
 
-function request_reset_password() {  
+function requestResetPassword() {  
     errorMessage('');
     successMessage('');
 
@@ -145,12 +141,12 @@ function request_reset_password() {
             }, 3000);
         },
         error: function(xhr, status, error) {
-            errorMessage(`Reset password request error, ${error}`);
+            showRequestError(xhr, status);
         }
     });
 }
 
-function request_email_verification(email) {  
+function requestEmailVerification(email) {  
     //statusMessage('');
     //successMessage('');
     
@@ -170,12 +166,12 @@ function request_email_verification(email) {
             }, 3000);
         },
         error: function(xhr, status, error) {
-            errorMessage(`Email verification request error, ${error}`);
+            showRequestError(xhr, status);
         }
     });
 }
 
-function request_email_token_verify() {  
+function requestEmailTokenVerify() {  
     errorMessage('');
     successMessage('');
     
@@ -195,19 +191,19 @@ function request_email_token_verify() {
             }, 3000);
         },
         error: function(xhr, status, error) {
-            errorMessage(`User verification request error, ${error}`);
+            showRequestError(xhr, status);
         }
     });
 }
 
-function request_register() {
+function requestRegister() {
     errorMessage('');
     successMessage('');
 
     const password = $('#password').val();
     const confirmPassword = $('#confirmPassword').val();
     if (password !== confirmPassword) {
-        errorMessage('Input passwords do not match!');
+        errorMessage('Passwords do not match!');
         return false;
     }
     
@@ -224,7 +220,7 @@ function request_register() {
         data: JSON.stringify(userData),
         success: function(data) {
             successMessage('Registration successful.\r\nRequesting email verification...');
-            request_email_verification(userData.email);
+            requestEmailVerification(userData.email);
 
             // in case of verification not required
             // successMessage('Registration successful.\r\nRedirecting to login...');
@@ -233,27 +229,7 @@ function request_register() {
             // }, 3000);
         },
         error: function(xhr, status, error) {
-            errorMessage(`Registration request error, ${error}`);
+            showRequestError(xhr, status);
         }
     });
-}
-
-function errorMessage(message) {
-    $("#statusMessage").text(message);
-    if (message === '') {
-        $("#statusMessage").addClass('d-none');
-    }
-    else {
-        $("#statusMessage").removeClass('d-none');
-    }
-}
-
-function successMessage(message) {
-    $("#successMessage").text(message);
-    if (message === '') {
-        $("#successMessage").addClass('d-none');
-    }
-    else {
-        $("#successMessage").removeClass('d-none');
-    }
 }

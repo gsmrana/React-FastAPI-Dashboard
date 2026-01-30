@@ -68,8 +68,8 @@ function chatRequest(streaming=false) {
             showStatusMessage('✅ Ready');
         },
         error: function(xhr, status, error) {
+            showRequestError(xhr, status);
             showBotResponse("bot", '⚠️ Network Error', botMessageId);
-            showStatusMessage('⚠️ Error: ' + escapeHtml(error));
         }
     });
 }
@@ -108,6 +108,15 @@ function showBotResponse(role, text, id) {
             bubble.parentElement.parentElement.scrollHeight;
         placeholder.classList.add(role);
     }
+}
+
+function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    showStatusMessage(`${status.toUpperCase()}: ${msg}`);
 }
 
 function showStatusMessage(message) {

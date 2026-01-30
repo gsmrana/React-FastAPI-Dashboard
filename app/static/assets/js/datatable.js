@@ -5,7 +5,7 @@ let dataRows = [];
 
 $(document).ready(function() {
     initDataTable();
-    loadEntries();
+    requestGetEntries();
 });
 
 // Initialize DataTable
@@ -26,7 +26,7 @@ function initDataTable() {
 }
 
 // Load data rows from API
-function loadEntries() {
+function requestGetEntries() {
     showLoading();
 
     // use the page endpoint as api endpoint
@@ -45,15 +45,23 @@ function loadEntries() {
         },
         error: function(xhr, status, error) {
             hideLoading();
-            showAlert('Error loading data: ' + error, 'danger');
+            showRequestError(xhr, status);
         }
     });
 }
 
-// Show alert message
-function showAlert(message, type) {
+function showRequestError(xhr, status)
+{
+    let msg = `${xhr.status} ${xhr.statusText}`;
+    if (xhr.responseJSON) {
+        msg = JSON.stringify(xhr.responseJSON.detail);
+    }
+    showErrorMessage(`${status.toUpperCase()}: ${msg}`);
+}
+
+function showErrorMessage(message) {
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

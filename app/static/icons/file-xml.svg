@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <!-- Document background -->
+  <path d="M 20 0 L 140 0 L 180 40 L 180 240 L 20 240 Z" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+  
+  <!-- Folded corner -->
+  <path d="M 140 0 L 140 40 L 180 40 Z" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2"/>
+  
+  <!-- Orange XML banner -->
+  <rect x="20" y="60" width="160" height="50" fill="#f97316"/>
+  
+  <!-- XML text -->
+  <text x="100" y="95" font-family="monospace" font-size="32" font-weight="bold" fill="#ffffff" text-anchor="middle">XML</text>
+  
+  <!-- Code brackets decoration -->
+  <text x="45" y="145" font-family="monospace" font-size="20" fill="#f97316" font-weight="bold">&lt;</text>
+  <text x="155" y="145" font-family="monospace" font-size="20" fill="#f97316" font-weight="bold">/&gt;</text>
+  
+  <!-- XML-style tag lines -->
+  <text x="40" y="145" font-family="monospace" font-size="12" fill="#9ca3af">&lt;tag&gt;</text>
+  <rect x="55" y="155" width="90" height="4" rx="2" fill="#d1d5db"/>
+  <rect x="55" y="165" width="70" height="4" rx="2" fill="#d1d5db"/>
+  <rect x="55" y="175" width="85" height="4" rx="2" fill="#d1d5db"/>
+  <text x="40" y="195" font-family="monospace" font-size="12" fill="#9ca3af">&lt;/tag&gt;</text>
+  
+  <!-- Attribute-like decoration -->
+  <text x="65" y="155" font-family="monospace" font-size="10" fill="#f97316">attr=</text>
+  <text x="95" y="155" font-family="monospace" font-size="10" fill="#10b981">"value"</text>
+</svg>

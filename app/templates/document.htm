@@ -3,6 +3,7 @@
 
 {% block style %}
         <link href="/assets/css/datatables.css" rel="stylesheet" />
+        <link href="/assets/css/fileviewer.css" rel="stylesheet" />
 {% endblock %}
 
 {% block sidebar %}
@@ -30,6 +31,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th></th>
                                     <th>Filename</th>
                                     <th>Size</th>
                                     <th>Created</th>
@@ -121,6 +123,17 @@
             </div>
         </div>
     </div>
+
+    <!-- File Viewer Modal -->
+    <div id="fileViewerModal" class="file-modal-overlay">
+        <div class="file-modal-content">
+            <span class="close-modal-btn">
+                <i class="fas fa-close"></i>
+            </span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block script %}

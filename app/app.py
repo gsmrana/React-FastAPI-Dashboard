@@ -79,40 +79,37 @@ app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 # include jinja pages routers
 app.include_router(jinja_pages.router, prefix='/pages', tags=["pages"])
 
-# serve React frontend
+# --- serve React frontend ---
 @app.get("/{full_path:path}")
 async def serve_react_frontend(request: Request, full_path: str):
-    # no registered API route matched
+    # ensure don't return HTML for API 404s
     if request.url.path.startswith(API_PREFIX):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="API endpoint not found"
-        )
-    
+        return await unhandled_route(request, full_path)
+
     # handle static file requests (css, js, images)
     file_path = REACT_BUILD_DIR / full_path
-    if "." in full_path:
-        if file_path.exists():
-            return FileResponse(file_path)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Static file not found"
-            )
+    if "." in full_path and file_path.exists():
+        return FileResponse(file_path)
 
     # handle React Routes (SPA Pattern)
     react_home = REACT_BUILD_DIR / "index.html"
     if react_home.exists():
-        return FileResponse(str(react_home))
+        return FileResponse(react_home)
 
     # default to jinja home page
     if request.url.path == "/":
         return await jinja_pages.home_page(request)
 
-    # failsafe response if nothing matches
+    # failsafe response if frontend not found
+    return await unhandled_route(request, full_path)
+
+# --- unhandled route handler ---
+ALL_METHODS_EXCEPT_GET = ["POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+@app.api_route("/{full_path:path}", methods=ALL_METHODS_EXCEPT_GET, include_in_schema=False)
+async def unhandled_route(request: Request, full_path: str):
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, 
-        detail="Not found"
+        detail="Not Found"
     )
 
 # --- http exception handler ---
