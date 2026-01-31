@@ -9,8 +9,10 @@ $(document).ready(function() {
 function initializeTheme() {
     if (localStorage.getItem("theme") === "dark") {
         $("body").addClass("dark-mode");
+        $("html").attr("data-bs-theme", "dark");
         updateThemeToggleIcons(true);
     } else {
+        $("html").attr("data-bs-theme", "light");
         updateThemeToggleIcons(false);
     }
 }
@@ -114,6 +116,10 @@ function removeSidebarOverlay() {
 function toggleTheme() {
     $("body").toggleClass("dark-mode");
     const isDark = $("body").hasClass("dark-mode");
+    
+    // Set Bootstrap theme attribute for DataTables and other Bootstrap components
+    $("html").attr("data-bs-theme", isDark ? "dark" : "light");
+    
     updateThemeToggleIcons(isDark);
     localStorage.setItem("theme", isDark ? "dark" : "light");
 }

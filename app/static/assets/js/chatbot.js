@@ -1,8 +1,189 @@
 import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
+    initializeMarkdown();
     bindEvents();
 });
+
+// Configure marked.js for markdown parsing with custom renderer
+function initializeMarkdown() {
+    if (typeof marked === 'undefined') {
+        console.warn('Marked.js not loaded');
+        return;
+    }
+
+    // Custom renderer for better control
+    const renderer = new marked.Renderer();
+
+    // Custom code block renderer with copy button and language label
+    renderer.code = function(code, language) {
+        const validLang = language && hljs.getLanguage(language) ? language : 'plaintext';
+        const langLabel = language || 'code';
+        
+        let highlightedCode;
+        try {
+            if (typeof hljs !== 'undefined' && language && hljs.getLanguage(language)) {
+                highlightedCode = hljs.highlight(code, { language: language }).value;
+            } else if (typeof hljs !== 'undefined') {
+                highlightedCode = hljs.highlightAuto(code).value;
+            } else {
+                highlightedCode = escapeHtml(code);
+            }
+        } catch (e) {
+            highlightedCode = escapeHtml(code);
+        }
+
+        return `
+            <div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="code-language">${langLabel}</span>
+                    <button class="copy-code-btn" onclick="copyCodeToClipboard(this)" title="Copy code">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <pre><code class="hljs language-${validLang}">${highlightedCode}</code></pre>
+            </div>
+        `;
+    };
+
+    // Custom inline code renderer
+    renderer.codespan = function(code) {
+        return `<code class="inline-code">${escapeHtml(code)}</code>`;
+    };
+
+    // Custom link renderer (open external links in new tab)
+    renderer.link = function(href, title, text) {
+        const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
+        const target = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
+        const titleAttr = title ? ` title="${title}"` : '';
+        return `<a href="${href}"${titleAttr}${target}>${text}</a>`;
+    };
+
+    // Configure marked options
+    marked.setOptions({
+        renderer: renderer,
+        breaks: true,           // Convert \n to <br>
+        gfm: true,              // GitHub Flavored Markdown
+        headerIds: false,       // Disable header IDs
+        mangle: false,          // Don't mangle email links
+        pedantic: false,
+        smartLists: true,
+        smartypants: false
+    });
+}
+
+// Pre-process text to protect math expressions before markdown parsing
+function preprocessMath(text) {
+    const mathPlaceholders = [];
+    let index = 0;
+
+    // Protect display math ($$...$$)
+    text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        const placeholder = `%%DISPLAY_MATH_${index}%%`;
+        mathPlaceholders.push({ placeholder, math: math.trim(), display: true });
+        index++;
+        return placeholder;
+    });
+
+    // Protect inline math ($...$) - but not currency like $100
+    text = text.replace(/\$([^$\n]+?)\$/g, (match, math) => {
+        // Skip if it looks like currency (just numbers)
+        if (/^\d+(\.\d+)?$/.test(math.trim())) {
+            return match;
+        }
+        const placeholder = `%%INLINE_MATH_${index}%%`;
+        mathPlaceholders.push({ placeholder, math: math.trim(), display: false });
+        index++;
+        return placeholder;
+    });
+
+    // Protect LaTeX \[...\] display math
+    text = text.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+        const placeholder = `%%DISPLAY_MATH_${index}%%`;
+        mathPlaceholders.push({ placeholder, math: math.trim(), display: true });
+        index++;
+        return placeholder;
+    });
+
+    // Protect LaTeX \(...\) inline math
+    text = text.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+        const placeholder = `%%INLINE_MATH_${index}%%`;
+        mathPlaceholders.push({ placeholder, math: math.trim(), display: false });
+        index++;
+        return placeholder;
+    });
+
+    return { text, mathPlaceholders };
+}
+
+// Post-process to render math expressions
+function postprocessMath(html, mathPlaceholders) {
+    mathPlaceholders.forEach(({ placeholder, math, display }) => {
+        let rendered;
+        try {
+            if (typeof katex !== 'undefined') {
+                rendered = katex.renderToString(math, {
+                    displayMode: display,
+                    throwOnError: false,
+                    strict: false
+                });
+            } else {
+                // Fallback if KaTeX not loaded
+                rendered = display ? `<div class="math-fallback">$$${math}$$</div>` : `<span class="math-fallback">$${math}$</span>`;
+            }
+        } catch (e) {
+            console.error('KaTeX render error:', e);
+            rendered = display ? `<div class="math-error">${escapeHtml(math)}</div>` : `<span class="math-error">${escapeHtml(math)}</span>`;
+        }
+        html = html.replace(placeholder, rendered);
+    });
+    return html;
+}
+
+// Parse markdown to HTML with math support
+function parseMarkdown(text) {
+    if (!text) return '';
+    
+    try {
+        // Pre-process to protect math
+        const { text: processedText, mathPlaceholders } = preprocessMath(text);
+        
+        // Parse markdown
+        let html;
+        if (typeof marked !== 'undefined') {
+            html = marked.parse(processedText);
+        } else {
+            html = escapeHtml(processedText).replace(/\n/g, '<br>');
+        }
+        
+        // Post-process to render math
+        html = postprocessMath(html, mathPlaceholders);
+        
+        return html;
+    } catch (e) {
+        console.error('Markdown parse error:', e);
+        return escapeHtml(text);
+    }
+}
+
+// Copy code to clipboard function (global for onclick)
+window.copyCodeToClipboard = function(button) {
+    const codeBlock = button.closest('.code-block-wrapper').querySelector('code');
+    const code = codeBlock.textContent;
+    
+    navigator.clipboard.writeText(code).then(() => {
+        const icon = button.querySelector('i');
+        icon.className = 'fas fa-check';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+            icon.className = 'fas fa-copy';
+            button.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+};
 
 function bindEvents() {
     $('#clearBtn').on('click', function() {
@@ -55,21 +236,21 @@ function chatRequest(streaming=false) {
             onprogress: function() {
                 if (streaming) {
                     const content = this.responseText;
-                    showBotResponse("bot", escapeHtml(content), botMessageId);
+                    showBotResponse("bot", content, botMessageId, true);
                 }
             },
             onloadend: function() {
                 console.log('Stream ended');
             }
         },
-        success: function(response) {
+                success: function(response) {
+            hideStatusMessage();
             const content = streaming ? response : response.content;
-            showBotResponse("bot", escapeHtml(content), botMessageId);
-            showStatusMessage('✅ Ready');
+            showBotResponse("bot", content, botMessageId, true);
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);
-            showBotResponse("bot", '⚠️ Network Error', botMessageId);
+            showBotResponse("bot", '⚠️ Network Error', botMessageId, false);
         }
     });
 }
@@ -99,11 +280,24 @@ function showBotTypingPlaceholder(id) {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function showBotResponse(role, text, id) {
+function showBotResponse(role, text, id, useMarkdown = true) {
     const placeholder = document.getElementById(id);
     if (placeholder) {
         const bubble = placeholder.querySelector('.bubble');
-        bubble.innerHTML = text;
+        
+        // Parse markdown for bot responses
+        if (useMarkdown && role === 'bot') {
+            bubble.innerHTML = parseMarkdown(text);
+            // Apply syntax highlighting to any code blocks
+            bubble.querySelectorAll('pre code').forEach((block) => {
+                if (typeof hljs !== 'undefined') {
+                    hljs.highlightElement(block);
+                }
+            });
+        } else {
+            bubble.innerHTML = escapeHtml(text);
+        }
+        
         bubble.parentElement.parentElement.scrollTop =
             bubble.parentElement.parentElement.scrollHeight;
         placeholder.classList.add(role);

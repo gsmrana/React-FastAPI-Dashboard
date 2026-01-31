@@ -68,3 +68,432 @@
   display: inline-block;
   margin-right: 4px;
 }
+
+/* Markdown Content Styles */
+.message.bot .bubble p {
+  margin: 0 0 0.75rem 0;
+}
+
+.message.bot .bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.message.bot .bubble h1,
+.message.bot .bubble h2,
+.message.bot .bubble h3,
+.message.bot .bubble h4,
+.message.bot .bubble h5,
+.message.bot .bubble h6 {
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.message.bot .bubble h1:first-child,
+.message.bot .bubble h2:first-child,
+.message.bot .bubble h3:first-child {
+  margin-top: 0;
+}
+
+.message.bot .bubble h1 { font-size: 1.4rem; }
+.message.bot .bubble h2 { font-size: 1.25rem; }
+.message.bot .bubble h3 { font-size: 1.1rem; }
+.message.bot .bubble h4 { font-size: 1rem; }
+
+/* Code Block Wrapper */
+.message.bot .bubble .code-block-wrapper {
+  margin: 0.75rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1e1e1e;
+  border: 1px solid #333;
+}
+
+.message.bot .bubble .code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.message.bot .bubble .code-language {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.message.bot .bubble .copy-code-btn {
+  background: transparent;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.message.bot .bubble .copy-code-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.message.bot .bubble .copy-code-btn.copied {
+  color: #4ade80;
+}
+
+/* Code Blocks */
+.message.bot .bubble pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  tab-size: 4;
+}
+
+.message.bot .bubble pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* Inline Code */
+.message.bot .bubble code.inline-code,
+.message.bot .bubble code:not([class*="language-"]):not(.hljs) {
+  background: rgba(0, 0, 0, 0.08);
+  color: #d63384;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.85em;
+  word-break: break-word;
+}
+
+/* Lists */
+.message.bot .bubble ul,
+.message.bot .bubble ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.message.bot .bubble li {
+  margin: 0.25rem 0;
+}
+
+.message.bot .bubble ul ul,
+.message.bot .bubble ol ol,
+.message.bot .bubble ul ol,
+.message.bot .bubble ol ul {
+  margin: 0.25rem 0;
+}
+
+/* Blockquotes */
+.message.bot .bubble blockquote {
+  border-left: 4px solid #3b82f6;
+  margin: 0.75rem 0;
+  padding: 0.5rem 1rem;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 0 8px 8px 0;
+}
+
+.message.bot .bubble blockquote p {
+  margin: 0;
+}
+
+/* Tables */
+.message.bot .bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.message.bot .bubble th,
+.message.bot .bubble td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.message.bot .bubble th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.message.bot .bubble tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* Links */
+.message.bot .bubble a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.message.bot .bubble a:hover {
+  text-decoration: underline;
+}
+
+/* Horizontal Rules */
+.message.bot .bubble hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1rem 0;
+}
+
+/* Strong and Emphasis */
+.message.bot .bubble strong {
+  font-weight: 600;
+}
+
+.message.bot .bubble em {
+  font-style: italic;
+}
+
+/* Dark Mode Support */
+body.dark-mode .message.bot .bubble {
+  background: #2d2d2d;
+  color: #e5e7eb;
+}
+
+body.dark-mode .message.bot .bubble code {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f472b6;
+}
+
+body.dark-mode .message.bot .bubble pre {
+  background: #1a1a1a;
+}
+
+body.dark-mode .message.bot .bubble blockquote {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+body.dark-mode .message.bot .bubble th {
+  background: #374151;
+}
+
+body.dark-mode .message.bot .bubble td,
+body.dark-mode .message.bot .bubble th {
+  border-color: #4b5563;
+}
+
+body.dark-mode .message.bot .bubble tr:nth-child(even) {
+  background: #374151;
+}
+
+body.dark-mode .message.bot .bubble hr {
+  border-top-color: #4b5563;
+}
+
+body.dark-mode .chat-window {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 35, 0.6),
+    rgba(25, 27, 35, 0.6)
+  );
+}
+
+body.dark-mode .message.bot .bubble code.inline-code,
+body.dark-mode .message.bot .bubble code:not([class*="language-"]):not(.hljs) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f472b6;
+}
+
+/* Math/LaTeX Styles */
+.message.bot .bubble .katex-display {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.message.bot .bubble .katex {
+  font-size: 1.1em;
+}
+
+.message.bot .bubble .math-fallback {
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.message.bot .bubble .math-error {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+body.dark-mode .message.bot .bubble .katex-display {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .message.bot .bubble .math-fallback {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Syntax Highlighting Overrides for Atom One Dark theme */
+.message.bot .bubble pre code.hljs {
+  background: transparent;
+  padding: 0;
+}
+
+/* Ensure proper colors for various syntax elements */
+.message.bot .bubble .hljs-keyword,
+.message.bot .bubble .hljs-selector-tag,
+.message.bot .bubble .hljs-literal,
+.message.bot .bubble .hljs-section,
+.message.bot .bubble .hljs-link {
+  color: #c678dd;
+}
+
+.message.bot .bubble .hljs-string,
+.message.bot .bubble .hljs-title,
+.message.bot .bubble .hljs-name,
+.message.bot .bubble .hljs-type,
+.message.bot .bubble .hljs-attribute,
+.message.bot .bubble .hljs-symbol,
+.message.bot .bubble .hljs-bullet,
+.message.bot .bubble .hljs-addition,
+.message.bot .bubble .hljs-variable,
+.message.bot .bubble .hljs-template-tag,
+.message.bot .bubble .hljs-template-variable {
+  color: #98c379;
+}
+
+.message.bot .bubble .hljs-comment,
+.message.bot .bubble .hljs-quote,
+.message.bot .bubble .hljs-deletion,
+.message.bot .bubble .hljs-meta {
+  color: #5c6370;
+}
+
+.message.bot .bubble .hljs-number,
+.message.bot .bubble .hljs-regexp,
+.message.bot .bubble .hljs-literal,
+.message.bot .bubble .hljs-params {
+  color: #d19a66;
+}
+
+.message.bot .bubble .hljs-function {
+  color: #61afef;
+}
+
+.message.bot .bubble .hljs-class .hljs-title,
+.message.bot .bubble .hljs-title.class_ {
+  color: #e5c07b;
+}
+
+.message.bot .bubble .hljs-built_in {
+  color: #e6c07b;
+}
+
+.message.bot .bubble .hljs-attr {
+  color: #d19a66;
+}
+
+/* Scrollbar for code blocks */
+.message.bot .bubble pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.message.bot .bubble pre::-webkit-scrollbar-track {
+  background: #2d2d2d;
+  border-radius: 4px;
+}
+
+.message.bot .bubble pre::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.message.bot .bubble pre::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Typing animation */
+@keyframes typing-blink {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.typing-dot {
+  animation: typing-blink 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Message animations */
+.message {
+  animation: message-fade-in 0.3s ease-out;
+}
+
+@keyframes message-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Better bubble max-width for readability */
+.message.bot .bubble {
+  max-width: 95%;
+}
+
+.message.user .bubble {
+  max-width: 80%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .message.bot .bubble,
+  .message.user .bubble {
+    max-width: 95%;
+  }
+  
+  .message.bot .bubble pre {
+    font-size: 0.8rem;
+  }
+  
+  .message.bot .bubble .code-block-header {
+    padding: 0.4rem 0.75rem;
+  }
+  
+  .message.bot .bubble .katex {
+    font-size: 1em;
+  }
+}

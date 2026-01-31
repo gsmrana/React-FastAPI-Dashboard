@@ -13,9 +13,22 @@
   --link-hover: #005b99;
   --card-bg: #ffffff;
   --footer-bg: #eaeaea;
-  --border-color: rgba(0, 0, 0, 0.05);
+  --border-color: rgba(0, 0, 0, 0.1);
   --sidebar-width: 260px;
   --navbar-height: 70px;
+  
+  /* Card header variables */
+  --card-header-bg: #f8f9fa;
+  --card-header-text: #333;
+  
+  /* Table specific variables */
+  --table-header-bg: #f5f5f5;
+  --table-stripe-bg: #fafafa;
+  --table-hover-bg: rgba(33, 150, 243, 0.1);
+  
+  /* Input specific variables */
+  --input-bg: #ffffff;
+  --input-border: #bdbdbd;
 }
 
 /* Body Styling */
@@ -35,7 +48,20 @@ body.dark-mode {
   --link-hover: #74c0ff;
   --card-bg: #2a2a2a;
   --footer-bg: #111;
-  --border-color: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+  
+  /* Card header variables - dark mode */
+  --card-header-bg: #333333;
+  --card-header-text: #eaeaea;
+  
+  /* Table specific variables - dark mode */
+  --table-header-bg: #333333;
+  --table-stripe-bg: #252525;
+  --table-hover-bg: rgba(77, 163, 255, 0.15);
+  
+  /* Input specific variables - dark mode */
+  --input-bg: #333333;
+  --input-border: #555555;
 }
 
 /* Main Wrapper Layout */
@@ -210,7 +236,7 @@ body.dark-mode {
   cursor: pointer;
   transition: background-color 0.3s;
   font-size: 0.9rem;
-  max-width: 150px;
+  max-width: 200px;
   text-decoration: none;
   color: inherit;
 }
@@ -268,7 +294,7 @@ body.dark-mode {
   }
 
   .username-text {
-    display: none;
+    max-width: 80px;
   }
 }
 
@@ -322,6 +348,13 @@ body.dark-mode {
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* Hide sidebar by default on tablet and mobile */
+@media (max-width: 991px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
 }
 
 /* Sidebar state helpers */
@@ -539,10 +572,6 @@ body.dark-mode {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1050;
-}
-
-.sidebar-overlay.active {
-  display: block;
 }
 
 /* Hero Section */
