@@ -1,16 +1,29 @@
 <nav class="navbar" id="navbar">
     <div class="nav-container">
-        <a href="/" class="logo">Mediahub</a>
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Menu">☰</button>
-        
-        <ul class="nav-links" id="nav-links">
-            <li><a href="#portfolio">Portfolio</a></li>
-            <li><a href="#contact">Contact</a></li>            
-            <li><a href="/pages/document">Dashboard</a></li>
-        </ul>
-    </div>
+        <!-- Mobile Sidebar Toggle -->
+        <button id="navbar-sidebar-toggle" class="navbar-sidebar-toggle d-none" aria-label="Toggle Sidebar" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
 
-    <div>
-        <button id="theme-toggle" aria-label="Toggle Dark Mode">🌙</button>
+        <!-- Nav Title -->
+        <a href="/" class="logo"><i class="fas fa-bolt"></i>Mediahub</a>
+
+        <!-- Nav Menu -->
+        <!-- <ul class="nav-links" id="nav-links">
+            <li><a href="#portfolio">Portfolio</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="/pages/document">Dashboard</a></li>
+        </ul> -->
+
+        <!-- User Menu -->
+        <div class="nav-user-menu">
+            <button id="navbar-theme-toggle" class="navbar-theme-toggle" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+            <a href="/pages/document" class="user-profile-badge">
+                <i class="fas fa-user-circle user-icon"></i>
+                <span class="username-text" id="navbar-useremail"></span>
+            </a>
+        </div>
     </div>
 </nav>

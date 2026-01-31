@@ -2,35 +2,62 @@ import { API_BASE_URL } from './constants.js';
 
 $(document).ready(function() {
     bindEvents();
-
-    if (localStorage.getItem("theme") === "dark") {
-        $("body").addClass("dark-mode");
-        $("#theme-toggle").text("☀️");
-    } else {
-        $("#theme-toggle").text("🌙");
-    }
+    initializeTheme();
+    loadUserInfo();
 });
 
-function bindEvents() {
-    $("#sidebar-toggle").on("click", () => {
-        $("#sidebar").toggleClass("closed");
+function initializeTheme() {
+    if (localStorage.getItem("theme") === "dark") {
+        $("body").addClass("dark-mode");
+        updateThemeToggleIcons(true);
+    } else {
+        updateThemeToggleIcons(false);
+    }
+}
 
-        const isClosed = $("#sidebar").hasClass("closed");
-        $("body").toggleClass("has-sidebar-closed", isClosed);        
+function updateThemeToggleIcons(isDark) {
+    const icon = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    $("#theme-toggle").html(icon);
+    $("#navbar-theme-toggle").html(icon);
+}
+
+function bindEvents() {
+    // Sidebar toggle for tablet/mobile (from navbar)
+    $("#navbar-sidebar-toggle").on("click", function(e) {
+        e.preventDefault();
+        toggleSidebar();
     });
 
-    $("#menu-toggle").on("click", () => {
+    // Sidebar toggle button (close button inside sidebar)
+    $("#sidebar-toggle").on("click", function(e) {
+        e.preventDefault();
+        closeSidebar();
+    });
+
+    // Sidebar overlay click to close
+    $(document).on("click", ".sidebar-overlay", function() {
+        closeSidebar();
+    });
+
+    // Main menu toggle (navbar links)
+    $("#menu-toggle").on("click", function(e) {
+        e.preventDefault();
         $("#nav-links").toggleClass("show");
     });
 
-    $("#theme-toggle").on("click", () => {
-        $("body").toggleClass("dark-mode");
-        const isDark = $("body").hasClass("dark-mode");
-        $("#theme-toggle").text(isDark ? "☀️" : "🌙");
-        localStorage.setItem("theme", isDark ? "dark" : "light");
+    // Close menu when link is clicked
+    $("#nav-links a").on("click", function() {
+        $("#nav-links").removeClass("show");
     });
 
-    $(window).on("scroll", () => {
+    // Theme toggle buttons (both navbar and sidebar)
+    $("#theme-toggle, #navbar-theme-toggle").on("click", function(e) {
+        e.preventDefault();
+        toggleTheme();
+    });
+
+    // Navbar scroll effect
+    $(window).on("scroll", function() {
         if ($(window).scrollTop() > 10) {
             $("#navbar").addClass("scrolled");
         } else {
@@ -38,16 +65,86 @@ function bindEvents() {
         }
     });
 
-    $('#logoutMenu').on('click', function() {
+    // Logout button
+    $('#logoutMenu').on('click', function(e) {
+        e.preventDefault();
         requestLogout();
+    });
+
+    // Close sidebar/modal when clicking outside
+    $(document).on("click", function(e) {
+        if (!$(e.target).closest("#sidebar, #navbar-sidebar-toggle").length &&
+            $("#sidebar").hasClass("open")) {
+            closeSidebar();
+        }
     });
 }
 
-export function loginCheck() {   
+function toggleSidebar() {
+    const sidebar = $("#sidebar");
+    const isOpen = sidebar.hasClass("open");
+
+    if (isOpen) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
+}
+
+function openSidebar() {
+    $("#sidebar").addClass("open").removeClass("closed");
+    addSidebarOverlay();
+}
+
+function closeSidebar() {
+    $("#sidebar").removeClass("open").addClass("closed");
+    removeSidebarOverlay();
+}
+
+function addSidebarOverlay() {
+    if (!$(".sidebar-overlay").length) {
+        $("<div class='sidebar-overlay active'></div>").insertBefore("#sidebar");
+    }
+}
+
+function removeSidebarOverlay() {
+    $(".sidebar-overlay").removeClass("active");
+}
+
+function toggleTheme() {
+    $("body").toggleClass("dark-mode");
+    const isDark = $("body").hasClass("dark-mode");
+    updateThemeToggleIcons(isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+}
+
+function loadUserInfo() {
     $.ajax({
         url: `${API_BASE_URL}/users/me`,
         method: 'GET',
-        success: function(data) {            
+        success: function(data) {
+            const email = data.email || "user@example.com";
+
+            // Update navbar email
+            $("#navbar-useremail").text(email);
+
+            // Update sidebar username and email
+            const username = data.full_name || data.email || "User";
+            $("#sidebar-username").text(username);
+            $("#sidebar-useremail").text(email);
+        },
+        error: function(xhr, status, error) {
+            // User not logged in, keep defaults
+            console.log('User info not available');
+        }
+    });
+}
+
+export function loginCheck() {
+    $.ajax({
+        url: `${API_BASE_URL}/users/me`,
+        method: 'GET',
+        success: function(data) {
             // redirect to back_url if present
             const urlParams = new URLSearchParams(window.location.search);
             const backUrl = urlParams.get('back_url');

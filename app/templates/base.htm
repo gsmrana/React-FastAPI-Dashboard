@@ -28,14 +28,19 @@
         {% block sidebar %}
         {% endblock %}
 
-        <!--- Page Content --->
-        {% block content %}
-        {% endblock %}
+        <!-- Main Content Wrapper -->
+        <main class="main-wrapper">
+            <!--- Page Content --->
+            <div class="content-wrapper">
+                {% block content %}
+                {% endblock %}
+            </div>
 
-        <!--- Page Footer ---->
-        <footer class="main-content text-center text-muted py-3 mt-5">
-            <p>© 2026 Sultan Mahmud Rana. All rights reserved.</p>
-        </footer>
+            <!--- Page Footer ---->
+            <footer class="main-content text-center text-muted py-3 mt-5">
+                <p>© 2026 Sultan Mahmud Rana. All rights reserved.</p>
+            </footer>
+        </main>
 
         <!-- Library scripts -->
         <script src="/assets/bootstrap-5.3.8/bootstrap.bundle.min.js"></script>
