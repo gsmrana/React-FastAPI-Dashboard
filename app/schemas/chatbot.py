@@ -2,15 +2,23 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class LLM_Info(BaseModel):
-    provider: str
-    model_name: str
-    temperature: Optional[float] = None
-
 class ChatRequest(BaseModel):
-    prompt: str
-    model_name: Optional[str] = None
+    llm_id: int
+    message: str
+    session_id: str = ""
+    system_prompt: Optional[str] = "You are a helpful and concise AI assistant."
 
 class ChatResponse(BaseModel):
-    content: str
-    llm_info: Optional[LLM_Info] = None
+    llm_id: int
+    response: str
+    session_id: str = ""
+    message_count: int = 0
+
+class HistoryResponse(BaseModel):
+    session_id: str
+    messages: list
+    message_count: int
+
+class SessionResponse(BaseModel):
+    session_id: str
+    message_count: int

@@ -1,6 +1,5 @@
 import { API_BASE_URL } from './constants.js';
 import { 
-    loginCheck, 
     showRequestError,
     errorMessage,
     successMessage,
@@ -9,7 +8,7 @@ import {
 
 $(document).ready(function() {
     bindEvents();
-    onPageloadCheck();
+    getUserVerifyToken();
 });
 
 function bindEvents() {
@@ -39,8 +38,7 @@ function bindEvents() {
     });
 }
 
-function onPageloadCheck() {
-    // spcific page condition check
+function getUserVerifyToken() {
     const path = window.location.pathname
     if (path.includes("user-verify")) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -49,15 +47,7 @@ function onPageloadCheck() {
             $('#token').val(token) // set to ui
             requestEmailTokenVerify();
         }
-        return;
     }
-    else if(path.includes("reset-password")) {
-        // nothing to do
-        return;
-    }
-
-    // run on all other page 
-    loginCheck();
 }
 
 function requestLogin() {
@@ -81,6 +71,7 @@ function requestLogin() {
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);
+            requestLogout(); //discard old tokens
         }
     });
 }

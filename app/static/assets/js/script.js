@@ -129,36 +129,10 @@ function loadUserInfo() {
         url: `${API_BASE_URL}/users/me`,
         method: 'GET',
         success: function(data) {
-            const email = data.email || "user@example.com";
-
-            // Update navbar email
-            $("#navbar-useremail").text(email);
-
-            // Update sidebar username and email
-            const username = data.full_name || data.email || "User";
-            $("#sidebar-username").text(username);
-            $("#sidebar-useremail").text(email);
+            $("#navbar-useremail").text(data.email);
         },
         error: function(xhr, status, error) {
-            // User not logged in, keep defaults
-            console.log('User info not available');
-        }
-    });
-}
-
-export function loginCheck() {
-    $.ajax({
-        url: `${API_BASE_URL}/users/me`,
-        method: 'GET',
-        success: function(data) {
-            // redirect to back_url if present
-            const urlParams = new URLSearchParams(window.location.search);
-            const backUrl = urlParams.get('back_url');
-            window.location.href = backUrl ? backUrl : '/pages/document';
-        },
-        error: function(xhr, status, error) {
-            logRequestError('Login check...', xhr, status);
-            requestLogout(); // ensure discard old token
+            //logRequestError('User profile...', xhr, status);
         }
     });
 }
@@ -171,7 +145,7 @@ export function requestLogout() {
             window.location.href = '/pages/home';
         },
         error: function(xhr, status, error) {
-            logRequestError('Logout...', xhr, status);
+            //logRequestError('Logout...', xhr, status);
         }
     });
 }

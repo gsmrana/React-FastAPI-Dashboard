@@ -5,8 +5,8 @@ from app.models.audit_mixin import AuditMixin
 
 class Document(DbBase, AuditMixin):
     __tablename__ = "documents"
-    id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    filename = Column(String, nullable=False)
     filepath = Column(String, nullable=False)
     filesize = Column(Integer, nullable=False)
     

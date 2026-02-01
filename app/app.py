@@ -11,9 +11,11 @@ from app.core.logger import get_logger
 from app.db.async_db import create_db_tables, dispose_sync_db_engine
 from app.core.users import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.api import health, admin, documents, chatbot
-from app.api import notepads, todos, expenses
 from app.pages import jinja_pages
+from app.api import (
+    health, admin, documents, notepads, todos, 
+    expenses, services, llms, chatbot
+)
 
 
 API_PREFIX = "/api/v1"
@@ -74,6 +76,8 @@ app.include_router(documents.router, prefix=API_PREFIX, tags=["document"])
 app.include_router(notepads.router, prefix=API_PREFIX, tags=["notepad"])
 app.include_router(todos.router, prefix=API_PREFIX, tags=["todo"])
 app.include_router(expenses.router, prefix=API_PREFIX, tags=["expense"])
+app.include_router(services.router, prefix=API_PREFIX, tags=["service"])
+app.include_router(llms.router, prefix=API_PREFIX, tags=["LLM"])
 app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 
 # include jinja pages routers

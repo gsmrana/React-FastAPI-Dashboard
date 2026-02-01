@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import config
-from app.core.logger import get_logger
 from app.schemas.expense import ExpenseSchema, UpdateExpenseSchema, CreateExpenseSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
@@ -14,7 +12,6 @@ from app.models.expense import Expense
 
 
 router = APIRouter()
-logger = get_logger(__name__)
 
 @router.get("/expenses", response_model=List[ExpenseSchema])
 async def expense_list(
@@ -32,8 +29,7 @@ async def expense_list(
     if not include_deleted:
         query = query.filter(Expense.deleted_at == None)
     result = await db.execute(query)
-    expenses = result.scalars().all()
-    return [ExpenseSchema.model_validate(item) for item in expenses]
+    return result.scalars().all()
 
 @router.post("/expenses", response_model=ExpenseSchema)
 async def create_expense(
@@ -48,7 +44,7 @@ async def create_expense(
     db.add(new_expense)
     await db.commit()
     await db.refresh(new_expense)
-    return ExpenseSchema.model_validate(new_expense)
+    return new_expense
 
 @router.get("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def get_expense(
@@ -60,7 +56,7 @@ async def get_expense(
     expense = result.scalars().first()
     if not expense:
         raise HTTPException(404, f"Expense id {expense_id} not found")
-    return ExpenseSchema.model_validate(expense)
+    return expense
 
 @router.patch("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def update_expense(
@@ -78,7 +74,7 @@ async def update_expense(
     expense.updated_by = user.id
     await db.commit()
     await db.refresh(expense)
-    return ExpenseSchema.model_validate(expense)
+    return expense
 
 @router.delete("/expenses/{expense_id}", response_model=ExpenseSchema)
 async def delete_expense(
@@ -98,4 +94,4 @@ async def delete_expense(
         await db.delete(expense)
     await db.commit()
     await db.refresh(expense)
-    return ExpenseSchema.model_validate(expense)
+    return expense

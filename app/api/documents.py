@@ -10,7 +10,6 @@ from fastapi.responses import FileResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import config
-from app.core.logger import get_logger
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
 from app.models.user import User
@@ -31,7 +30,6 @@ ICON_MAP = [
 ]
 
 router = APIRouter()
-logger = get_logger(__name__)
 ICON_DIR = Path("app/static/icons")
 UPLOAD_DIR = Path(config.upload_dir)
 FILE_NOT_FOUND_EXC = HTTPException(status_code=404, detail="File not found")

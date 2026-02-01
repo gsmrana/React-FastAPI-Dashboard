@@ -5,8 +5,8 @@ from app.models.audit_mixin import AuditMixin
 
 class Todo(DbBase, AuditMixin):
     __tablename__ = "todos"
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    title = Column(String, nullable=False)
     notes = Column(Text, default="", nullable=False)
 
     is_starred = Column(Boolean, default=False, nullable=False)

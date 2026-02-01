@@ -188,12 +188,13 @@ window.copyCodeToClipboard = function(button) {
 function bindEvents() {
     $('#clearBtn').on('click', function() {
         $('#chatWindow').empty();
+        requestClearChatHistory();
     });
 
     // click to Send
     $('#chatForm').on('submit', function(e) {
         e.preventDefault();
-        chatRequest(false);
+        sendChatRequest(0, false);
     });
 
     // Enter to Send
@@ -201,7 +202,7 @@ function bindEvents() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             if ($('#chatForm')[0].checkValidity()) {
-                chatRequest(true);
+                sendChatRequest(1, true);
             } else {
                 $('#chatForm')[0].reportValidity();
             }
@@ -210,25 +211,33 @@ function bindEvents() {
 }
 
 // request chat from API
-function chatRequest(streaming=false) {
+function sendChatRequest(llm_id, streaming=false) {
     const prompt = $('#promptInput').val().trim();
     $('#promptInput').val('');
     
     // show user prompt
     showUserPrompt("user", escapeHtml(prompt));
-    showThinkingStatus();
     
     // show bot message
     const botMessageId = "bot-" + Date.now();
     showBotTypingPlaceholder(botMessageId);
 
-    const url = streaming ? `${API_BASE_URL}/chat/stream` : `${API_BASE_URL}/chat/simple`;
+    const chatRequest = {
+        llm_id: llm_id,
+        message: prompt,
+        session_id: "my_session"
+    }
+
+    let url = `${API_BASE_URL}/chatbot/simple`;
+    if (streaming) {
+        url = `${API_BASE_URL}/chatbot/stream`;
+    }
 
     $.ajax({
         url: url,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ prompt: prompt }),
+        data: JSON.stringify(chatRequest),
         xhrFields: {
             onloadstart: function() {
                 console.log('Stream started');
@@ -243,14 +252,30 @@ function chatRequest(streaming=false) {
                 console.log('Stream ended');
             }
         },
-                success: function(response) {
+        success: function(data) {
             hideStatusMessage();
-            const content = streaming ? response : response.content;
+            const content = streaming ? data : data.response;
             showBotResponse("bot", content, botMessageId, true);
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);
             showBotResponse("bot", '⚠️ Network Error', botMessageId, false);
+        }
+    });
+}
+
+// clear chat history from API
+function requestClearChatHistory() {
+    const session_id = "my_session";
+    $.ajax({
+        url: `${API_BASE_URL}/chatbot/history/${session_id}`,
+        method: 'DELETE',
+        contentType: 'application/json',
+        success: function(data) {
+            hideStatusMessage();
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
         }
     });
 }
@@ -315,10 +340,6 @@ function showRequestError(xhr, status)
 
 function showStatusMessage(message) {
     $('#statusMessage').text(message);
-}
-
-function showThinkingStatus() {
-    showStatusMessage('⏳ Thinking...');
 }
 
 function hideStatusMessage() {

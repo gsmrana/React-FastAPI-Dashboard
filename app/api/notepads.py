@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import config
-from app.core.logger import get_logger
 from app.schemas.notepad import NoteSchema, UpdateNoteSchema, CreateNoteSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
@@ -14,7 +12,6 @@ from app.models.notepad import Notepad
 
 
 router = APIRouter()
-logger = get_logger(__name__)
 
 @router.get("/notepads", response_model=List[NoteSchema])
 async def note_list(
@@ -26,8 +23,7 @@ async def note_list(
     if not include_deleted:
         query = query.filter(Notepad.deleted_at == None)
     result = await db.execute(query)
-    notepads = result.scalars().all()
-    return [NoteSchema.model_validate(item) for item in notepads]
+    return result.scalars().all()
 
 @router.post("/notepads", response_model=NoteSchema)
 async def create_note(
@@ -42,7 +38,7 @@ async def create_note(
     db.add(new_note)
     await db.commit()
     await db.refresh(new_note)
-    return NoteSchema.model_validate(new_note)
+    return new_note
 
 @router.get("/notepads/{note_id}", response_model=NoteSchema)
 async def get_note(
@@ -54,7 +50,7 @@ async def get_note(
     notepad = result.scalars().first()
     if not notepad:
         raise HTTPException(404, f"Note id {note_id} not found")
-    return NoteSchema.model_validate(notepad)
+    return notepad
 
 @router.patch("/notepads/{note_id}", response_model=NoteSchema)
 async def update_note(
@@ -72,7 +68,7 @@ async def update_note(
     notepad.updated_by = user.id
     await db.commit()
     await db.refresh(notepad)
-    return NoteSchema.model_validate(notepad)
+    return notepad
 
 @router.delete("/notepads/{note_id}", response_model=NoteSchema)
 async def delete_note(
@@ -92,4 +88,4 @@ async def delete_note(
         await db.delete(notepad)
     await db.commit()
     await db.refresh(notepad)
-    return NoteSchema.model_validate(notepad)
+    return notepad
