@@ -1,8 +1,11 @@
 import { API_BASE_URL } from './constants.js';
 
+let currentLlmId = null;
+
 $(document).ready(function() {
     initializeMarkdown();
     bindEvents();
+    requestLoadLlmList();
 });
 
 // Configure marked.js for markdown parsing with custom renderer
@@ -191,10 +194,10 @@ function bindEvents() {
         requestClearChatHistory();
     });
 
-    // click to Send
+    // Send button
     $('#chatForm').on('submit', function(e) {
         e.preventDefault();
-        sendChatRequest(0, false);
+        sendChatRequest();
     });
 
     // Enter to Send
@@ -202,17 +205,65 @@ function bindEvents() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             if ($('#chatForm')[0].checkValidity()) {
-                sendChatRequest(1, true);
+                sendChatRequest();
             } else {
                 $('#chatForm')[0].reportValidity();
             }
         }
     });
+
+    $('#modelSelect').on('change', function() {
+        const selectedId = $(this).val();
+        if (selectedId) {
+            currentLlmId = parseInt(selectedId);
+            requestLoadNote(currentLlmId);
+        } else {
+            currentLlmId = null;
+            $('#noteInput').val('');
+        }
+    });
+}
+
+// load LLM list from API
+function requestLoadLlmList() {
+    showLoadingStatus();
+
+    $.ajax({
+        url: `${API_BASE_URL}/llms`,
+        method: 'GET',
+        success: function(data) {
+            hideStatusMessage();
+            populateModelDropdown(data);
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
+        }
+    });
+}
+
+// populate LLM list dropdown
+function populateModelDropdown(llms) {
+    const $select = $('#modelSelect');
+    $select.find('option:not(:first)').remove();
+    
+    llms.forEach(function(llm) {
+        $select.append($('<option>', {
+            value: llm.id,
+            text: llm.model_name || `Note #${llm.id}`
+        }));
+    });
+
+    // Auto-select first note if available
+    if (llms.length > 0 && !currentLlmId) {
+        currentLlmId = llms[0].id;
+        $select.val(currentLlmId);
+    }
 }
 
 // request chat from API
-function sendChatRequest(llm_id, streaming=false) {
+function sendChatRequest(streaming=true) {
     const prompt = $('#promptInput').val().trim();
+    const llm_id = parseInt($('#modelSelect').val());
     $('#promptInput').val('');
     
     // show user prompt
@@ -222,19 +273,17 @@ function sendChatRequest(llm_id, streaming=false) {
     const botMessageId = "bot-" + Date.now();
     showBotTypingPlaceholder(botMessageId);
 
+    // use dummy llm id for now
+    const dummy_llm_id = parseInt(llm_id % 2)
+
     const chatRequest = {
-        llm_id: llm_id,
+        llm_id: dummy_llm_id,
         message: prompt,
         session_id: "my_session"
     }
 
-    let url = `${API_BASE_URL}/chatbot/simple`;
-    if (streaming) {
-        url = `${API_BASE_URL}/chatbot/stream`;
-    }
-
     $.ajax({
-        url: url,
+        url: `${API_BASE_URL}/chatbot/stream`,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(chatRequest),
@@ -270,7 +319,6 @@ function requestClearChatHistory() {
     $.ajax({
         url: `${API_BASE_URL}/chatbot/history/${session_id}`,
         method: 'DELETE',
-        contentType: 'application/json',
         success: function(data) {
             hideStatusMessage();
         },
@@ -329,6 +377,15 @@ function showBotResponse(role, text, id, useMarkdown = true) {
     }
 }
 
+function escapeHtml(unsafe) {
+  return unsafe
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function showRequestError(xhr, status)
 {
     let msg = `${xhr.status} ${xhr.statusText}`;
@@ -338,19 +395,14 @@ function showRequestError(xhr, status)
     showStatusMessage(`${status.toUpperCase()}: ${msg}`);
 }
 
+function showLoadingStatus() {
+    showStatusMessage('⏳ Loading...');
+}
+
 function showStatusMessage(message) {
     $('#statusMessage').text(message);
 }
 
 function hideStatusMessage() {
     showStatusMessage('');
-}
-
-function escapeHtml(unsafe) {
-  return unsafe
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }

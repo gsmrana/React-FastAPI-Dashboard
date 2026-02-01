@@ -14,10 +14,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <div class="main-content">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-10 col-lg-12">
+    <div class="container-fluid px-3 px-md-4 mt-3">
+        <div class="main-content h-100">
+            <div class="row justify-content-center h-100">
+                <div class="col-12">
                     <div class="card shadow-sm chat-card">
                         
                         <div class="card-header d-flex align-items-center justify-content-between">
@@ -27,12 +27,20 @@
                                         <h5 class="mb-0">Notepad</h5>
                                     </div>
                                     <div>
+                                        <select id="noteSelect" class="form-select form-select-sm" style="width: auto; min-width: 150px;">
+                                            <option value="">-- Select Note --</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label id="statusMessage"></label>
                                     </div>
                             </div>
                                 <div>
-                                    <button id="clearBtn" class="btn btn-secondary">
-                                        <i class="fas fa-eraser" title="Clear"></i>
+                                    <button id="newBtn" class="btn btn-primary" title="New Note">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button id="deleteBtn" class="btn btn-danger">
+                                        <i class="fas fa-trash-can" title="Clear"></i>
                                     </button>
                                     <button id="saveBtn" class="btn btn-success">
                                         <i class="fas fa-floppy-disk" title="Save"></i>
@@ -41,7 +49,7 @@
                         </div>
 
                         <div id="noteWindow" class="card-body overflow-auto chat-window">
-                            <textarea id="noteInput" type="text" name="textarea" class="form-control" style="height: 520px;"></textarea>
+                            <textarea id="noteInput" type="text" name="textarea" class="form-control" style="height: 100%; min-height: 100%;"></textarea>
                         </div>
 
                     </div>

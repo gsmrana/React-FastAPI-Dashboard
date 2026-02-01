@@ -18,16 +18,21 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <div class="main-content">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-10 col-lg-12">
+    <div class="container-fluid px-3 px-md-4 mt-3">
+        <div class="main-content h-100">
+            <div class="row justify-content-center h-100">
+                <div class="col-12">
                     <div class="card shadow-sm chat-card">
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="green-dot"></div>
                                     <div>
                                         <h5 class="mb-0">Chatbot</h5>
+                                    </div>
+                                    <div>
+                                        <select id="modelSelect" class="form-select form-select-sm model-select">
+                                            <option value="">-- Select Model --</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label id="statusMessage"></label>
