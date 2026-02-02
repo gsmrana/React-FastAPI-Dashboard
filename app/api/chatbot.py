@@ -42,6 +42,7 @@ llms = [
 ]
 
 def get_llm(llm_id: int):
+    llm_id = llm_id % 2 == 0 # test purpose
     if llm_id >= len(llms):
         raise HTTPException(404, f"LLM id {llm_id} not found")
     return llms[llm_id]
@@ -152,8 +153,7 @@ async def chatbot_stream(
     - **session_id**: Unique identifier for the conversation session
     - **system_prompt**: Optional custom system prompt
     """
-    if not request.session_id: 
-        request.session_id = "default"
+    request.session_id = request.session_id or "default"
     chain = create_chain(request)
     prompt = {"input": request.message}
     config = {"configurable": {"session_id": request.session_id}}

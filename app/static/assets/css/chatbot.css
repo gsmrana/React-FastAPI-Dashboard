@@ -82,8 +82,8 @@ body.dark-mode .model-select:hover {
 }
 
 .message.user .bubble {
-  background: rgba(37, 117, 252, 0.95);
-  color: white;
+  background: white;
+  color: #111827;
   border-bottom-right-radius: 4px;
 }
 

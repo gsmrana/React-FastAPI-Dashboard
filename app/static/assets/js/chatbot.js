@@ -1,10 +1,12 @@
 import { API_BASE_URL } from './constants.js';
 
 let currentLlmId = null;
+let chatSessionId = "default";
 
 $(document).ready(function() {
     initializeMarkdown();
     bindEvents();
+    requestUserProfile();
     requestLoadLlmList();
 });
 
@@ -224,6 +226,21 @@ function bindEvents() {
     });
 }
 
+// get user profile from API
+function requestUserProfile() {
+    $.ajax({
+        url: `${API_BASE_URL}/users/me`,
+        method: 'GET',
+        success: function(data) {
+            chatSessionId = data.email;
+            requestLoadChatHistory();
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
+        }
+    });
+}
+
 // load LLM list from API
 function requestLoadLlmList() {
     showLoadingStatus();
@@ -249,7 +266,7 @@ function populateModelDropdown(llms) {
     llms.forEach(function(llm) {
         $select.append($('<option>', {
             value: llm.id,
-            text: llm.model_name || `Note #${llm.id}`
+            text: llm.title || llm.model_name
         }));
     });
 
@@ -273,13 +290,10 @@ function sendChatRequest(streaming=true) {
     const botMessageId = "bot-" + Date.now();
     showBotTypingPlaceholder(botMessageId);
 
-    // use dummy llm id for now
-    const dummy_llm_id = parseInt(llm_id % 2)
-
     const chatRequest = {
-        llm_id: dummy_llm_id,
+        llm_id: llm_id,
         message: prompt,
-        session_id: "my_session"
+        session_id: chatSessionId
     }
 
     $.ajax({
@@ -313,11 +327,44 @@ function sendChatRequest(streaming=true) {
     });
 }
 
+// get chat history from API
+function requestLoadChatHistory() {
+    showLoadingStatus();
+    $.ajax({
+        url: `${API_BASE_URL}/chatbot/history/${chatSessionId}`,
+        method: 'GET',
+        success: function(data) {
+            hideStatusMessage();
+            populateChatHistory(data);
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
+        }
+    });
+}
+
+// populate chat history
+function populateChatHistory(history) {
+    $('#chatWindow').empty();
+
+    let msgid = 0
+    history.messages.forEach(function(message) {
+        if (message.type === 'human') {
+            showUserPrompt("user", message.content);
+        }
+        else {
+            showBotTypingPlaceholder(++msgid)
+            showBotResponse("bot", message.content, msgid, true);
+        }
+    });
+}
+
 // clear chat history from API
 function requestClearChatHistory() {
-    const session_id = "my_session";
+    showLoadingStatus();
+
     $.ajax({
-        url: `${API_BASE_URL}/chatbot/history/${session_id}`,
+        url: `${API_BASE_URL}/chatbot/history/${chatSessionId}`,
         method: 'DELETE',
         success: function(data) {
             hideStatusMessage();
