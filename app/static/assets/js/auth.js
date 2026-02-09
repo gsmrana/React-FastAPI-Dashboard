@@ -5,6 +5,7 @@ import {
     successMessage,
 } from './script.js';
 
+const LOGIN_PAGE_URL = '/pages/public/login';
 
 $(document).ready(function() {
     bindEvents();
@@ -67,7 +68,7 @@ function requestLogin() {
             // redirect to back_url if present
             const urlParams = new URLSearchParams(window.location.search);
             const backUrl = urlParams.get('back_url');
-            window.location.href = backUrl ? backUrl : '/pages/document';
+            window.location.href = backUrl ? backUrl : '/pages/private/document';
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);
@@ -92,7 +93,7 @@ function requestForgotPassword() {
         success: function(data) {            
             successMessage('Request submitted, check your email.\r\nRedirecting to login...');
             setTimeout(() => {
-                window.location.href = '/pages/login';
+                window.location.href = LOGIN_PAGE_URL;
             }, 5000);
         },
         error: function(xhr, status, error) {
@@ -128,7 +129,7 @@ function requestResetPassword() {
         success: function(data) {            
             successMessage('Password reset successful.\r\nRedirecting to login...');
             setTimeout(() => {
-                window.location.href = '/pages/login';
+                window.location.href = LOGIN_PAGE_URL;
             }, 3000);
         },
         error: function(xhr, status, error) {
@@ -153,7 +154,7 @@ function requestEmailVerification(email) {
         success: function(data) {            
             successMessage('Check your inbox for verification email.\r\nRedirecting to login...');
             setTimeout(() => {
-                window.location.href = '/pages/login';
+                window.location.href = LOGIN_PAGE_URL;
             }, 3000);
         },
         error: function(xhr, status, error) {
@@ -178,7 +179,7 @@ function requestEmailTokenVerify() {
         success: function(data) {            
             successMessage('User Verification successful.\r\nRedirecting to login...');
             setTimeout(() => {
-                window.location.href = '/pages/login';
+                window.location.href = LOGIN_PAGE_URL;
             }, 3000);
         },
         error: function(xhr, status, error) {
@@ -216,7 +217,7 @@ function requestRegister() {
             // in case of verification not required
             // successMessage('Registration successful.\r\nRedirecting to login...');
             // setTimeout(() => {
-            //     window.location.href = '/pages/login';
+            //     window.location.href = LOGIN_PAGE_URL;
             // }, 3000);
         },
         error: function(xhr, status, error) {

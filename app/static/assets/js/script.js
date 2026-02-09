@@ -142,7 +142,7 @@ export function requestLogout() {
         url: `${API_BASE_URL}/auth/jwt/logout`,
         method: 'POST',
         success: function() {
-            window.location.href = '/pages/home';
+            window.location.href = '/';
         },
         error: function(xhr, status, error) {
             //logRequestError('Logout...', xhr, status);

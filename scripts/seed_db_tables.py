@@ -19,7 +19,7 @@ async def create_database_tables(rebuild: bool=False):
 
 if __name__ == "__main__":
     # ensure psycopg driver compatibility on Windows
-    if sys.platform == "win32":
+    if sys.platform == "win32" and "+psycopg" in config.database_url:
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     user_option = input("Do you want to include drop (clear data) and rebuilt all tables? (y/N): ")

@@ -102,7 +102,7 @@ async def serve_react_frontend(request: Request, full_path: str):
 
     # default to jinja home page
     if request.url.path == "/":
-        return await jinja_pages.home_page(request)
+        return await jinja_pages.public_page(request, "index")
 
     # failsafe response if frontend not found
     return await unhandled_route(request, full_path)
@@ -125,7 +125,7 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
     if exc.status_code == status.HTTP_401_UNAUTHORIZED:
         if request.url.path.startswith("/pages/"):
             return RedirectResponse(
-                url=f"/pages/login?back_url={request.url.path}", 
+                url=f"/pages/public/login?back_url={request.url.path}", 
                 status_code=status.HTTP_302_FOUND,
             )
     return await http_exception_handler(request, exc)

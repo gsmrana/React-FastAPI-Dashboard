@@ -30,8 +30,8 @@ function initDataTable() {
 function requestGetEntries() {
     showLoading();
 
-    // use the page endpoint as api endpoint
-    const endpoint = window.location.pathname.split('/')[2]
+    // use the page url last segment as api endpoint
+    const endpoint = window.location.pathname.split('/').pop();
     
     $.ajax({
         url: `${API_BASE_URL}/admin/${endpoint}`,

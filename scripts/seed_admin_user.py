@@ -64,7 +64,7 @@ async def create_superuser(email: str, password: str):
 
 if __name__ == "__main__":
     # ensure psycopg driver compatibility on Windows
-    if sys.platform == "win32":
+    if sys.platform == "win32" and "+psycopg" in config.database_url:
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     email = input("Enter email: ")

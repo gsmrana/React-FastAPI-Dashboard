@@ -3,7 +3,7 @@ from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from app.core.config import config
 
 
-EMAIL_TEMPLATE_DIR = "app/templates"
+EMAIL_TEMPLATE_DIR = "app/templates/email"
 
 email_config = ConnectionConfig(
     MAIL_USERNAME=config.smtp_user,
@@ -45,4 +45,4 @@ async def send_email_template(recipients: list[str], subject: str, template_body
     )
  
     fm = FastMail(email_config)
-    await fm.send_message(message, template_name="welcome_email.html")
+    await fm.send_message(message, template_name="welcome.html")

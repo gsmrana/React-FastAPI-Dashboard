@@ -1,16 +1,16 @@
-{% extends "base.htm" %}
-{% block title %}{{ title }} - Mediahub{% endblock %}
+{% extends "base.html" %}
+{% block title %}System Info - Mediahub{% endblock %}
 
 {% block style %}
         <link href="/assets/css/datatables.css" rel="stylesheet" />
 {% endblock %}
 
 {% block navbar %}
-    {% include 'navbar.htm' %}
+    {% include 'navbar.html' %}
 {% endblock %}
 
 {% block sidebar %}
-    {% include 'sidebar.htm' %}
+    {% include 'sidebar.html' %}
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><i class="fas fa-gear me-2"></i>{{ title }}</h4>
+                        <h4 class="mb-0"><i class="fas fa-gear me-2"></i>System Info</h4>
                     </div>
                 </div>
                 <div class="card-body">               

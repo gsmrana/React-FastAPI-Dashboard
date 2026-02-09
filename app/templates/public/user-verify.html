@@ -1,5 +1,5 @@
-{% extends "base.htm" %}
-{% block title %}Forgot Password - Mediahub{% endblock %}
+{% extends "base.html" %}
+{% block title %}User Verification - Mediahub{% endblock %}
 
 {% block content %}
     <div class="container mt-4">
@@ -7,27 +7,27 @@
             <div class="card shadow-lg" style="width: 100%; min-width: 320px; max-width: 420px;">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <h2 class="text-center mb-2 fw-bold text-dark">Forgot Password</h2>
-                        <p class="text-center text-muted mb-4">Verify your email</p>
+                        <h2 class="text-center mb-2 fw-bold text-dark">User Verification</h2>
+                        <p class="text-center text-muted mb-4">Enter token from your email</p>
                     </div>
 
-                    <form method="post" id="forgotPasswordForm">
+                    <form method="post" id="tokenVerifyForm">
                         
                         <div class="alert alert-danger mt-3 d-none" id="statusMessage" role="alert"></div>
                         <div class="alert alert-success mt-3 d-none" id="successMessage" role="alert"></div>
                         
-                        <div class="mb-3">
-                            <label for="email" class="form-label fw-500 text-dark">Email</label>
+                        <div class="mb-4">
+                            <label for="token" class="form-label fw-500 text-dark">Token</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0" style="border-color: #e0e0e0;">
-                                    <i class="fas fa-envelope text-primary"></i>
+                                    <i class="fas fa-key text-primary"></i>
                                 </span>
-                                <input 
-                                    id="email"
-                                    name="email" 
-                                    type="email" 
-                                    class="form-control border-start-0" 
-                                    placeholder="Enter your email" 
+                                <input
+                                    id="token"
+                                    name="token"
+                                    type="text"
+                                    class="form-control border-start-0"
+                                    placeholder="Enter your token"
                                     required
                                     style="border-color: #e0e0e0;">
                             </div>
@@ -36,14 +36,14 @@
                         <input name="back_url" type="hidden" value="{{ back_url }}" />
 
                         <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
-                            Submit Request
+                            Verify
                         </button>
                     </form>
 
                     <div class="text-center text-muted mt-4 small">
                         <p class="text-center text-muted mt-4 small">
                             Already have an account? 
-                            <a href="/pages/login" class="text-primary text-decoration-none fw-bold">Sign in here</a>
+                            <a href="/pages/public/login" class="text-primary text-decoration-none fw-bold">Sign in here</a>
                         </p>
                     </div>
                 </div>
