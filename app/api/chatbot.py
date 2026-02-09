@@ -20,7 +20,7 @@ from app.schemas.chatbot import (
 
 
 router = APIRouter()
-chat_histories: Dict[str, InMemoryChatMessageHistory] = {}
+chat_sessions: Dict[str, InMemoryChatMessageHistory] = {}
 
 openai_llm = ChatOpenAI(
     base_url=config.openai_api_endpoint,
@@ -47,11 +47,29 @@ def get_llm(llm_id: int):
         raise HTTPException(404, f"LLM id {llm_id} not found")
     return llms[llm_id]
 
+def create_user_chat_session(user: User) -> str:
+    username = user.email.split("@")[0]
+    last_id = 0
+    for session_id in chat_sessions:
+        if session_id.startswith(username):
+            last_id = max(last_id, int(session_id.split("_")[-1]))
+    
+    session_id = f"{username}_{last_id + 1:02d}"
+    chat_sessions[session_id] = InMemoryChatMessageHistory()
+    return session_id
+
+def get_user_chat_sessions(user: User) -> list[str]:
+    username = user.email.split("@")[0]
+    user_sessions = [session_id for session_id in chat_sessions if session_id.startswith(username)]
+    if not user_sessions:  # create a default session
+        session_id = create_user_chat_session(user)
+        user_sessions.append(session_id)
+    return user_sessions
+
 def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
-    """Get or create chat history for a session"""
-    if session_id not in chat_histories:
-        chat_histories[session_id] = InMemoryChatMessageHistory()
-    return chat_histories[session_id]
+    if session_id not in chat_sessions:
+        chat_sessions[session_id] = InMemoryChatMessageHistory()
+    return chat_sessions[session_id]
 
 def create_chain(request: ChatRequest):
     """Create a conversational chain with history"""
@@ -86,8 +104,8 @@ async def chat_stream_callback(llm, prompt, config=None, event_stream=False):
                 yield chunk.content # plain fetch-stream
         await asyncio.sleep(0)  # allows other awaiting tasks to run
 
-@router.post("/chat/simple", response_model=ChatResponse)
-async def chat_simple(
+@router.post("/ask/simple", response_model=ChatResponse)
+async def ask_simple(
     request: ChatRequest,
     user: User = Depends(current_active_user),
 ):
@@ -99,8 +117,8 @@ async def chat_simple(
         response=resp.content,
     )
 
-@router.post("/chat/stream")
-async def chat_stream(
+@router.post("/ask/stream")
+async def ask_stream(
     request: ChatRequest,
     event_stream: bool = False,
     user: User = Depends(current_active_user),
@@ -112,8 +130,8 @@ async def chat_stream(
         media_type= "text/event-stream" if event_stream else "text/plain",
     )
 
-@router.post("/chatbot/simple", response_model=ChatResponse)
-async def chatbot_simple(
+@router.post("/chat/simple", response_model=ChatResponse)
+async def chat_simple(
     request: ChatRequest,
     user: User = Depends(current_active_user),
 ):
@@ -121,7 +139,6 @@ async def chatbot_simple(
     Send a message and receive a response with preserved context
     
     - **message**: The user's message
-    - **session_id**: Unique identifier for the conversation session
     - **system_prompt**: Optional custom system prompt
     """
     if not request.session_id: 
@@ -140,8 +157,8 @@ async def chatbot_simple(
         message_count=message_count
     )
 
-@router.post("/chatbot/stream")
-async def chatbot_stream(
+@router.post("/chat/stream")
+async def chat_stream(
     request: ChatRequest,
     event_stream: bool = False,
     user: User = Depends(current_active_user),
@@ -152,6 +169,7 @@ async def chatbot_stream(
     - **message**: The user's message
     - **session_id**: Unique identifier for the conversation session
     - **system_prompt**: Optional custom system prompt
+    - **event_stream**: Optional streaming event type
     """
     request.session_id = request.session_id or "default"
     chain = create_chain(request)
@@ -162,20 +180,16 @@ async def chatbot_stream(
         media_type= "text/event-stream" if event_stream else "text/plain",
     )
 
-@router.get("/chatbot/history/{session_id}", response_model=HistoryResponse)
-async def get_history(
+@router.get("/chat/history/{session_id}", response_model=HistoryResponse)
+async def get_chat_history(
     session_id: str,
     user: User = Depends(current_active_user),
 ):
-    """
-    Retrieve chat history for a specific session
-    
-    - **session_id**: The session identifier
-    """
-    if session_id not in chat_histories:
+    if session_id not in chat_sessions:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     history = get_session_history(session_id)
+    
     messages = [
         {
             "type": msg.type,
@@ -190,38 +204,16 @@ async def get_history(
         message_count=len(messages)
     )
 
-@router.delete("/chatbot/history/{session_id}")
-async def clear_history(
-    session_id: str,
+@router.get("/chat/sessions")
+async def list_all_chat_sessions(
     user: User = Depends(current_active_user),
 ):
-    """
-    Clear chat history for a specific session
-    
-    - **session_id**: The session identifier
-    """
-    if session_id not in chat_histories:
-        raise HTTPException(status_code=404, detail="Session not found")
-    
-    chat_histories[session_id].clear()
-    
-    return HistoryResponse(
-        session_id=session_id,
-        messages=[],
-        message_count=0,
-    )
-
-@router.get("/chatbot/sessions")
-async def list_sessions(
-    user: User = Depends(current_active_user),
-):
-    """List all active chat sessions"""
     sessions = [
         {
             "session_id": session_id,
             "message_count": len(history.messages)
         }
-        for session_id, history in chat_histories.items()
+        for session_id, history in chat_sessions.items()
     ]
     
     return {
@@ -229,15 +221,62 @@ async def list_sessions(
         "sessions": sessions
     }
 
-@router.delete("/chatbot/sessions")
-async def clear_all_sessions(
+@router.get("/chat/sessions/me")
+async def get_chat_sessions_me(
     user: User = Depends(current_active_user),
 ):
-    """Clear all chat sessions"""
-    count = len(chat_histories)
-    chat_histories.clear()
+    sessions = [
+        {
+            "session_id": session_id,
+            "message_count": len(chat_sessions[session_id].messages)
+        }
+        for session_id in get_user_chat_sessions(user)
+    ]
     
     return {
-        "message": "All sessions cleared",
-        "sessions_cleared": count
+        "total_sessions": len(sessions),
+        "sessions": sessions
+    }
+
+@router.get("/chat/sessions/new")
+async def create_chat_session_me(
+    user: User = Depends(current_active_user),
+):
+    create_user_chat_session(user)
+    sessions = [
+        {
+            "session_id": session_id,
+            "message_count": len(chat_sessions[session_id].messages)
+        }
+        for session_id in get_user_chat_sessions(user)
+    ]
+    
+    return {
+        "total_sessions": len(sessions),
+        "sessions": sessions
+    }
+
+@router.delete("/chat/sessions")
+async def delete_all_chat_sessions(
+    user: User = Depends(current_active_user),
+):
+    count = len(chat_sessions)
+    chat_sessions.clear()
+    return { 
+        "deleted_sessions": count,
+        "detail": "All chat sessions deleted",
+    }
+
+@router.delete("/chat/sessions/{session_id}")
+async def delete_chat_session(
+    session_id: str,
+    user: User = Depends(current_active_user),
+):
+    if session_id not in chat_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    del chat_sessions[session_id]
+    return { 
+        "session_id": session_id, 
+        "detail": "Chat session deleted" 
     }

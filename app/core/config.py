@@ -37,7 +37,7 @@ class Config(BaseSettings):
     allowed_origins: List[str] = ["*"]
     
     # dir configs
-    upload_dir: str = "uploaded_files"
+    data_dir: str = "./data"
 
     # DB configs
     database_debug: bool = False
@@ -79,4 +79,3 @@ class Config(BaseSettings):
         return values
 
 config = Config()
-os.makedirs(config.upload_dir, exist_ok=True)

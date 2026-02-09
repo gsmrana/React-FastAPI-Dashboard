@@ -77,7 +77,7 @@ app.include_router(notepads.router, prefix=API_PREFIX, tags=["notepad"])
 app.include_router(todos.router, prefix=API_PREFIX, tags=["todo"])
 app.include_router(expenses.router, prefix=API_PREFIX, tags=["expense"])
 app.include_router(services.router, prefix=API_PREFIX, tags=["service"])
-app.include_router(llms.router, prefix=API_PREFIX, tags=["LLM"])
+app.include_router(llms.router, prefix=API_PREFIX, tags=["llm"])
 app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 
 # include jinja pages routers

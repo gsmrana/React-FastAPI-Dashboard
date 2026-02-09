@@ -1,14 +1,61 @@
 import { API_BASE_URL } from './constants.js';
 
-let currentLlmId = null;
-let chatSessionId = "default";
+let currentModelId = null;
+let chatSessionId = null;
 
 $(document).ready(function() {
     initializeMarkdown();
     bindEvents();
-    requestUserProfile();
-    requestLoadLlmList();
+    requestLoadModelList();
+    requestLoadSessionList();
 });
+
+function bindEvents() {
+    $('#newBtn').on('click', function() {
+        requestNewChatSession();
+    });
+    
+    $('#deleteBtn').on('click', function() {
+        requestDeleteChatHistory();
+    });
+
+    // Send button
+    $('#chatForm').on('submit', function(e) {
+        e.preventDefault();
+        sendChatRequest();
+    });
+
+    // Enter to Send
+    $('#promptInput').on('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if ($('#chatForm')[0].checkValidity()) {
+                sendChatRequest();
+            } else {
+                $('#chatForm')[0].reportValidity();
+            }
+        }
+    });
+
+    $('#modelSelect').on('change', function() {
+        const selectedId = $(this).val();
+        if (selectedId) {
+            currentModelId = parseInt(selectedId);
+        } else {
+            currentModelId = null;
+        }
+    });
+
+    $('#sessionSelect').on('change', function() {
+        const selectedId = $(this).val();
+        if (selectedId) {
+            chatSessionId = selectedId;
+            requestLoadChatHistory();
+        } else {
+            chatSessionId = null;
+        }
+    });
+}
 
 // Configure marked.js for markdown parsing with custom renderer
 function initializeMarkdown() {
@@ -190,59 +237,8 @@ window.copyCodeToClipboard = function(button) {
     });
 };
 
-function bindEvents() {
-    $('#clearBtn').on('click', function() {
-        $('#chatWindow').empty();
-        requestClearChatHistory();
-    });
-
-    // Send button
-    $('#chatForm').on('submit', function(e) {
-        e.preventDefault();
-        sendChatRequest();
-    });
-
-    // Enter to Send
-    $('#promptInput').on('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if ($('#chatForm')[0].checkValidity()) {
-                sendChatRequest();
-            } else {
-                $('#chatForm')[0].reportValidity();
-            }
-        }
-    });
-
-    $('#modelSelect').on('change', function() {
-        const selectedId = $(this).val();
-        if (selectedId) {
-            currentLlmId = parseInt(selectedId);
-            requestLoadNote(currentLlmId);
-        } else {
-            currentLlmId = null;
-            $('#noteInput').val('');
-        }
-    });
-}
-
-// get user profile from API
-function requestUserProfile() {
-    $.ajax({
-        url: `${API_BASE_URL}/users/me`,
-        method: 'GET',
-        success: function(data) {
-            chatSessionId = data.email;
-            requestLoadChatHistory();
-        },
-        error: function(xhr, status, error) {
-            showRequestError(xhr, status);
-        }
-    });
-}
-
-// load LLM list from API
-function requestLoadLlmList() {
+// load model list from API
+function requestLoadModelList() {
     showLoadingStatus();
 
     $.ajax({
@@ -258,7 +254,7 @@ function requestLoadLlmList() {
     });
 }
 
-// populate LLM list dropdown
+// populate model list dropdown
 function populateModelDropdown(llms) {
     const $select = $('#modelSelect');
     $select.find('option:not(:first)').remove();
@@ -271,20 +267,57 @@ function populateModelDropdown(llms) {
     });
 
     // Auto-select first note if available
-    if (llms.length > 0 && !currentLlmId) {
-        currentLlmId = llms[0].id;
-        $select.val(currentLlmId);
+    if (llms.length > 0 && !currentModelId) {
+        currentModelId = llms[0].id;
+        $select.val(currentModelId);
+    }
+}
+
+// load chat session from API
+function requestLoadSessionList() {
+    showLoadingStatus();
+
+    $.ajax({
+        url: `${API_BASE_URL}/chat/sessions/me`,
+        method: 'GET',
+        success: function(data) {
+            hideStatusMessage();
+            populateChatSessionDropdown(data.sessions);
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
+        }
+    });
+}
+
+// populate chat session dropdown
+function populateChatSessionDropdown(sessions) {
+    const $select = $('#sessionSelect');
+    $select.find('option:not(:first)').remove();
+    
+    sessions.forEach(function(session) {
+        $select.append($('<option>', {
+            value: session.session_id,
+            text: session.session_id
+        }));
+    });
+
+    // Auto-select last session
+    if (sessions.length > 0) {
+        chatSessionId = sessions[sessions.length - 1].session_id;
+        $select.val(chatSessionId);
+        requestLoadChatHistory();
     }
 }
 
 // request chat from API
-function sendChatRequest(streaming=true) {
+function sendChatRequest(chat=true, streaming=true) {
     const prompt = $('#promptInput').val().trim();
     const llm_id = parseInt($('#modelSelect').val());
     $('#promptInput').val('');
     
     // show user prompt
-    showUserPrompt("user", escapeHtml(prompt));
+    showUserPrompt("user", prompt);
     
     // show bot message
     const botMessageId = "bot-" + Date.now();
@@ -296,8 +329,13 @@ function sendChatRequest(streaming=true) {
         session_id: chatSessionId
     }
 
+    let url = `${API_BASE_URL}/ask/stream`
+    if (chat) {
+        url = `${API_BASE_URL}/chat/stream`
+    }
+
     $.ajax({
-        url: `${API_BASE_URL}/chatbot/stream`,
+        url: url,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(chatRequest),
@@ -329,9 +367,11 @@ function sendChatRequest(streaming=true) {
 
 // get chat history from API
 function requestLoadChatHistory() {
+    if (!chatSessionId) return; 
     showLoadingStatus();
+
     $.ajax({
-        url: `${API_BASE_URL}/chatbot/history/${chatSessionId}`,
+        url: `${API_BASE_URL}/chat/history/${chatSessionId}`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
@@ -345,6 +385,7 @@ function requestLoadChatHistory() {
 
 // populate chat history
 function populateChatHistory(history) {
+    if (!history) return; 
     $('#chatWindow').empty();
 
     let msgid = 0
@@ -359,15 +400,36 @@ function populateChatHistory(history) {
     });
 }
 
-// clear chat history from API
-function requestClearChatHistory() {
+// create new chat session
+function requestNewChatSession() {
+    $('#chatWindow').empty();
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_URL}/chatbot/history/${chatSessionId}`,
+        url: `${API_BASE_URL}/chat/sessions/new`,
+        method: 'GET',
+        success: function(data) {
+            hideStatusMessage();
+            populateChatSessionDropdown(data.sessions);
+        },
+        error: function(xhr, status, error) {
+            showRequestError(xhr, status);
+        }
+    });
+}
+
+// delete chat session from API
+function requestDeleteChatHistory() {
+    $('#chatWindow').empty();
+    if(!chatSessionId) return;
+    showLoadingStatus();
+
+    $.ajax({
+        url: `${API_BASE_URL}/chat/sessions/${chatSessionId}`,
         method: 'DELETE',
         success: function(data) {
             hideStatusMessage();
+            requestLoadSessionList();
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);
@@ -379,9 +441,11 @@ function showUserPrompt(role, text, id) {
     const wrapper = document.createElement("div");
     wrapper.className = `message ${role}`;
     wrapper.id = id || "";
+    
     const bubble = document.createElement("div");
     bubble.className = "bubble";
-    bubble.innerHTML = text;
+    bubble.innerHTML = escapeHtml(text);
+    
     wrapper.appendChild(bubble);
     chatWindow.appendChild(wrapper);
     chatWindow.scrollTop = chatWindow.scrollHeight;

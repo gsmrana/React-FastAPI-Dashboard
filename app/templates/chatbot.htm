@@ -35,12 +35,20 @@
                                         </select>
                                     </div>
                                     <div>
+                                        <select id="sessionSelect" class="form-select form-select-sm session-select">
+                                            <option value="">-- Select Session --</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label id="statusMessage"></label>
                                     </div>
                                 </div>
                             <div>
-                                <button id="clearBtn" class="btn btn-secondary">
-                                    <i class="fas fa-eraser" title="Clear"></i>
+                                <button id="newBtn" class="btn btn-primary" title="New Session">
+                                    <i class="fas fa-file-circle-plus"></i>
+                                </button>
+                                <button id="deleteBtn" class="btn btn-danger" title="Delete Session">
+                                    <i class="fas fa-trash-can"></i>
                                 </button>
                             </div>
                         </div>

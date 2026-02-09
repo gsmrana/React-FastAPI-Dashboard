@@ -8,24 +8,23 @@ $(document).ready(function() {
 });
 
 function bindEvents() {
-    $('#deleteBtn').on('click', function() {
-        requestDeleteNote(currentNoteId);
-        requestLoadNoteList();
+    $('#newBtn').on('click', function() {
+        showNewNotePrompt();
     });
-    
+
     $('#saveBtn').on('click', function() {
         requestUpdateNote();
     });
 
-    $('#newBtn').on('click', function() {
-        showNewNotePrompt();
-    });
+    $('#deleteBtn').on('click', function() {
+        requestDeleteNote();
+    });    
 
     $('#noteSelect').on('change', function() {
         const selectedId = $(this).val();
         if (selectedId) {
             currentNoteId = parseInt(selectedId);
-            requestLoadNote(currentNoteId);
+            requestLoadNote();
         } else {
             currentNoteId = null;
             $('#noteInput').val('');
@@ -66,18 +65,31 @@ function populateNoteDropdown(notes) {
     if (notes.length > 0 && !currentNoteId) {
         currentNoteId = notes[0].id;
         $select.val(currentNoteId);
-        requestLoadNote(currentNoteId);
+        requestLoadNote();
     }
 }
 
+// append to note dropdown
+function appendToNoteDropdown(note) {
+    const $select = $('#noteSelect');
+    $select.append($('<option>', {
+        value: note.id,
+        text: note.title || `Note #${note.id}`
+    }));
+
+    // Auto-select append note
+    currentNoteId = note.id;
+    $select.val(currentNoteId);
+}
+
 // load single note from API
-function requestLoadNote(noteId) {
-    if (!noteId) return;
+function requestLoadNote() {
+    if (!currentNoteId) return;
     
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_URL}/notepads/${noteId}`,
+        url: `${API_BASE_URL}/notepads/${currentNoteId}`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
@@ -90,7 +102,7 @@ function requestLoadNote(noteId) {
 }
 
 // create note to API
-function requestCreateNote(title, content = '') {
+function requestCreateNote(title, inputText='') {
     showLoadingStatus();
 
     $.ajax({
@@ -99,13 +111,11 @@ function requestCreateNote(title, content = '') {
         contentType: 'application/json',
         data: JSON.stringify({ 
             title: title,
-            content: content 
+            content: inputText 
         }),
         success: function(data) {
             showStatusMessage('✅ Created');
-            currentNoteId = data.id;
-            requestLoadNoteList();
-            $('#noteSelect').val(data.id);
+            appendToNoteDropdown(data)
             $('#noteInput').val(data.content);
             setTimeout(() => {
                 hideStatusMessage();
@@ -127,13 +137,12 @@ function showNewNotePrompt() {
 
 // update note to API
 function requestUpdateNote() {
-    const inputText = $('#noteInput').val();
-    
     if (!currentNoteId) {
         showStatusMessage('Please select or create a note first');
         return;
     }
     
+    const inputText = $('#noteInput').val();
     showLoadingStatus();
 
     $.ajax({
@@ -143,8 +152,9 @@ function requestUpdateNote() {
         data: JSON.stringify({ 
             content: inputText 
         }),
-        success: function() {
+        success: function(data) {
             showStatusMessage('✅ Saved');
+            $('#noteInput').val(data.content);
             setTimeout(() => {
                 hideStatusMessage();
             }, 3000);
@@ -156,17 +166,18 @@ function requestUpdateNote() {
 }
 
 // delete note from API
-function requestDeleteNote(noteId) {
-    if (!noteId) return;
+function requestDeleteNote() {
+    if (!currentNoteId) return;
 
     $('#noteInput').val('');
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_URL}/notepads/${noteId}`,
+        url: `${API_BASE_URL}/notepads/${currentNoteId}`,
         method: 'DELETE',
         success: function(data) {
             hideStatusMessage();
+            requestLoadNoteList();
         },
         error: function(xhr, status, error) {
             showRequestError(xhr, status);

@@ -31,7 +31,8 @@ ICON_MAP = [
 
 router = APIRouter()
 ICON_DIR = Path("app/static/icons")
-UPLOAD_DIR = Path(config.upload_dir)
+UPLOAD_DIR = Path(config.data_dir, "uploaded")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 FILE_NOT_FOUND_EXC = HTTPException(status_code=404, detail="File not found")
 
 def icon_filename(ext):

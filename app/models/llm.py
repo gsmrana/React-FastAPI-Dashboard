@@ -12,9 +12,9 @@ class Llm(DbBase, AuditMixin):
     
     title = Column(String, nullable=False)
     model_name = Column(String, nullable=False)
+    temperature = Column(Float, nullable=False)
     api_endpoint = Column(String, nullable=False)
     api_key = Column(String, nullable=False)
-    temperature = Column(Float, nullable=False)
     notes = Column(String, default="", nullable=False)
 
     is_starred = Column(Boolean, default=False, nullable=False)
