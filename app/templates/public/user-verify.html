@@ -7,7 +7,7 @@
             <div class="card shadow-lg" style="width: 100%; min-width: 320px; max-width: 420px;">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <h2 class="text-center mb-2 fw-bold text-dark">User Verification</h2>
+                        <h2 class="text-center mb-2 fw-bold">User Verification</h2>
                         <p class="text-center text-muted mb-4">Enter token from your email</p>
                     </div>
 
@@ -17,19 +17,18 @@
                         <div class="alert alert-success mt-3 d-none" id="successMessage" role="alert"></div>
                         
                         <div class="mb-4">
-                            <label for="token" class="form-label fw-500 text-dark">Token</label>
+                            <label for="token" class="form-label fw-500">Token</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0" style="border-color: #e0e0e0;">
+                                <span class="input-group-text input-icon-box">
                                     <i class="fas fa-key text-primary"></i>
                                 </span>
                                 <input
                                     id="token"
                                     name="token"
                                     type="text"
-                                    class="form-control border-start-0"
+                                    class="form-control auth-input"
                                     placeholder="Enter your token"
-                                    required
-                                    style="border-color: #e0e0e0;">
+                                    required>
                             </div>
                         </div>
 
@@ -51,7 +50,7 @@
         </div>
     </div>
 
-    <style>
+        <style>
         .fw-500 {
             font-weight: 500;
         }
@@ -60,17 +59,40 @@
         }
         .form-label {
             font-size: 0.95rem;
-        }
-        .input-group-text {
-            border: 1px solid #e0e0e0;
+            color: var(--text-color);
         }
         .card {
             border: none;
             border-radius: 12px;
             transition: box-shadow 0.3s;
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
         .card:hover {
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+        }
+        .auth-input {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-color);
+        }
+        .auth-input:focus {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(77, 163, 255, 0.25);
+        }
+        .auth-input::placeholder {
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+        .input-icon-box {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-color);
+        }
+        h2 {
+            color: var(--text-color);
         }
     </style>
     

@@ -131,7 +131,7 @@ function initDataTable() {
                 }
             }
         ],
-        pageLength: 10,
+        pageLength: 8,
         responsive: true,
         language: {
             search: "_INPUT_",
