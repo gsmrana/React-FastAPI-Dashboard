@@ -9,7 +9,7 @@ $(document).ready(function() {
 
 function bindEvents() {
     $('#newBtn').on('click', function() {
-        showNewNotePrompt();
+        showNewNoteModal();
     });
 
     $('#saveBtn').on('click', function() {
@@ -17,8 +17,24 @@ function bindEvents() {
     });
 
     $('#deleteBtn').on('click', function() {
+        $('#deleteModal').modal('show');
+    });
+
+    $('#createBtn').on('click', function() {
+        if ($('#noteForm')[0].checkValidity()) {
+            requestCreateNewNote();
+        } else {
+            $('#noteForm')[0].reportValidity();
+        }
+    });
+    
+    $('#confirmDeleteBtn').on('click', function() {
         requestDeleteNote();
-    });    
+    });
+
+    $('.close-modal-btn').on('click', function() {
+        closeModal();
+    });
 
     $('#noteSelect').on('change', function() {
         const selectedId = $(this).val();
@@ -57,7 +73,7 @@ function populateNoteDropdown(notes) {
     notes.forEach(function(note) {
         $select.append($('<option>', {
             value: note.id,
-            text: note.title || `Note #${note.id}`
+            text: `${note.id} - ${note.title}`
         }));
     });
 
@@ -74,7 +90,7 @@ function appendToNoteDropdown(note) {
     const $select = $('#noteSelect');
     $select.append($('<option>', {
         value: note.id,
-        text: note.title || `Note #${note.id}`
+        text: `${note.id} - ${note.title}`
     }));
 
     // Auto-select append note
@@ -102,7 +118,13 @@ function requestLoadNote() {
 }
 
 // create note to API
-function requestCreateNote(title, inputText='') {
+function requestCreateNewNote() {
+    const title = $('#noteName').val().trim();
+    if (!title) return;
+    
+    const inputText = ''
+    $('#noteModal').modal('hide');
+    
     showLoadingStatus();
 
     $.ajax({
@@ -125,14 +147,6 @@ function requestCreateNote(title, inputText='') {
             showRequestError(xhr, status);
         }
     });
-}
-
-// show prompt for new note
-function showNewNotePrompt() {
-    const title = prompt('Enter note title:');
-    if (title && title.trim()) {
-        requestCreateNote(title.trim());
-    }
 }
 
 // update note to API
@@ -170,6 +184,7 @@ function requestDeleteNote() {
     if (!currentNoteId) return;
 
     $('#noteInput').val('');
+    $('#deleteModal').modal('hide');
     showLoadingStatus();
 
     $.ajax({
@@ -184,6 +199,24 @@ function requestDeleteNote() {
         }
     });
 }
+
+// show modal for new note
+function showNewNoteModal() {
+    $('#createBtn').show();
+    $('#modalTitle').text('Create Note');
+    $('#noteModal').modal('show');
+}
+
+// Reset form
+function resetForm() {
+    $('#noteForm')[0].reset();
+    $('#createBtn').show();
+}
+
+// Reset form when modal is hidden
+$('#noteModal').on('hidden.bs.modal', function() {
+    resetForm();
+});
 
 function showRequestError(xhr, status)
 {

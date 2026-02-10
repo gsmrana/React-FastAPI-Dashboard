@@ -18,58 +18,187 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid px-3 px-md-4 mt-3">
-        <div class="main-content h-100">
-            <div class="row justify-content-center h-100">
-                <div class="col-12">
-                    <div class="card shadow-sm chat-card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="green-dot"></div>
-                                    <div>
-                                        <h5 class="mb-0">Chatbot</h5>
-                                    </div>
-                                    <div>
-                                        <select id="modelSelect" class="form-select form-select-sm model-select">
-                                            <option value="">-- Select Model --</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <select id="sessionSelect" class="form-select form-select-sm session-select">
-                                            <option value="">-- Select Session --</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label id="statusMessage"></label>
-                                    </div>
-                                </div>
-                            <div>
-                                <button id="newBtn" class="btn btn-primary" title="New Session">
-                                    <i class="fas fa-file-circle-plus"></i>
-                                </button>
-                                <button id="deleteBtn" class="btn btn-danger" title="Delete Session">
-                                    <i class="fas fa-trash-can"></i>
-                                </button>
+<div class="container-fluid py-3 py-md-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10 col-xxl-9">
+            <!-- Page Header -->
+            <!-- <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+                <div>
+                    <h4 class="mb-1 fw-bold">
+                        <i class="fas fa-comments text-primary me-2"></i>AI Chatbot
+                    </h4>
+                    <p class="text-muted mb-0 small">Chat with AI-powered assistant</p>
+                </div>
+            </div> -->
+
+            <!-- Main Chat Card -->
+            <div class="card shadow-sm border-0">
+                <!-- Chat Header -->
+                <div class="card-header bg-transparent border-bottom">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                        <!-- Left: Model & Session Selectors -->
+                        <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-sm-auto">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-brain text-primary d-none d-sm-block"></i>
+                                <select id="modelSelect" class="form-select form-select-sm model-select">
+                                    <option value="" disabled>Select Model</option>
+                                </select>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-history text-secondary d-none d-sm-block"></i>
+                                <select id="sessionSelect" class="form-select form-select-sm model-select">
+                                    <option value="" disabled>Select Session</option>
+                                </select>
                             </div>
                         </div>
-
-                        <div id="chatWindow" class="card-body overflow-auto chat-window">
-                            <!-- Messages will be injected here -->
-                        </div>
-
-                        <div class="card-footer">
-                            <form id="chatForm" class="d-flex gap-2">
-                                <input id="promptInput" type="text" class="form-control" placeholder="Ask me anything..." autocomplete="off" required>
-                                <button id="sendBtn" class="btn btn-success">
-                                    <i class="fas fa-paper-plane" title="Send"></i>
-                                </button>
-                            </form>
+                        <!-- Right: Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button id="newBtn" class="btn btn-outline-primary btn-sm" title="New Chat">
+                                <i class="fas fa-plus"></i>
+                                <span class="d-none d-md-inline ms-1">New</span>
+                            </button>
+                            <button id="deleteBtn" class="btn btn-outline-danger btn-sm" title="Delete Chat">
+                                <i class="fas fa-trash"></i>
+                                <span class="d-none d-md-inline ms-1">Delete</span>
+                            </button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Chat Window -->
+                <div class="card-body p-0">
+                    <div id="chatWindow" class="chat-window overflow-auto p-3">
+                        <!-- Chat messages will be rendered here -->
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-3 opacity-50"></i>
+                            <p class="mb-0">Start a conversation with AI</p>
+                            <small>Select a model and type your message below</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="card-footer bg-transparent border-top">
+                    <!-- Status Message -->
+                    <div id="statusMessage" class="small text-muted mb-2"></div>
+
+                    <form id="chatForm" class="d-flex gap-2 align-items-end">
+                        <div class="flex-grow-1">
+                            <textarea
+                                id="promptInput"
+                                class="form-control chat-input"
+                                placeholder="Ask me anything..."
+                                rows="1"
+                                required
+                                style="resize: none; min-height: 44px; max-height: 120px;"
+                            ></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-send" title="Send Message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<style>
+/* Chatbot Page Specific Styles */
+.chat-window {
+    height: calc(100vh - 250px);
+    min-height: 300px;
+    max-height: 650px;
+    background: linear-gradient(180deg, rgba(250, 250, 255, 0.4), rgba(245, 247, 255, 0.4));
+    border-radius: 0;
+}
+
+body.dark-mode .chat-window {
+    background: linear-gradient(180deg, rgba(30, 30, 35, 0.4), rgba(25, 27, 35, 0.4));
+}
+
+.chat-input {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chat-input:focus {
+    background-color: var(--input-bg);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.15);
+    color: var(--text-color);
+}
+
+.btn-send {
+    width: 80px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.model-select {
+    min-width: 140px;
+    border-radius: 8px;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 576px) {
+    .chat-window {
+        height: calc(100vh - 340px);
+        min-height: 250px;
+    }
+
+    .model-select {
+        min-width: 100%;
+    }
+
+    .card-header {
+        padding: 12px;
+    }
+
+    .card-footer {
+        padding: 12px;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 991px) {
+    .chat-window {
+        height: calc(100vh - 360px);
+    }
+}
+
+/* Card Styling */
+.card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-header, .card-footer {
+    padding: 16px 20px;
+}
+
+/* Badge Styling */
+.badge {
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+/* Keyboard shortcuts styling */
+kbd {
+    background-color: var(--table-stripe-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+</style>
 {% endblock %}
 
 {% block script %}
@@ -102,4 +231,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
     <script src="/assets/js/chatbot.js" type="module"></script>
+    <script>
+        // Auto-resize textarea
+        const textarea = document.getElementById('promptInput');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    </script>
 {% endblock %}

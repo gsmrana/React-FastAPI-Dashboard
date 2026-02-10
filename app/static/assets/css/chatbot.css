@@ -300,6 +300,11 @@ body.dark-mode .model-select:hover {
 }
 
 /* Dark Mode Support */
+body.dark-mode .message.user .bubble {
+  background: #2d2d2d;
+  color: #e5e7eb;
+}
+
 body.dark-mode .message.bot .bubble {
   background: #2d2d2d;
   color: #e5e7eb;
