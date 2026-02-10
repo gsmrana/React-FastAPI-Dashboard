@@ -1,6 +1,7 @@
 import { API_BASE_URL } from './constants.js';
 
 let currentNoteId = null;
+let noteList = []
 
 $(document).ready(function() {
     bindEvents();  
@@ -12,17 +13,29 @@ function bindEvents() {
         showNewNoteModal();
     });
 
+    $('#renameBtn').on('click', function() {
+        showUpdateNoteModal();
+    });
+
     $('#saveBtn').on('click', function() {
-        requestUpdateNote();
+        const content = $('#noteInput').val()
+        requestUpdateNote('', content);
     });
 
     $('#deleteBtn').on('click', function() {
         $('#deleteModal').modal('show');
     });
 
-    $('#createBtn').on('click', function() {
+    $('#saveModalBtn').on('click', function() {
         if ($('#noteForm')[0].checkValidity()) {
-            requestCreateNewNote();
+            const btnName = $('#saveModalBtn').text();
+            if (btnName === 'Create') {
+                requestCreateNewNote();
+            }
+            else {
+                const title = $('#noteName').val().trim();
+                requestUpdateNote(title, '');
+            }
         } else {
             $('#noteForm')[0].reportValidity();
         }
@@ -71,6 +84,7 @@ function populateNoteDropdown(notes) {
     $select.find('option:not(:first)').remove();
     
     notes.forEach(function(note) {
+        noteList[note.id] = note.title;
         $select.append($('<option>', {
             value: note.id,
             text: `${note.id} - ${note.title}`
@@ -122,19 +136,19 @@ function requestCreateNewNote() {
     const title = $('#noteName').val().trim();
     if (!title) return;
     
-    const inputText = ''
-    $('#noteModal').modal('hide');
+    const userData = { 
+        title: title,
+        content: '' 
+    }
     
+    $('#noteModal').modal('hide');
     showLoadingStatus();
 
     $.ajax({
         url: `${API_BASE_URL}/notepads`,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ 
-            title: title,
-            content: inputText 
-        }),
+        data: JSON.stringify(userData),
         success: function(data) {
             showStatusMessage('✅ Created');
             appendToNoteDropdown(data)
@@ -150,25 +164,29 @@ function requestCreateNewNote() {
 }
 
 // update note to API
-function requestUpdateNote() {
-    if (!currentNoteId) {
-        showStatusMessage('Please select or create a note first');
-        return;
-    }
+function requestUpdateNote(title, content='') {
+    if (!currentNoteId) return;
     
-    const inputText = $('#noteInput').val();
+    const userData = {}
+    if (title) {
+        userData.title = title;
+    }
+
+    if (content) {
+        userData.content = content;
+    }
+
+    $('#noteModal').modal('hide');
     showLoadingStatus();
 
     $.ajax({
         url: `${API_BASE_URL}/notepads/${currentNoteId}`,
         method: 'PATCH',
         contentType: 'application/json',
-        data: JSON.stringify({ 
-            content: inputText 
-        }),
+        data: JSON.stringify(userData),
         success: function(data) {
             showStatusMessage('✅ Saved');
-            $('#noteInput').val(data.content);
+            requestLoadNoteList();
             setTimeout(() => {
                 hideStatusMessage();
             }, 3000);
@@ -202,15 +220,27 @@ function requestDeleteNote() {
 
 // show modal for new note
 function showNewNoteModal() {
-    $('#createBtn').show();
+    $('#saveModalBtn').text('Create');
+    $('#saveModalBtn').show();
     $('#modalTitle').text('Create Note');
+    $('#noteModal').modal('show');
+}
+
+// show modal for rename note
+function showUpdateNoteModal() {
+    const noteName = noteList[currentNoteId]
+    
+    $('#saveModalBtn').text('Rename');
+    $('#saveModalBtn').show();
+    $('#noteName').val(noteName);
+    $('#modalTitle').text('Rename Note');
     $('#noteModal').modal('show');
 }
 
 // Reset form
 function resetForm() {
     $('#noteForm')[0].reset();
-    $('#createBtn').show();
+    $('#saveModalBtn').show();
 }
 
 // Reset form when modal is hidden

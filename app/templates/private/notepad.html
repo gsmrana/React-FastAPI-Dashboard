@@ -38,8 +38,12 @@
                         <!-- Right: Action Buttons -->
                         <div class="d-flex gap-2 flex-wrap">
                             <button id="newBtn" class="btn btn-outline-primary btn-sm" title="New Note">
-                                <i class="fas fa-plus"></i>
+                                <i class="fas fa-file-circle-plus"></i>
                                 <span class="d-none d-sm-inline ms-1">New</span>
+                            </button>
+                            <button id="renameBtn" class="btn btn-outline-secondary btn-sm" title="Rename Note">
+                                <i class="fas fa-pen-to-square"></i>
+                                <span class="d-none d-sm-inline ms-1">Rename</span>
                             </button>
                             <button id="saveBtn" class="btn btn-outline-success btn-sm" title="Save Note">
                                 <i class="fas fa-save"></i>
@@ -104,7 +108,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-gradient" id="createBtn">Create</button>
+                    <button type="button" class="btn btn-primary" id="saveModalBtn">Save</button>
                 </div>
             </div>
         </div>

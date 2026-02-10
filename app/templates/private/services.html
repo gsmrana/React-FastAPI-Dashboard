@@ -21,7 +21,7 @@
             <h2 class="mb-1"><i class="fas fa-server me-2"></i>Services</h2>
             <p class="text-muted mb-0">Manage your service credentials and accounts</p>
         </div>
-        <button class="btn btn-primary" id="addNewBtn">
+        <button class="btn btn-outline-primary" id="addNewBtn">
             <i class="fas fa-plus me-2"></i>Add Service
         </button>
     </div>
@@ -29,22 +29,25 @@
     <!-- Data Table Card -->
     <div class="card shadow-sm">
         <div class="card-body">
-            <table id="dataTable" class="table table-hover" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>URL</th>
-                        <th>Username</th>
-                        <th>Category</th>
-                        <th>Starred</th>
-                        <th>Tags</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="dataTable" class="table table-hover" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>URL</th>
+                            <th>Username</th>
+                            <th>Category</th>
+                            <th>Starred</th>
+                            <th>Tags</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
+
 </div>
 
 <!-- Add/Edit Service Modal -->
