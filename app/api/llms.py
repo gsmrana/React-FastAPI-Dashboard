@@ -4,11 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.llm import LlmSchema, UpdateLlmSchema, CreateLlmSchema
 from app.core.users import current_active_user
+from app.core.llm_cache import LlmCache, llm_cache, get_llm_cache
 from app.db.async_db import get_async_db
 from app.models.user import User
 from app.models.llm import Llm
+from app.schemas.llm import LlmSchema, UpdateLlmSchema, CreateLlmSchema
 
 
 router = APIRouter()
@@ -38,7 +39,20 @@ async def create_llm(
     db.add(new_llm)
     await db.commit()
     await db.refresh(new_llm)
+    await llm_cache.refresh()
     return new_llm
+
+@router.get("/llms/cached", response_model=List[LlmSchema])
+async def get_cached_llms(
+    user: User = Depends(current_active_user),
+    cache: LlmCache = Depends(get_llm_cache),
+):
+    """Get list of available LLM models from cache"""
+    configs = cache.get_active_llm_configs()
+    if not configs:
+        await cache.refresh()
+        configs = cache.get_active_llm_configs()
+    return list(configs.values())
 
 @router.get("/llms/{llm_id}", response_model=LlmSchema)
 async def get_llm(
@@ -65,9 +79,10 @@ async def update_llm(
         raise HTTPException(404, f"LLM id {llm_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(llm, key, value)
-    llm.updated_by = user.id
+        llm.updated_by = user.id
     await db.commit()
     await db.refresh(llm)
+    await llm_cache.refresh()
     return llm
 
 @router.delete("/llms/{llm_id}", response_model=LlmSchema)
@@ -86,6 +101,8 @@ async def delete_llm(
         llm.deleted_at = datetime.now(timezone.utc)
     else:
         await db.delete(llm)
+    
     await db.commit()
     await db.refresh(llm)
+    await llm_cache.refresh()
     return llm

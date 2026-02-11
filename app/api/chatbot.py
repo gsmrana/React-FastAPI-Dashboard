@@ -2,16 +2,13 @@ import asyncio
 from typing import Dict
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
-from langchain_openai import ChatOpenAI
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
-from app.core.config import config
 from app.core.users import current_active_user
-from app.db.async_db import get_async_db
+from app.core.llm_cache import LlmProvider, llm_cache
 from app.models.user import User
 from app.schemas.chatbot import (
     ChatRequest, ChatResponse,
@@ -22,30 +19,20 @@ from app.schemas.chatbot import (
 router = APIRouter()
 chat_sessions: Dict[str, InMemoryChatMessageHistory] = {}
 
-openai_llm = ChatOpenAI(
-    base_url=config.openai_api_endpoint,
-    api_key=config.openai_api_key,
-    model=config.openai_llm_model,
-    temperature=config.openai_llm_temperature,
-)
 
-antropic_llm = ChatAnthropic(
-    base_url=config.anthropic_api_endpoint,
-    api_key=config.anthropic_api_key,
-    model_name=config.anthropic_llm_model,
-    temperature=config.anthropic_llm_temperature,
-)
-
-llms = [
-    openai_llm, 
-    antropic_llm,
-]
-
-def get_llm(llm_id: int):
-    llm_id = llm_id % 2 == 0 # test purpose
-    if llm_id >= len(llms):
-        raise HTTPException(404, f"LLM id {llm_id} not found")
-    return llms[llm_id]
+def get_llm_instance(llm_id: int) -> LlmProvider:
+    """Get LLM instance from cache by ID"""
+    llm = llm_cache.get_llm_instance(llm_id)
+    if llm is None:
+        # Check if the LLM config exists but is inactive
+        llm_config = llm_cache.get_llm_config(llm_id)
+        if llm_config is None:
+            raise HTTPException(404, f"LLM id {llm_id} not found")
+        elif not llm_config.is_active:
+            raise HTTPException(400, f"LLM '{llm_config.title}' (id={llm_id}) is not active")
+        else:
+            raise HTTPException(500, f"LLM '{llm_config.title}' (id={llm_id}) failed to initialize")
+    return llm
 
 def create_user_chat_session(user: User) -> str:
     username = user.email.split("@")[0]
@@ -73,7 +60,7 @@ def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
 
 def create_chain(request: ChatRequest):
     """Create a conversational chain with history"""
-    llm = get_llm(request.llm_id)
+    llm = get_llm_instance(request.llm_id)
     prompt = ChatPromptTemplate.from_messages([
         ("system", request.system_prompt),
         MessagesPlaceholder(variable_name="history"),
@@ -95,7 +82,7 @@ def generate_prompt(request: ChatRequest):
         HumanMessage(content=request.message),
     ]
 
-async def chat_stream_callback(llm, prompt, config=None, event_stream=False):
+async def chat_stream_callback(llm: LlmProvider, prompt, config=None, event_stream=False):
     async for chunk in llm.astream(prompt, config):
         if chunk.content:
             if event_stream:
@@ -109,7 +96,7 @@ async def ask_simple(
     request: ChatRequest,
     user: User = Depends(current_active_user),
 ):
-    llm = get_llm(request.llm_id)
+    llm = get_llm_instance(request.llm_id)
     prompt = generate_prompt(request)
     resp = llm.invoke(prompt)
     return ChatResponse(
@@ -123,7 +110,7 @@ async def ask_stream(
     event_stream: bool = False,
     user: User = Depends(current_active_user),
 ):    
-    llm = get_llm(request.llm_id)
+    llm = get_llm_instance(request.llm_id)
     prompt = generate_prompt(request)
     return StreamingResponse(
         chat_stream_callback(llm, prompt, event_stream=event_stream),

@@ -237,12 +237,12 @@ window.copyCodeToClipboard = function(button) {
     });
 };
 
-// load model list from API
+// load model list from API (using cache to avoid database reads)
 function requestLoadModelList() {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_URL}/llms`,
+        url: `${API_BASE_URL}/llms/cached`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
