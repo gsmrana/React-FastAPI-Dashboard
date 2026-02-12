@@ -1,5 +1,4 @@
 import uuid
-from datetime import date
 from typing import Optional
 from fastapi import Request, Depends
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
@@ -10,7 +9,7 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 
 from app.core.config import config
 from app.core.logger import get_logger
-from app.core.email import email_service
+from app.core.email import UserEmailSchema, email_service
 from app.models.user import User, get_user_db
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -30,27 +29,29 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
         logger.info(f"Verification requested by user: {user.email}, Verification token: {token}")
-        subject = f"Welcome to {config.app_name}"
-        body = {
-            "username": user.full_name,
-            "app_name": config.app_name,
-            "year": date.today().year,
-            "verify_url": f"{config.app_domain}/pages/public/user-verify?token={token}",
-            "support_url": f"{config.app_domain}/pages/public/support",
-        }
-        await email_service.send_email([user.email], subject, template_body=body, template_name="user_welcome.html")
+        body = UserEmailSchema(
+            user_name = user.full_name,
+            action_url = f"{config.app_domain}/pages/public/user-verify?token={token}"
+        )
+        await email_service.send_email(
+            [user.email], 
+            subject = f"Welcome to {config.app_name}", 
+            template_body = body.model_dump(), 
+            template_name = "user_welcome.html"
+        )
 
     async def on_after_forgot_password(self, user: User, token: str, request: Optional[Request] = None):
         logger.info(f"Forgot password requested by user: {user.email}, Reset token: {token}")
-        subject = f"Password Recovery - {config.app_name}"
-        body = {
-            "username": user.full_name,
-            "app_name": config.app_name,
-            "year": date.today().year,
-            "reset_url": f"{config.app_domain}/pages/public/reset-password?token={token}",
-            "support_url": f"{config.app_domain}/pages/public/support",
-        }
-        await email_service.send_email([user.email], subject, template_body=body, template_name="reset_password.html")
+        body = UserEmailSchema(
+            user_name = user.full_name,
+            action_url = f"{config.app_domain}/pages/public/reset-password?token={token}"
+        )
+        await email_service.send_email(
+            [user.email], 
+            subject = f"Password Recovery - {config.app_name}", 
+            template_body = body.model_dump(), 
+            template_name = "reset_password.html"
+        )
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):

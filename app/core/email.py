@@ -1,5 +1,9 @@
+from io import BytesIO
 from pathlib import Path
+from datetime import date
 from typing import Optional
+from pydantic import BaseModel
+from fastapi import UploadFile
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 
 from app.core.config import config
@@ -72,6 +76,28 @@ class EmailService:
         subject: str,
         *,
         body: Optional[str] = None,
+        attachment_files: list[str] = [],
+        template_body: Optional[dict] = None,
+        template_name: Optional[str] = None,
+        subtype: MessageType = MessageType.html,
+    ) -> bool:
+        message = MessageSchema(
+            recipients=recipients,
+            subject=subject,
+            body=body,
+            attachments=attachment_files,
+            template_body=template_body,
+            subtype=subtype
+        )
+        return await self.send_email_message(message, template_name)
+    
+    async def send_email_with_buffer_attachments(
+        self,
+        recipients: list[str],
+        subject: str,
+        attachments: list[tuple[str, bytes]],
+        *,
+        body: Optional[str] = None,
         template_body: Optional[dict] = None,
         template_name: Optional[str] = None,
         subtype: MessageType = MessageType.html,
@@ -81,9 +107,18 @@ class EmailService:
             subject=subject,
             body=body,
             template_body=template_body,
-            subtype=subtype
+            subtype=subtype,
+            attachments=[UploadFile(BytesIO(buffer), filename=name) for name, buffer in attachments]
         )
         return await self.send_email_message(message, template_name)
+
+  
+class UserEmailSchema(BaseModel):
+    user_name: str
+    app_name: str = config.app_name
+    year: int = date.today().year
+    action_url: str = f"{config.app_domain}"
+    support_url: str = f"{config.app_domain}/pages/public/support"
 
 # Global instance
 email_service = EmailService()

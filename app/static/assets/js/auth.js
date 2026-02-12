@@ -60,6 +60,7 @@ function requestLogin() {
         password: $('#password').val()
     };
     
+    successMessage('Logging in, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/jwt/login`,
         method: 'POST',
@@ -85,6 +86,7 @@ function requestForgotPassword() {
         email: $('#email').val()
     };
     
+    successMessage('Requesting password reset, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/forgot-password`,
         method: 'POST',
@@ -121,6 +123,7 @@ function requestResetPassword() {
         password: password
     };
     
+    successMessage('Resetting password, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/reset-password`,
         method: 'POST',
@@ -146,6 +149,7 @@ function requestEmailVerification(email) {
         email: email
     };
     
+    successMessage('Requesting email verification, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/request-verify-token`,
         method: 'POST',
@@ -171,6 +175,7 @@ function requestEmailTokenVerify() {
         token: $('#token').val()
     };
     
+    successMessage('Verifying token, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/verify`,
         method: 'POST',
@@ -205,13 +210,14 @@ function requestRegister() {
         password: password
     };
     
+    successMessage('Registering, please wait...');
     $.ajax({
         url: `${API_BASE_URL}/auth/register`,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(userData),
         success: function(data) {
-            successMessage('Registration successful.\r\nRequesting email verification...');
+            successMessage('Registration successful.');
             requestEmailVerification(userData.email);
 
             // in case of verification not required
