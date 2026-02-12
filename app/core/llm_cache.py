@@ -1,16 +1,8 @@
-"""
-LLM Cache Service - Caches LLM model configurations from database
-
-This module provides a caching layer for LLM models 
-to avoid database reads on every chatbot API call.
-The cache can be refreshed when models are 
-created or updated in the database.
-"""
 from typing import Dict, Optional, Union
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logger import get_logger
 from app.db.async_db import AsyncSessionLocal
@@ -28,54 +20,42 @@ class LlmProviderType:
 
 
 class LlmCache:
-    """
-    Singleton cache for LLM model instances.
-    
-    Loads LLM configurations from database and creates corresponding
-    LangChain model instances. The cache is stored in memory to avoid
-    database reads on every API call.
-    """
-    
-    _instance: Optional["LlmCache"] = None
+    _instance: Optional['LlmCache'] = None
     _initialized: bool = False
     
-    def __new__(cls):
+    def __new__(cls) -> 'LlmCache':
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
     
     def __init__(self):
-        if not self._initialized:
-            self._llm_configs: Dict[int, Llm] = {}  # id -> Llm model from db
-            self._llm_instances: Dict[int, LlmProvider] = {}  # id -> LangChain instance
-            LlmCache._initialized = True
+        if LlmCache._initialized:
+            return
+        
+        self._llm_configs: Dict[int, Llm] = {}  # id -> Llm model from db
+        self._llm_instances: Dict[int, LlmProvider] = {}  # id -> LangChain instance
+        LlmCache._initialized = True
     
     @property
     def is_loaded(self) -> bool:
-        """Check if cache has been loaded with data"""
         return len(self._llm_configs) > 0
     
     def get_llm_configs(self) -> Dict[int, Llm]:
-        """Get all cached LLM configurations"""
         return self._llm_configs
     
     def get_active_llm_configs(self) -> Dict[int, Llm]:
-        """Get only active (non-deleted) LLM configurations"""
         return {
             id: config for id, config in self._llm_configs.items() 
             if config.is_active and config.deleted_at is None
         }
     
     def get_llm_config(self, llm_id: int) -> Optional[Llm]:
-        """Get a specific LLM configuration by ID"""
         return self._llm_configs.get(llm_id)
     
     def get_llm_instance(self, llm_id: int) -> Optional[LlmProvider]:
-        """Get a LangChain LLM instance by ID"""
         return self._llm_instances.get(llm_id)
     
     def _create_llm_instance(self, config: Llm) -> Optional[LlmProvider]:
-        """Create a LangChain LLM instance from database configuration"""
         try:
             if config.provider == LlmProviderType.OPENAI:
                 return ChatOpenAI(
@@ -97,15 +77,6 @@ class LlmCache:
         return None
     
     async def load(self, db: Optional[AsyncSession] = None) -> int:
-        """
-        Load all LLM configurations from database and create instances.
-        
-        Args:
-            db: Optional database session. If not provided, creates a new session.
-            
-        Returns:
-            Number of LLM models loaded
-        """
         close_session = False
         if db is None:
             db = AsyncSessionLocal()
@@ -143,18 +114,10 @@ class LlmCache:
                 await db.close()
     
     async def refresh(self) -> int:
-        """Refresh the cache by reloading from database"""
         logger.info("Refreshing LLM cache...")
         return await self.load()
     
     def invalidate(self, llm_id: Optional[int] = None):
-        """
-        Invalidate cache entries.
-        
-        Args:
-            llm_id: If provided, invalidates only that specific model.
-                   If None, invalidates entire cache.
-        """
         if llm_id is not None:
             self._llm_configs.pop(llm_id, None)
             self._llm_instances.pop(llm_id, None)
@@ -165,7 +128,7 @@ class LlmCache:
             logger.info("Invalidated entire LLM cache")
 
 
-# Global cache instance
+# Global instance
 llm_cache = LlmCache()
 
 
