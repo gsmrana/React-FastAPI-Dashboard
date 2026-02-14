@@ -47,12 +47,16 @@ async def create_llm_config(
 
 @router.get("/llm-configs/cached", response_model=List[LlmSchema])
 async def get_cached_llm_configs(
+    force_refresh: Optional[bool] = None,
     user: User = Depends(current_active_user),
     cache: LlmCache = Depends(get_llm_cache),
 ):
     """Get list of available LLM configs from cache"""
+    if force_refresh:
+        await cache.refresh()
+    
     configs = cache.get_active_llm_configs()
-    if not configs:
+    if not configs and not force_refresh:
         await cache.refresh()
         configs = cache.get_active_llm_configs()
     return list(configs.values())
