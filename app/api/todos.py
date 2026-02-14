@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
@@ -15,15 +15,15 @@ router = APIRouter()
 
 @router.get("/todos", response_model=List[TodoSchema])
 async def get_todo_list(
-    include_completed: bool = False,
-    include_deleted: bool = False,
+    include_completed: Optional[bool] = None,
+    include_deleted: Optional[bool] = None,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Todo)
-    if not include_deleted:
+    if include_deleted is None or include_deleted is False:
         query = query.filter(Todo.deleted_at == None)
-    if not include_completed:
+    if include_completed is None or include_completed is False:
         query = query.filter(Todo.is_completed == False)
     result = await db.execute(query)
     return result.scalars().all()

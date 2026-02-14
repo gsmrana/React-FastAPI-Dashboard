@@ -101,7 +101,7 @@ function initDataTable() {
                 }
             },
             { 
-                data: 'transaction_datetime',
+                data: 'date',
                 render: function(data) {
                     if (!data) return '-';
                     return new Date(data).toLocaleString();
@@ -214,8 +214,8 @@ function populateForm(expense) {
     $('#expenseLocation').val(expense.location);
     $('#expenseTags').val(expense.tags);
     
-    if (expense.transaction_datetime) {
-        $('#expenseDateTime').val(formatDatetimeLocal(expense.transaction_datetime));
+    if (expense.date) {
+        $('#expenseDateTime').val(formatDatetimeLocal(expense.date));
     }
 }
 
@@ -235,7 +235,7 @@ function saveEntry() {
         currency: $('#expenseCurrency').val(),
         category: parseInt($('#expenseCategory').val()),
         payment_method: parseInt($('#expensePaymentMethod').val()),
-        transaction_datetime: $('#expenseDateTime').val(),
+        date: $('#expenseDateTime').val(),
         location: $('#expenseLocation').val(),
         tags: $('#expenseTags').val()
     };

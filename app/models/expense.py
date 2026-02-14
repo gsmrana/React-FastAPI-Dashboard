@@ -8,7 +8,7 @@ class Expense(DbBase, AuditMixin):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)
     description = Column(Text, default="", nullable=False)
-    transaction_datetime = Column(DateTime(timezone=True), nullable=False)
+    date = Column(DateTime(timezone=True), nullable=False)
     category = Column(Integer, nullable=False) # e.g., 0: food, 1: transport, etc.
     tags = Column(String, default="", nullable=False)  # Comma-separated tags
     location = Column(String, default="", nullable=False)

@@ -13,8 +13,8 @@ from app.core.users import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.pages import jinja_pages
 from app.api import (
-    health, admin, documents, notepads, todos, 
-    expenses, services, llms, chatbot
+    health, admin, documents, llm_configs, notepads, 
+	todos, expenses, services, chatbot
 )
 
 
@@ -77,7 +77,7 @@ app.include_router(notepads.router, prefix=API_PREFIX, tags=["notepad"])
 app.include_router(todos.router, prefix=API_PREFIX, tags=["todo"])
 app.include_router(expenses.router, prefix=API_PREFIX, tags=["expense"])
 app.include_router(services.router, prefix=API_PREFIX, tags=["service"])
-app.include_router(llms.router, prefix=API_PREFIX, tags=["llm"])
+app.include_router(llm_configs.router, prefix=API_PREFIX, tags=["llm_config"])
 app.include_router(chatbot.router, prefix=API_PREFIX, tags=["chatbot"])
 
 # include jinja pages routers

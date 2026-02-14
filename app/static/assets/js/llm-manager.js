@@ -217,7 +217,7 @@ function requestGetEntries() {
     showLoading();
     
     $.ajax({
-        url: `${API_BASE_URL}/llms`,
+        url: `${API_BASE_URL}/llm-configs`,
         method: 'GET',
         success: function(data) {
             llms = data;
@@ -236,7 +236,7 @@ function viewEntity(id) {
     showLoading();
     
     $.ajax({
-        url: `${API_BASE_URL}/llms/${id}`,
+        url: `${API_BASE_URL}/llm-configs/${id}`,
         method: 'GET',
         success: function(llm) {
             hideLoading();
@@ -304,7 +304,7 @@ function saveEntry() {
     };
 
     const method = id ? 'PATCH' : 'POST';
-    const url = id ? `${API_BASE_URL}/llms/${id}` : `${API_BASE_URL}/llms`;
+    const url = id ? `${API_BASE_URL}/llm-configs/${id}` : `${API_BASE_URL}/llm-configs`;
 
     showLoading();
 
@@ -344,7 +344,7 @@ function toggleStar(id) {
     showLoading();
 
     $.ajax({
-        url: `${API_BASE_URL}/llms/${id}`,
+        url: `${API_BASE_URL}/llm-configs/${id}`,
         method: 'PATCH',
         contentType: 'application/json',
         data: JSON.stringify({ is_starred: !llm.is_starred }),
@@ -371,7 +371,7 @@ function toggleActive(id) {
     showLoading();
 
     $.ajax({
-        url: `${API_BASE_URL}/llms/${id}`,
+        url: `${API_BASE_URL}/llm-configs/${id}`,
         method: 'PATCH',
         contentType: 'application/json',
         data: JSON.stringify({ is_active: !llm.is_active }),
@@ -420,10 +420,21 @@ function testConnection() {
     
     // Simple HEAD request to check if endpoint is reachable
     // Note: This is a basic check - actual API testing would require backend support
-    setTimeout(function() {
-        hideLoading();
-        showSuccessMessage('Connection test completed. Please verify the API key is valid with your provider.');
-    }, 1000);
+    $.ajax({
+        url: apiEndpoint,
+        method: 'HEAD',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        },
+        success: function() {
+            hideLoading();
+            showSuccessMessage('Connection test successful.');
+        },
+        error: function(xhr, status, error) {
+            hideLoading();
+            showRequestError(xhr, status);
+        }
+    });
 }
 
 // Delete entry
@@ -431,7 +442,7 @@ function deleteEntry(id) {
     showLoading();
 
     $.ajax({
-        url: `${API_BASE_URL}/llms/${id}`,
+        url: `${API_BASE_URL}/llm-configs/${id}`,
         method: 'DELETE',
         success: function() {
             hideLoading();

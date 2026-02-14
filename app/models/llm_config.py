@@ -3,8 +3,8 @@ from app.db.async_db import DbBase
 from app.models.audit_mixin import AuditMixin
 
 
-class Llm(DbBase, AuditMixin):
-    __tablename__ = "llms"
+class LlmConfig(DbBase, AuditMixin):
+    __tablename__ = "llm_configs"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     provider = Column(Integer, nullable=False) # i.e OpenAI, Anthropic, Azure
     category = Column(Integer, nullable=False) # i.e LLM, Embeddings

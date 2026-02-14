@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
@@ -15,9 +15,9 @@ router = APIRouter()
 
 @router.get("/expenses", response_model=List[ExpenseSchema])
 async def expense_list(
-    from_date: datetime = None,
-    to_date: datetime = None,
-    include_deleted: bool = False,
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    include_deleted: Optional[bool] = None,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
@@ -26,7 +26,7 @@ async def expense_list(
         query = query.filter(Expense.date >= from_date)
     if to_date:
         query = query.filter(Expense.date <= to_date)
-    if not include_deleted:
+    if include_deleted is None or include_deleted is False:
         query = query.filter(Expense.deleted_at == None)
     result = await db.execute(query)
     return result.scalars().all()

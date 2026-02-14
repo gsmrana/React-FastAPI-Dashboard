@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, Column
@@ -15,12 +15,12 @@ router = APIRouter()
 
 @router.get("/services", response_model=List[ServiceSchema])
 async def get_service_list(
-    include_deleted: bool = False,
+    include_deleted: Optional[bool] = None, 
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Service)
-    if not include_deleted:
+    if include_deleted is None or include_deleted is False:
         query = query.filter(Service.deleted_at == None)
     result = await db.execute(query)
     return result.scalars().all()

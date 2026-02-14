@@ -242,7 +242,7 @@ function requestLoadModelList() {
     showLoadingStatus();
 
     $.ajax({
-        url: `${API_BASE_URL}/llms/cached`,
+        url: `${API_BASE_URL}/llm-configs/cached`,
         method: 'GET',
         success: function(data) {
             hideStatusMessage();
@@ -255,20 +255,20 @@ function requestLoadModelList() {
 }
 
 // populate model list dropdown
-function populateModelDropdown(llms) {
+function populateModelDropdown(llm_configs) {
     const $select = $('#modelSelect');
     $select.find('option:not(:first)').remove();
     
-    llms.forEach(function(llm) {
+    llm_configs.forEach(function(llm_config) {
         $select.append($('<option>', {
-            value: llm.id,
-            text: llm.title || llm.model_name
+            value: llm_config.id,
+            text: llm_config.title || llm_config.model_name
         }));
     });
 
     // Auto-select first note if available
-    if (llms.length > 0 && !currentModelId) {
-        currentModelId = llms[0].id;
+    if (llm_configs.length > 0 && !currentModelId) {
+        currentModelId = llm_configs[0].id;
         $select.val(currentModelId);
     }
 }
