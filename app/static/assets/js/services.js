@@ -170,7 +170,8 @@ function initDataTable() {
         ],
         pageLength: 10,
         responsive: true,
-        order: [[0, 'asc']], // Sort by name ascending
+        order: [],
+        //order: [[0, 'asc']], // Sort by name ascending
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search services..."

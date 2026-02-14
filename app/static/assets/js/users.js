@@ -89,6 +89,8 @@ function initDataTable() {
         ],
         pageLength: 10,
         responsive: true,
+        order: [],
+        // order: [[0, 'asc']],
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search users..."

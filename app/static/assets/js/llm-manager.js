@@ -8,7 +8,7 @@ const providerLabels = ['OpenAI', 'Anthropic', 'Azure OpenAI', 'Google AI', 'AWS
 const providerIcons = ['fa-robot', 'fa-brain', 'fa-microsoft', 'fa-google', 'fa-aws', 'fa-circle-nodes', 'fa-wind', 'fa-face-smile', 'fa-server', 'fa-ellipsis-h'];
 const providerColors = ['text-success', 'text-warning', 'text-info', 'text-primary', 'text-danger', 'text-secondary', 'text-info', 'text-warning', 'text-muted', 'text-secondary'];
 
-const categoryLabels = ['LLM (Chat/Completion)', 'Embeddings', 'Image Generation', 'Speech to Text', 'Text to Speech', 'Vision', 'Code Generation', 'Other'];
+const categoryLabels = ['Chat LLM', 'Embeddings', 'Image Generation', 'Speech to Text', 'Text to Speech', 'Vision', 'Code Generation', 'Other'];
 const categoryIcons = ['fa-comments', 'fa-vector-square', 'fa-image', 'fa-microphone', 'fa-volume-up', 'fa-eye', 'fa-code', 'fa-ellipsis-h'];
 
 $(document).ready(function() {
@@ -204,7 +204,8 @@ function initDataTable() {
         ],
         pageLength: 10,
         responsive: true,
-        order: [[0, 'asc']],
+        order: [],
+        // order: [[0, 'asc']],
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search LLM models..."

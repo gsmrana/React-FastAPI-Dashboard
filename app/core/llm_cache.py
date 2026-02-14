@@ -99,8 +99,6 @@ class LlmCache:
                 instance = self._create_llm_instance(llm_config)
                 if instance:
                     self._llm_instances[llm_config.id] = instance
-                    logger.info(f"Loaded LLM config cache: {llm_config.title} (id={llm_config.id}, provider={llm_config.provider})")
-            
             logger.info(f"LLM config cache loaded count: {len(self._llm_configs)}")
             return len(self._llm_configs)
             
@@ -112,7 +110,6 @@ class LlmCache:
                 await db.close()
     
     async def refresh(self) -> int:
-        logger.info("Refreshing LLM config cache...")
         return await self.load()
     
     def invalidate(self, llm_id: Optional[int] = None):

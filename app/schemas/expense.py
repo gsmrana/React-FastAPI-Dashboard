@@ -7,7 +7,7 @@ class ExpenseContent(BaseModel):
     id: int
     title: str
     description: str
-    transaction_datetime: DbDatetime
+    date: DbDatetime
     category: int
     tags: Optional[str]
     location: Optional[str]
@@ -22,7 +22,7 @@ class ExpenseSchema(AuditSchema, ExpenseContent):
 class CreateExpenseSchema(BaseModel):
     title: str
     description: Optional[str] = ""
-    transaction_datetime: DbDatetime
+    date: DbDatetime
     category: int
     tags: Optional[str] = ""
     location: Optional[str] = ""
@@ -34,7 +34,7 @@ class CreateExpenseSchema(BaseModel):
 class UpdateExpenseSchema(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    transaction_datetime: Optional[DbDatetime] = None
+    date: Optional[DbDatetime] = None
     category: Optional[int] = None
     tags: Optional[str] = None
     location: Optional[str] = None
@@ -42,4 +42,3 @@ class UpdateExpenseSchema(BaseModel):
     payment_method: Optional[int] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
-

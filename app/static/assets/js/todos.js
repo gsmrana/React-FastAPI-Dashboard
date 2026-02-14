@@ -130,6 +130,8 @@ function initDataTable() {
         ],
         pageLength: 10,
         responsive: true,
+        order: [],
+        // order: [[5, 'desc']],
         language: {
             search: "_INPUT_",
             searchPlaceholder: "Search todos..."
