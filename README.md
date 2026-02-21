@@ -69,6 +69,7 @@ Install packages
 
 ```
 cd frontend
+cp .env.example .env.local
 npm install
 ```
 
@@ -94,28 +95,38 @@ cp -r -force dist/* ../app/static/
 
 ## Install and run systemd service (Linux)
 
+Service Setup
 ```
 sudo cp fastapiapp.service /etc/systemd/system/fastapiapp-daemon.service
 sudo systemctl daemon-reload
 sudo systemctl enable fastapiapp-daemon.service
 ```
 
+Service Start/Restart
 ```
 sudo systemctl restart fastapiapp-daemon.service
 ```
 
 ## Install and run launchd service (macOS)
 
+Service Setup
 ```
 sudo cp com.fastapiapp.service.plist /Library/LaunchDaemons/
 sudo chown root:wheel /Library/LaunchDaemons/com.fastapiapp.service.plist
 sudo chmod 644 /Library/LaunchDaemons/com.fastapiapp.service.plist
 ```
 
+Service First Load
 ```
-# first start
 sudo launchctl load -w /Library/LaunchDaemons/com.fastapiapp.service.plist
+```
 
-# restart
+Service Stop
+```
+sudo launchctl bootout system /Library/LaunchDaemons/com.fastapiapp.service.plist
+```
+
+Service Restart
+```
 sudo launchctl kickstart -k system/com.fastapiapp.service
 ```

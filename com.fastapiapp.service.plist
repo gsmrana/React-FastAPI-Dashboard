@@ -25,12 +25,12 @@
     <true/>
 
     <key>ThrottleInterval</key>
-    <integer>3</integer>
+    <integer>30</integer>
 
     <key>StandardOutPath</key>
-    <string>/opt/React-FastAPI-Dashboard/fastapiapp.out.log</string>
+    <string>/opt/React-FastAPI-Dashboard/logs/fastapiapp.out.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/opt/React-FastAPI-Dashboard/fastapiapp.err.log</string>
+    <string>/opt/React-FastAPI-Dashboard/logs/fastapiapp.err.log</string>
 </dict>
 </plist>
