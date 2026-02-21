@@ -92,12 +92,30 @@ Copy build to backend app
 cp -r -force dist/* ../app/static/
 ```
 
-## Linux Systemd Service
-
-Create a systemd service
+## Install and run systemd service (Linux)
 
 ```
-sudo cp script/dashboard.service /etc/systemd/system/dashboard-daemon.service
+sudo cp fastapiapp.service /etc/systemd/system/fastapiapp-daemon.service
 sudo systemctl daemon-reload
-sudo systemctl restart dashboard-daemon.service
+sudo systemctl enable fastapiapp-daemon.service
+```
+
+```
+sudo systemctl restart fastapiapp-daemon.service
+```
+
+## Install and run launchd service (macOS)
+
+```
+sudo cp com.fastapiapp.service.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/com.fastapiapp.service.plist
+sudo chmod 644 /Library/LaunchDaemons/com.fastapiapp.service.plist
+```
+
+```
+# first start
+sudo launchctl load -w /Library/LaunchDaemons/com.fastapiapp.service.plist
+
+# restart
+sudo launchctl kickstart -k system/com.fastapiapp.service
 ```

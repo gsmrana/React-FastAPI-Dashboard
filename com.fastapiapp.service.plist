@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.fastapiapp.service</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>set -a; source /opt/React-FastAPI-Dashboard/.env; set +a; exec /opt/React-FastAPI-Dashboard/.venv/bin/uvicorn app.app:app --host 0.0.0.0 --port 8000 --no-access-log</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/opt/React-FastAPI-Dashboard</string>
+
+    <key>UserName</key>
+    <string>root</string>
+
+    <key>GroupName</key>
+    <string>wheel</string>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>3</integer>
+
+    <key>StandardOutPath</key>
+    <string>/opt/React-FastAPI-Dashboard/fastapiapp.out.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/opt/React-FastAPI-Dashboard/fastapiapp.err.log</string>
+</dict>
+</plist>
