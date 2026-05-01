@@ -109,6 +109,16 @@ export interface Document {
   modified_at?: string;
 }
 
+export interface ChatSession {
+  session_id: string;
+  message_count: number;
+}
+
+export interface ChatSessionResponse {
+  total_sessions: number;
+  sessions: ChatSession[];
+}
+
 export interface ChatMessage {
   type: 'human' | 'ai' | 'system';
   content: string;

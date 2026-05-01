@@ -73,8 +73,8 @@ export default function LogsPage() {
                 fontFamily: 'Fira Code, Consolas, monospace',
                 overflow: 'auto',
                 maxHeight: '70vh',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
+                // whiteSpace: 'pre-wrap',
+                // wordBreak: 'break-all',
               }}
             >
               {text || '(empty)'}

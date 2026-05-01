@@ -70,7 +70,7 @@ export default function SysInfoPage() {
                     <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
                       {section.replace(/_/g, ' ')}
                     </Typography>
-                    <Chip size="small" label={typeof value === 'object' ? 'object' : 'value'} />
+                    {/* <Chip size="small" label={typeof value === 'object' ? 'object' : 'value'} /> */}
                   </Stack>
                   <Stack spacing={0.75}>
                     {flatten(value).map((row) => (
@@ -82,8 +82,8 @@ export default function SysInfoPage() {
                         sx={{
                           fontSize: 13,
                           py: 0.5,
-                          borderBottom: 1,
-                          borderColor: 'divider',
+                          // borderBottom: 1,
+                          // borderColor: 'divider',
                         }}
                       >
                         <Typography

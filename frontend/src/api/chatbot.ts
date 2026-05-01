@@ -1,5 +1,5 @@
 import { apiClient, API_BASE } from './client';
-import type { ChatHistory, ChatRequest, ChatResponse } from '@/types';
+import type { ChatHistory, ChatRequest, ChatResponse, ChatSession, ChatSessionResponse } from '@/types';
 
 export const chatbotApi = {
   ask: async (payload: ChatRequest): Promise<ChatResponse> => {
@@ -17,10 +17,10 @@ export const chatbotApi = {
     return data;
   },
   sessions: async (): Promise<string[]> => {
-    const { data } = await apiClient.get<string[] | { sessions: string[] }>(
+    const { data } = await apiClient.get<ChatSessionResponse>(
       '/api/v1/chat/sessions'
     );
-    return Array.isArray(data) ? data : data.sessions ?? [];
+    return data.sessions.map((s) => s.session_id);
   },
 
   /**
