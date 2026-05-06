@@ -14,15 +14,19 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 5173,
+      port: 3000,
+      host: '0.0.0.0',
+      open: false,
       proxy: {
         '/api': { target: backendTarget, changeOrigin: true, secure: false },
         '/health': { target: backendTarget, changeOrigin: true, secure: false },
       },
     },
     build: {
+      target: 'esnext',
       outDir: 'dist',
       sourcemap: false,
+      chunkSizeWarningLimit: 1000,
     },
   };
 });

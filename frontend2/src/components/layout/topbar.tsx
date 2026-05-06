@@ -25,11 +25,11 @@ const titles: Record<string, string> = {
   "/expenses": "Expenses",
   "/services": "Services",
   "/profile": "User Profile",
-  "/admin/users": "User Management",
+  "/admin/users": "User Manager",
   "/admin/llm": "LLM Manager",
   "/admin/config": "App Config",
   "/admin/system": "System Info",
-  "/admin/logs": "Application Logs",
+  "/admin/logs": "App Logs",
 };
 
 export function Topbar() {

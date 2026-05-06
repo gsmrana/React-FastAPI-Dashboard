@@ -56,7 +56,7 @@ export default function ChatbotPage() {
   const [llmId, setLlmId] = useState<number | ''>('');
   const [persistent, setPersistent] = useState(true);
   const [stream, setStream] = useState(true);
-  const [systemPrompt, setSystemPrompt] = useState('You are a helpful assistant.');
+  const [systemPrompt, setSystemPrompt] = useState('You are a helpful and concise AI assistant.');
   const [showSysPrompt, setShowSysPrompt] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [messages, setMessages] = useState<UIMessage[]>([]);
@@ -227,7 +227,7 @@ export default function ChatbotPage() {
               size="small"
             />
           }
-          label="Persistent (keep history)"
+          label="Preserve context"
         />
         <FormControlLabel
           control={
@@ -237,7 +237,7 @@ export default function ChatbotPage() {
               size="small"
             />
           }
-          label="Stream responses"
+          label="Streaming response"
         />
       </Stack>
       <Divider />
@@ -282,8 +282,8 @@ export default function ChatbotPage() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 96px)' }}>
       <PageHeader
-        title="Chatbot"
-        subtitle="Ask questions, get answers — with streaming"
+        // title="Chatbot"
+        // subtitle="Ask questions, get answers — with streaming"
         actions={
           isMobile ? (
             <IconButton onClick={() => setDrawerOpen(true)}>

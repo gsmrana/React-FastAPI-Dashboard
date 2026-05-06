@@ -25,17 +25,17 @@ import { Separator } from "@/components/ui/separator";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/files", label: "File Manager", icon: FolderKanban },
-  { to: "/chat", label: "Chatbot", icon: Bot },
-  { to: "/notes", label: "Notepad", icon: StickyNote },
-  { to: "/todos", label: "To-Do", icon: ListChecks },
+  { to: "/todos", label: "Todos", icon: ListChecks },
   { to: "/expenses", label: "Expenses", icon: DollarSign },
+  { to: "/notes", label: "Notepad", icon: StickyNote },
+  { to: "/chat", label: "Chatbot", icon: Bot },
+  { to: "/files", label: "File Manager", icon: FolderKanban },
   { to: "/services", label: "Services", icon: Wrench },
   // { to: "/profile", label: "Profile", icon: User },
 ];
 
 const admin = [
-  { to: "/admin/users", label: "User Management", icon: Users },
+  { to: "/admin/users", label: "User Manager", icon: Users },
   { to: "/admin/llm", label: "LLM Manager", icon: Cpu },
   { to: "/admin/config", label: "App Config", icon: Settings },
   { to: "/admin/logs", label: "App Logs", icon: ScrollText },

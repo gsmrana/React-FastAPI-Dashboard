@@ -14,7 +14,7 @@ export interface RegisterPayload {
 
 export const authApi = {
   async me(): Promise<User> {
-    const { data } = await apiClient.get<User>('/api/v1/users/me');
+    const { data } = await apiClient.get<User>('/users/me');
     return data;
   },
 
@@ -22,39 +22,39 @@ export const authApi = {
     const form = new URLSearchParams();
     form.set('username', creds.username);
     form.set('password', creds.password);
-    await apiClient.post('/api/v1/auth/jwt/login', form, {
+    await apiClient.post('/auth/jwt/login', form, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
   },
 
   async logout(): Promise<void> {
-    await apiClient.post('/api/v1/auth/jwt/logout');
+    await apiClient.post('/auth/jwt/logout');
   },
 
   async register(payload: RegisterPayload): Promise<User> {
-    const { data } = await apiClient.post<User>('/api/v1/auth/register', payload);
+    const { data } = await apiClient.post<User>('/auth/register', payload);
     return data;
   },
 
   async forgotPassword(email: string): Promise<void> {
-    await apiClient.post('/api/v1/auth/forgot-password', { email });
+    await apiClient.post('/auth/forgot-password', { email });
   },
 
   async resetPassword(token: string, password: string): Promise<void> {
-    await apiClient.post('/api/v1/auth/reset-password', { token, password });
+    await apiClient.post('/auth/reset-password', { token, password });
   },
 
   async requestVerifyToken(email: string): Promise<void> {
-    await apiClient.post('/api/v1/auth/request-verify-token', { email });
+    await apiClient.post('/auth/request-verify-token', { email });
   },
 
   async verify(token: string): Promise<User> {
-    const { data } = await apiClient.post<User>('/api/v1/auth/verify', { token });
+    const { data } = await apiClient.post<User>('/auth/verify', { token });
     return data;
   },
 
   async updateMe(payload: Partial<User & { password: string }>): Promise<User> {
-    const { data } = await apiClient.patch<User>('/api/v1/users/me', payload);
+    const { data } = await apiClient.patch<User>('/users/me', payload);
     return data;
   },
 };

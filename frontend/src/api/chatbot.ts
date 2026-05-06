@@ -3,22 +3,22 @@ import type { ChatHistory, ChatRequest, ChatResponse, ChatSession, ChatSessionRe
 
 export const chatbotApi = {
   ask: async (payload: ChatRequest): Promise<ChatResponse> => {
-    const { data } = await apiClient.post<ChatResponse>('/api/v1/ask/simple', payload);
+    const { data } = await apiClient.post<ChatResponse>('/ask/simple', payload);
     return data;
   },
   chat: async (payload: ChatRequest): Promise<ChatResponse> => {
-    const { data } = await apiClient.post<ChatResponse>('/api/v1/chat/simple', payload);
+    const { data } = await apiClient.post<ChatResponse>('/chat/simple', payload);
     return data;
   },
   history: async (session_id: string): Promise<ChatHistory> => {
     const { data } = await apiClient.get<ChatHistory>(
-      `/api/v1/chat/history/${encodeURIComponent(session_id)}`
+      `/chat/history/${encodeURIComponent(session_id)}`
     );
     return data;
   },
   sessions: async (): Promise<string[]> => {
     const { data } = await apiClient.get<ChatSessionResponse>(
-      '/api/v1/chat/sessions'
+      '/chat/sessions'
     );
     return data.sessions.map((s) => s.session_id);
   },
@@ -35,7 +35,7 @@ export const chatbotApi = {
       onChunk: (chunk: string) => void;
     }
   ): Promise<string> {
-    const path = opts.persistent ? '/api/v1/chat/stream' : '/api/v1/ask/stream';
+    const path = opts.persistent ? '/chat/stream' : '/ask/stream';
     const url = `${API_BASE}${path}?event_stream=true`;
     const resp = await fetch(url, {
       method: 'POST',

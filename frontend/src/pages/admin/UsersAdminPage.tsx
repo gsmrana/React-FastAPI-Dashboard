@@ -88,7 +88,7 @@ export default function UsersAdminPage() {
   return (
     <Box>
       <PageHeader
-        title="User Management"
+        title="User Manager"
         subtitle="Admin: list, search, and create users"
         actions={
           <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)}>

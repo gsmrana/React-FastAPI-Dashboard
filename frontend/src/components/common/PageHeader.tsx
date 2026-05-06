@@ -6,7 +6,7 @@ export default function PageHeader({
   subtitle,
   actions,
 }: {
-  title: string;
+  title?: string;
   subtitle?: string;
   actions?: ReactNode;
 }) {
@@ -19,9 +19,11 @@ export default function PageHeader({
       sx={{ mb: 3 }}
     >
       <Box>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          {title}
-        </Typography>
+        {title && (
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            {title}
+          </Typography>
+        )}
         {subtitle && (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             {subtitle}

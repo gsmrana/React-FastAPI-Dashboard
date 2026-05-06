@@ -165,9 +165,9 @@ export default function ServicesPage() {
         }
       />
 
-      <Alert severity="warning" sx={{ mb: 2 }}>
+      {/* <Alert severity="warning" sx={{ mb: 2 }}>
         Passwords are stored as-is on the server. Avoid using this for high-security secrets.
-      </Alert>
+      </Alert> */}
 
       {services.isLoading ? (
         <LoadingScreen />

@@ -1,9 +1,12 @@
 import axios from 'axios';
 
+export const APP_NAME = import.meta.env.VITE_APP_NAME || 'Nexus Hub';
+export const APP_VERSION = '1.0.0';
+
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export const apiClient = axios.create({
-  baseURL: API_BASE,
+  baseURL: API_BASE + '/api/v1',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

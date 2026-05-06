@@ -69,13 +69,13 @@ Install packages
 
 ```
 cd frontend
-cp .env.example .env.local
 npm install
 ```
 
 Development Run
 
 ```
+cp .env.example .env.development (optional)
 npm run dev
 ```
 
@@ -84,7 +84,9 @@ npm run dev
 Production Build
 
 ```
+cp .env.example .env.production (optional)
 npm run build
+npm run preview
 ```
 
 Copy build to backend app

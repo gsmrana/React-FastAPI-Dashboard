@@ -105,14 +105,20 @@ export default function Dashboard() {
     .slice(0, 5);
   const recentNotes = (notes.data ?? []).slice(0, 5);
   const recentDocs = (docs.data ?? []).slice(0, 5);
+  const greeting =
+    new Date().getHours() < 12
+      ? 'Good morning'
+      : new Date().getHours() < 18
+        ? 'Good afternoon'
+        : 'Good evening';
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">
-          Welcome back{user?.full_name ? `, ${user.full_name.split(" ")[0]}` : ""}!
+          {`${greeting}${user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}`}
         </h2>
-        <p className="text-muted-foreground">Here's what's happening across your hub.</p>
+        <p className="text-muted-foreground">Here's what's happening in your workspace</p>
       </div>
 
       {/* KPI cards */}

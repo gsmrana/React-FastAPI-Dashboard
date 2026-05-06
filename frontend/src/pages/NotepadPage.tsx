@@ -383,10 +383,10 @@ export default function NotepadPage() {
 
   return (
     <Box>
-      <PageHeader
+      {/* <PageHeader
         title="Notepad"
         subtitle="Markdown notes with live preview"
-      />
+      /> */}
 
       {notes.isLoading ? (
         <LoadingScreen />
