@@ -151,8 +151,8 @@ class UserEmailSchema(BaseModel):
     user_name: str
     app_name: str = config.app_name
     year: int = date.today().year
-    action_url: str = f"{config.app_domain}"
-    support_url: str = f"{config.contact_support_url}"
+    action_url: str = config.app_domain
+    support_url: str = config.contact_support_url
 
 # Global instance
 email_service = EmailService()

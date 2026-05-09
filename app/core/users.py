@@ -29,7 +29,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         if not config.registration_email_enable:
             return
         body = UserEmailSchema(
-            user_name = str(user.full_name)
+            user_name = str(user.full_name),
+            action_url = config.app_domain
         )
         email_service.send_email_background(
             [user.email], 
