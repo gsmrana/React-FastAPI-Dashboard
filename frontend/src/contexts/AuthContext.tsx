@@ -31,8 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const u = await authApi.me();
-      setUser(u);
+      const user = await authApi.me();
+
+      if (!user.is_active || !user.is_verified) {
+        await authApi.logout(); // cleanup session
+        throw new Error('Your account is not active or not verified yet.');
+      }
+
+      setUser(user);
     } catch {
       setUser(null);
     }
@@ -74,7 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   const register = useCallback(async (payload: RegisterPayload) => {
-    return authApi.register(payload);
+    const user = await authApi.register(payload);
+    await authApi.requestVerifyToken(payload.email);
+    return user;
   }, []);
 
   const value = useMemo<AuthContextValue>(

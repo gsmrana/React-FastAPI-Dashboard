@@ -1,3 +1,4 @@
+import { APP_NAME } from '@/api/client';
 import { Box, Container, Paper, Typography, useTheme } from '@mui/material';
 import type { ReactNode } from 'react';
 
@@ -44,8 +45,11 @@ export default function AuthLayout({
               boxShadow: 4,
             }}
           >
-            N
+            {APP_NAME.charAt(0)}
           </Box>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+            {APP_NAME}
+          </Typography>
         </Box>
         <Paper sx={{ p: { xs: 3, sm: 4 }, borderRadius: 3 }} elevation={6}>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>

@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NAV_ITEMS } from './navItems';
+import { APP_NAME } from '@/api/client';
 
 export const SIDEBAR_WIDTH = 248;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
@@ -72,11 +73,11 @@ export default function Sidebar({
             fontSize: 16,
           }}
         >
-          N
+          {APP_NAME.charAt(0)}
         </Box>
         {expanded && (
           <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 0.2 }}>
-            Nexus Hub
+            {APP_NAME}
           </Typography>
         )}
       </Toolbar>
