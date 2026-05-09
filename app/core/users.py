@@ -26,31 +26,46 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         logger.info(f"New user registered email: {user.email}, id: {user.id}")
-
-    async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
-        logger.info(f"Verification requested by user: {user.email}, Verification token: {token}")
+        if not config.registration_email_enable:
+            return
         body = UserEmailSchema(
-            user_name = user.full_name,
-            action_url = f"{config.app_domain}/pages/public/user-verify?token={token}"
+            user_name = str(user.full_name)
         )
-        await email_service.send_email(
+        email_service.send_email_background(
             [user.email], 
             subject = f"Welcome to {config.app_name}", 
             template_body = body.model_dump(), 
-            template_name = "user_welcome.html"
+            template_name = "welcome_email.html"
+        )
+
+    async def on_after_request_verify(self, user: User, token: str, request: Optional[Request] = None):
+        logger.info(f"Verification requested by user: {user.email}, Verification token: {token}")
+        if not config.verification_email_enable:
+            return
+        body = UserEmailSchema(
+            user_name = str(user.full_name),
+            action_url = f"{config.app_domain}/verify-email?token={token}"
+        )
+        email_service.send_email_background(
+            [user.email], 
+            subject = f"Email Verification - {config.app_name}", 
+            template_body = body.model_dump(), 
+            template_name = "verification_email.html"
         )
 
     async def on_after_forgot_password(self, user: User, token: str, request: Optional[Request] = None):
-        logger.info(f"Forgot password requested by user: {user.email}, Reset token: {token}")
+        logger.info(f"Forgot password requested by user: {user.email}, Password Reset token: {token}")
+        if not config.forgot_password_email_enable:
+            return
         body = UserEmailSchema(
-            user_name = user.full_name,
-            action_url = f"{config.app_domain}/pages/public/reset-password?token={token}"
+            user_name = str(user.full_name),
+            action_url = f"{config.app_domain}/reset-password?token={token}"
         )
-        await email_service.send_email(
+        email_service.send_email_background(
             [user.email], 
-            subject = f"Password Recovery - {config.app_name}", 
+            subject = f"Password Reset - {config.app_name}", 
             template_body = body.model_dump(), 
-            template_name = "reset_password.html"
+            template_name = "password_reset_email.html"
         )
 
 

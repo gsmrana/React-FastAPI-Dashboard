@@ -49,13 +49,19 @@ class Config(BaseSettings):
     jwt_lifetime_sec: int = 86400 # 1 day
     jwt_secret_key: str = "jwt-dev-secret"
 
-    # email Configs
+    # email support configs
     email_support_enable: bool = False
-    email_from_name: str = DEFAULT_APP_NAME
-    smtp_user: str = "sender@gmail.com"
+    smtp_user: str = ""
     smtp_password: str = ""
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
+
+    # email send configs
+    email_from_name: str = DEFAULT_APP_NAME
+    contact_support_url: str = ""
+    registration_email_enable: bool = False
+    verification_email_enable: bool = False
+    forgot_password_email_enable: bool = False
     
     # docker --env_file support - strip quotes from env vars
     @classmethod

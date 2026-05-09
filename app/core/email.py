@@ -1,3 +1,4 @@
+import asyncio
 from io import BytesIO
 from pathlib import Path
 from datetime import date
@@ -70,6 +71,7 @@ class EmailService:
                     template_name, ", ".join(str(r) for r in message.recipients))
         return True
     
+
     async def send_email(
         self,
         recipients: list[str],
@@ -90,7 +92,39 @@ class EmailService:
             subtype=subtype
         )
         return await self.send_email_message(message, template_name)
-    
+
+
+    def send_email_background(
+        self,
+        recipients: list[str],
+        subject: str,
+        *,
+        body: Optional[str] = None,
+        attachment_files: list[str] = [],
+        template_body: Optional[dict] = None,
+        template_name: Optional[str] = None,
+        subtype: MessageType = MessageType.html,
+    ) -> None:
+        async def _wrapper():
+            try:
+                await self.send_email(
+                    recipients,
+                    subject,
+                    body=body,
+                    attachment_files=attachment_files,
+                    template_body=template_body,
+                    template_name=template_name,
+                    subtype=subtype,
+                )
+            except Exception:
+                logger.exception(
+                    "Background email task failed for recipients: %s",
+                    ", ".join(recipients),
+                )
+
+        asyncio.create_task(_wrapper())
+
+
     async def send_email_with_buffer_attachments(
         self,
         recipients: list[str],
@@ -112,13 +146,13 @@ class EmailService:
         )
         return await self.send_email_message(message, template_name)
 
-  
+
 class UserEmailSchema(BaseModel):
     user_name: str
     app_name: str = config.app_name
     year: int = date.today().year
     action_url: str = f"{config.app_domain}"
-    support_url: str = f"{config.app_domain}/pages/public/support"
+    support_url: str = f"{config.contact_support_url}"
 
 # Global instance
 email_service = EmailService()
