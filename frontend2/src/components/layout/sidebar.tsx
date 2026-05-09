@@ -22,6 +22,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { APP_NAME } from "@/lib/api";
 
 const main = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -69,9 +70,9 @@ export function Sidebar({ isMobile, onItemClick }: SidebarProps) {
         >
           <div className="flex items-center gap-2 font-semibold">
             <div className="size-8 rounded-md bg-primary text-primary-foreground grid place-items-center text-sm font-bold">
-              N
+              {APP_NAME.charAt(0)}
             </div>
-            {!collapsed && <span>Nexus Hub</span>}
+            {!collapsed && <span>{APP_NAME}</span>}
           </div>
         </div>
 

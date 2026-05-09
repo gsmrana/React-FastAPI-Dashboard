@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, API_BASE_URL } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
 import type { AppConfig, SysInfo, UserRead } from "@/types/api";
 
 export function useSysInfo() {
@@ -35,7 +35,7 @@ export function useAppLog(autoRefresh = false) {
 }
 
 export function appLogDownloadUrl() {
-  return `${API_BASE_URL}/admin/applog/download`;
+  return `${API_BASE}/admin/applog/download`;
 }
 
 export function useAdminUsers(params?: { offset?: number; limit?: number }) {

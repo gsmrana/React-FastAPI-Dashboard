@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { APP_NAME } from "@/lib/api";
 
 export function AuthLayout() {
   return (
@@ -10,13 +11,13 @@ export function AuthLayout() {
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
         <div className="flex items-center gap-2 mb-6">
           <div className="size-10 rounded-md bg-primary text-primary-foreground grid place-items-center font-bold">
-            N
+            {APP_NAME.charAt(0)}
           </div>
-          <span className="text-xl font-semibold">Nexus Hub</span>
+          <span className="text-xl font-semibold">{APP_NAME}</span>
         </div>
         <Outlet />
         <p className="mt-8 text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Nexus Hub
+          &copy; {new Date().getFullYear()} {APP_NAME}
         </p>
       </div>
     </div>

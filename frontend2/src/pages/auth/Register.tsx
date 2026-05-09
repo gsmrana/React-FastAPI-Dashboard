@@ -41,7 +41,7 @@ export default function Register() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Create account</CardTitle>
-        <CardDescription>Sign up to access Nexus Hub.</CardDescription>
+        <CardDescription>Sign up to access your dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

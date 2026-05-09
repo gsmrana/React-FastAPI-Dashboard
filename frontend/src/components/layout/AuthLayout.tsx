@@ -1,5 +1,7 @@
 import { APP_NAME } from '@/api/client';
-import { Box, Container, Paper, Typography, useTheme } from '@mui/material';
+import { Box, Container, IconButton, Paper, Tooltip, Typography, useTheme } from '@mui/material';
+import { DarkMode, LightMode } from '@mui/icons-material';
+import { useThemeMode } from '@/contexts/ThemeContext';
 import type { ReactNode } from 'react';
 
 export default function AuthLayout({
@@ -12,6 +14,7 @@ export default function AuthLayout({
   children: ReactNode;
 }) {
   const theme = useTheme();
+  const { mode, toggleMode } = useThemeMode();
   return (
     <Box
       sx={{
@@ -27,6 +30,13 @@ export default function AuthLayout({
             : `radial-gradient(1200px 600px at 10% 0%, ${theme.palette.primary.light}55, transparent), radial-gradient(900px 500px at 90% 100%, ${theme.palette.secondary.light}55, transparent), ${theme.palette.background.default}`,
       }}
     >
+      <Box sx={{ position: 'fixed', top: 16, right: 16, zIndex: 10 }}>
+        <Tooltip title={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
+          <IconButton onClick={toggleMode} color="inherit">
+            {mode === 'dark' ? <LightMode /> : <DarkMode />}
+          </IconButton>
+        </Tooltip>
+      </Box>
       <Container maxWidth="sm">
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Box

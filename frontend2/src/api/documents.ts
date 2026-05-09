@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, API_BASE_URL } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
 import type { Document } from "@/types/api";
 
 const KEY = ["documents"] as const;
@@ -60,11 +60,11 @@ export function useDeleteDocument() {
 }
 
 export function thumbnailUrl(filename: string, width = 240, height = 240) {
-  return `${API_BASE_URL}/documents/thumbnail/${encodeURIComponent(filename)}?width=${width}&height=${height}`;
+  return `${API_BASE}/documents/thumbnail/${encodeURIComponent(filename)}?width=${width}&height=${height}`;
 }
 export function viewUrl(filename: string) {
-  return `${API_BASE_URL}/documents/view/${encodeURIComponent(filename)}`;
+  return `${API_BASE}/documents/view/${encodeURIComponent(filename)}`;
 }
 export function downloadUrl(filename: string) {
-  return `${API_BASE_URL}/documents/download/${encodeURIComponent(filename)}`;
+  return `${API_BASE}/documents/download/${encodeURIComponent(filename)}`;
 }

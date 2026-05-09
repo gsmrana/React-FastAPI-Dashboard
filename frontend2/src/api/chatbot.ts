@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, API_BASE_URL } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
 import type { ChatRequest, ChatResponse, HistoryResponse, SessionsResponse } from "@/types/api";
 
 const KEY = ["chat"] as const;
@@ -80,7 +80,7 @@ export async function streamChat(
   onToken: (chunk: string) => void,
   signal?: AbortSignal,
 ) {
-  const res = await fetch(`${API_BASE_URL}/chat/stream`, {
+  const res = await fetch(`${API_BASE}/chat/stream`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

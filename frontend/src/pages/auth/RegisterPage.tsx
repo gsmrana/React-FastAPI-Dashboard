@@ -44,7 +44,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthLayout title="Create account" subtitle="Join the dashboard in seconds">
+    <AuthLayout title="Create account" subtitle="Sign up to access your dashboard.">
       <Box component="form" onSubmit={onSubmit} noValidate>
         <Stack spacing={2}>
           {error && <Alert severity="error">{error}</Alert>}

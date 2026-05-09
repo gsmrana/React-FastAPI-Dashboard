@@ -15,6 +15,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useUiStore } from "@/stores/ui-store";
 import { useLogout } from "@/api/auth";
 import { initials } from "@/lib/utils";
+import { APP_NAME } from "@/lib/api";
 
 const titles: Record<string, string> = {
   "/": "Dashboard",
@@ -42,7 +43,7 @@ export function Topbar() {
   const title =
     titles[location.pathname] ||
     Object.entries(titles).find(([k]) => k !== "/" && location.pathname.startsWith(k))?.[1] ||
-    "Nexus Hub";
+    APP_NAME;
 
   const handleLogout = async () => {
     await logout.mutateAsync();
