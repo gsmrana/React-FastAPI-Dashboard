@@ -4,18 +4,20 @@ import mimetypes
 from PIL import Image
 from typing import List
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, UploadFile, Depends, File
 from fastapi.responses import FileResponse, Response
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import config
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
 from app.models.user import User
+from app.models.document import Document
 from app.schemas.document import (
     DocumentRequest,
-    DocumentSchema, 
+    DocumentSchema,
     RenameRequest,
 )
 
@@ -35,17 +37,20 @@ UPLOAD_DIR = Path(config.data_dir, "uploaded")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 FILE_NOT_FOUND_EXC = HTTPException(status_code=404, detail="File not found")
 
+
 def icon_filename(ext):
     for ext_list in ICON_MAP:
         if ext in ext_list:
             return ext_list[-1]
     return "file-text.svg"
 
-def get_formatted_size(size_bytes):   
+
+def get_formatted_size(size_bytes):
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
         if size_bytes < 1024:
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
+
 
 def get_unique_filename(file_path):
     count = 1
@@ -55,51 +60,86 @@ def get_unique_filename(file_path):
         count += 1
     return unique_filename
 
+
+def _apply_group_filter(query, user: User):
+    if user.is_superuser:
+        return query
+    if user.group_id is not None:
+        return query.filter(Document.group_id == user.group_id)
+    return query.filter(Document.created_by == user.id)
+
+
+def _check_access(doc: Document, user: User) -> bool:
+    if user.is_superuser:
+        return True
+    if user.group_id is not None:
+        return doc.group_id == user.group_id
+    return doc.created_by == user.id
+
+
+def _doc_to_schema(doc: Document) -> DocumentSchema:
+    file_path = Path(doc.filepath)
+    filesize_str = get_formatted_size(doc.filesize) if doc.filesize else ""
+    modified_at = None
+    if file_path.exists():
+        modified_at = datetime.fromtimestamp(file_path.stat().st_mtime)
+    return DocumentSchema(
+        id=doc.id,
+        filename=doc.filename,
+        filepath=doc.filepath,
+        filesize=filesize_str,
+        category=doc.category,
+        is_starred=doc.is_starred,
+        tags=doc.tags,
+        description=doc.description,
+        created_at=doc.created_at,
+        modified_at=modified_at,
+    )
+
+
 @router.get("/documents", response_model=List[DocumentSchema])
 async def document_list(
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    documents = []
-    for idx, file in enumerate(UPLOAD_DIR.iterdir()):
-        filestat = file.stat()
-        documents.append(DocumentSchema(
-            id=str(idx+1),
-            filename=file.name,
-            filepath=str(file),
-            filesize=get_formatted_size(filestat.st_size),
-            created_at=datetime.fromtimestamp(filestat.st_ctime),
-            modified_at=datetime.fromtimestamp(filestat.st_mtime),
-        ))
-    return documents
+    query = select(Document).filter(Document.deleted_at == None)
+    query = _apply_group_filter(query, user)
+    result = await db.execute(query)
+    docs = result.scalars().all()
+    return [_doc_to_schema(d) for d in docs]
+
 
 @router.post("/documents/upload", response_model=List[DocumentSchema])
 async def upload_files(
     files: list[UploadFile] = File(...),
-    # user: User = Depends(current_active_user), # excluding user auth for external use
-    # db: AsyncSession = Depends(get_async_db),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    stored_files = []
+    created_docs = []
     for file in files:
         store_filepath = UPLOAD_DIR / file.filename
         store_filepath = get_unique_filename(store_filepath)
 
         with open(store_filepath, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        stored_files.append(store_filepath)
 
-    response = []
-    for idx, filepath in enumerate(stored_files):
-        filestat = filepath.stat()
-        response.append(DocumentSchema(
-            id=str(idx+1),
-            filename=filepath.name,
-            filepath=str(filepath),
-            filesize=get_formatted_size(filestat.st_size),
-            created_at=datetime.fromtimestamp(filestat.st_ctime),
-            modified_at=datetime.fromtimestamp(filestat.st_mtime),
-        ))
-    return response
+        filesize = store_filepath.stat().st_size
+        doc = Document(
+            filename=store_filepath.name,
+            filepath=str(store_filepath),
+            filesize=filesize,
+            created_by=user.id,
+            group_id=user.group_id,
+        )
+        db.add(doc)
+        created_docs.append((doc, store_filepath))
+
+    await db.commit()
+    for doc, _ in created_docs:
+        await db.refresh(doc)
+
+    return [_doc_to_schema(doc) for doc, _ in created_docs]
+
 
 @router.get("/documents/thumbnail/{filename}")
 async def get_thumbnail(
@@ -107,12 +147,17 @@ async def get_thumbnail(
     width: int = 100,
     height: int = 100,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    file_path = UPLOAD_DIR / filename
+    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not _check_access(doc, user):
+        raise FILE_NOT_FOUND_EXC
+
+    file_path = Path(doc.filepath)
     if not file_path.exists():
         raise FILE_NOT_FOUND_EXC
-    
+
     ext = file_path.suffix.lower()
     if ext in [".jpg", ".jpeg", ".png", ".webp"]:
         width = width if width > 10 else 10
@@ -122,29 +167,29 @@ async def get_thumbnail(
             buf = io.BytesIO()
             img.save(buf, format="WEBP")
             return Response(
-                content=buf.getvalue(), 
+                content=buf.getvalue(),
                 media_type="image/webp",
             )
     return FileResponse(ICON_DIR / icon_filename(ext))
+
 
 @router.get("/documents/view/{filename}", response_class=FileResponse)
 async def view_file(
     filename: str,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    file_path = UPLOAD_DIR / filename
+    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not _check_access(doc, user):
+        raise FILE_NOT_FOUND_EXC
+
+    file_path = Path(doc.filepath)
     if not file_path.exists():
         raise FILE_NOT_FOUND_EXC
-    
-    # media_type helps the browser understand how to render it
+
     media_type, _ = mimetypes.guess_type(file_path)
-
-    # 'inline' tells the browser: "Try to show this inside the window"
-    headers = {
-        "Content-Disposition": f"inline; filename={file_path.name}"
-    }
-
+    headers = {"Content-Disposition": f"inline; filename={file_path.name}"}
     return FileResponse(
         path=file_path,
         filename=file_path.name,
@@ -152,13 +197,19 @@ async def view_file(
         media_type=media_type or "application/octet-stream",
     )
 
+
 @router.get("/documents/download/{filename}", response_class=FileResponse)
 async def download_file(
     filename: str,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    file_path = UPLOAD_DIR / filename
+    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not _check_access(doc, user):
+        raise FILE_NOT_FOUND_EXC
+
+    file_path = Path(doc.filepath)
     if not file_path.exists():
         raise FILE_NOT_FOUND_EXC
 
@@ -169,36 +220,50 @@ async def download_file(
         media_type=media_type or "application/octet-stream"
     )
 
+
 @router.patch("/documents", response_model=DocumentSchema)
 async def update_filename(
-    doc: RenameRequest,
+    doc_req: RenameRequest,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    file_path = UPLOAD_DIR / doc.filename
-    if not file_path.exists():
-        raise FILE_NOT_FOUND_EXC    
-    
-    file_path.rename(UPLOAD_DIR / doc.new_filename)
-    return DocumentSchema(
-        id=0,
-        filename=doc.new_filename,
-        filepath=str(UPLOAD_DIR / doc.new_filename),
-    )
+    result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not _check_access(doc, user):
+        raise FILE_NOT_FOUND_EXC
+
+    old_path = Path(doc.filepath)
+    if not old_path.exists():
+        raise FILE_NOT_FOUND_EXC
+
+    new_path = UPLOAD_DIR / doc_req.new_filename
+    old_path.rename(new_path)
+
+    doc.filename = doc_req.new_filename
+    doc.filepath = str(new_path)
+    doc.updated_by = user.id
+    await db.commit()
+    await db.refresh(doc)
+    return _doc_to_schema(doc)
+
 
 @router.delete("/documents", response_model=DocumentSchema)
 async def delete_file(
-    doc: DocumentRequest,
+    doc_req: DocumentRequest,
     user: User = Depends(current_active_user),
-    # db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(get_async_db),
 ):
-    file_path = UPLOAD_DIR / doc.filename
-    if not file_path.exists():
+    result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not _check_access(doc, user):
         raise FILE_NOT_FOUND_EXC
 
-    file_path.unlink()
-    return DocumentSchema(
-        id=0,
-        filename=doc.filename,
-        filepath=str(file_path),
-    )
+    file_path = Path(doc.filepath)
+    if file_path.exists():
+        file_path.unlink()
+
+    doc.deleted_by = user.id
+    doc.deleted_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(doc)
+    return _doc_to_schema(doc)

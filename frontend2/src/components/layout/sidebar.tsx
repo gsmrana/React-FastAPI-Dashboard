@@ -31,13 +31,14 @@ const main = [
   { to: "/notes", label: "Notepad", icon: StickyNote },
   { to: "/chat", label: "Chatbot", icon: Bot },
   { to: "/files", label: "File Manager", icon: FolderKanban },
-  { to: "/services", label: "Services", icon: Wrench },
+  { to: "/services", label: "Service Manager", icon: Wrench },
+  { to: "/llms", label: "LLM Manager", icon: Cpu },
+  { to: "/groups", label: "Group Members", icon: Users },
   // { to: "/profile", label: "Profile", icon: User },
 ];
 
 const admin = [
   { to: "/admin/users", label: "User Manager", icon: Users },
-  { to: "/admin/llm", label: "LLM Manager", icon: Cpu },
   { to: "/admin/config", label: "App Config", icon: Settings },
   { to: "/admin/logs", label: "App Logs", icon: ScrollText },
   { to: "/admin/system", label: "System Info", icon: ServerCog },

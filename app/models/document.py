@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class Document(DbBase, AuditMixin):
+class Document(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "documents"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     filename = Column(String, nullable=False)

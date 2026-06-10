@@ -16,9 +16,10 @@ import ServicesPage from '@/pages/ServicesPage';
 import DocumentsPage from '@/pages/DocumentsPage';
 import ChatbotPage from '@/pages/ChatbotPage';
 import ProfilePage from '@/pages/ProfilePage';
+import GroupsPage from '@/pages/GroupsPage';
 
 import UsersAdminPage from '@/pages/admin/UsersAdminPage';
-import LlmManagerPage from '@/pages/admin/LlmManagerPage';
+import LlmManagerPage from '@/pages/LlmManagerPage';
 import AppConfigPage from '@/pages/admin/AppConfigPage';
 import SysInfoPage from '@/pages/admin/SysInfoPage';
 import LogsPage from '@/pages/admin/LogsPage';
@@ -46,10 +47,12 @@ export default function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="/todos" element={<TodosPage />} />
         <Route path="/expenses" element={<ExpensesPage />} />
-        <Route path="/notepad" element={<NotepadPage />} />
-        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/notes" element={<NotepadPage />} />
+        <Route path="/chat" element={<ChatbotPage />} />
         <Route path="/files" element={<DocumentsPage />} />
-        <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/llms" element={<LlmManagerPage />} />
+        <Route path="/groups" element={<GroupsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
         {/* Admin */}
@@ -58,14 +61,6 @@ export default function AppRoutes() {
           element={
             <AdminRoute>
               <UsersAdminPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/llm-manager"
-          element={
-            <AdminRoute>
-              <LlmManagerPage />
             </AdminRoute>
           }
         />

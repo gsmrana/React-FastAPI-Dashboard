@@ -1,9 +1,11 @@
 from sqlalchemy import Column, Integer, Float, String, Text, DateTime
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class Expense(DbBase, AuditMixin):
+
+class Expense(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "expenses"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)

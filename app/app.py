@@ -14,7 +14,7 @@ from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.pages import jinja_pages
 from app.api import (
     health, admin, documents, llm_configs, notepads, 
-	todos, expenses, services, chatbot
+	todos, expenses, services, chatbot, groups
 )
 
 
@@ -72,6 +72,7 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 
 # include api routers
 app.include_router(admin.router, prefix=API_PREFIX, tags=["admin"])
+app.include_router(groups.router, prefix=API_PREFIX, tags=["group"])
 app.include_router(documents.router, prefix=API_PREFIX, tags=["document"])
 app.include_router(notepads.router, prefix=API_PREFIX, tags=["notepad"])
 app.include_router(todos.router, prefix=API_PREFIX, tags=["todo"])

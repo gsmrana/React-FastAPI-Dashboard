@@ -7,6 +7,7 @@ export interface AuditFields {
   created_by?: string | null;
   updated_by?: string | null;
   deleted_by?: string | null;
+  group_id?: number | null;
 }
 
 export interface User {
@@ -16,7 +17,30 @@ export interface User {
   is_superuser: boolean;
   is_verified: boolean;
   full_name?: string;
+  group_id?: number | null;
+  group_role?: 'owner' | 'member' | null;
 }
+
+export interface GroupMember {
+  id: string;
+  email: string;
+  full_name: string;
+  group_role?: string | null;
+}
+
+export interface Group {
+  id: number;
+  name: string;
+  description?: string | null;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  members: GroupMember[];
+}
+
+export type CreateGroup = { name: string; description?: string };
+export type UpdateGroup = { name?: string; description?: string };
+export type GroupInvite = { email: string };
 
 export interface Todo extends AuditFields {
   id: number;

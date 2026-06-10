@@ -13,6 +13,23 @@ from app.models.service import Service
 
 router = APIRouter()
 
+
+def _apply_group_filter(query, Model, user: User):
+    if user.is_superuser:
+        return query
+    if user.group_id is not None:
+        return query.filter(Model.group_id == user.group_id)
+    return query.filter(Model.created_by == user.id)
+
+
+def _check_access(resource, user: User) -> bool:
+    if user.is_superuser:
+        return True
+    if user.group_id is not None:
+        return resource.group_id == user.group_id
+    return resource.created_by == user.id
+
+
 @router.get("/services", response_model=List[ServiceSchema])
 async def get_service_list(
     include_deleted: Optional[bool] = None, 
@@ -20,6 +37,7 @@ async def get_service_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Service)
+    query = _apply_group_filter(query, Service, user)
     if include_deleted is None or include_deleted is False:
         query = query.filter(Service.deleted_at == None)
     result = await db.execute(query)
@@ -33,7 +51,8 @@ async def create_service(
 ):
     new_service = Service(
         **create_service.model_dump(),
-        created_by=user.id
+        created_by=user.id,
+        group_id=user.group_id,
     )
     db.add(new_service)
     await db.commit()
@@ -48,7 +67,7 @@ async def get_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service:
+    if not service or not _check_access(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     return service
 
@@ -61,7 +80,7 @@ async def update_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service:
+    if not service or not _check_access(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(service, key, value)
@@ -79,7 +98,7 @@ async def delete_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service:
+    if not service or not _check_access(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     if not hard_delete:
         service.deleted_by = user.id
@@ -87,5 +106,6 @@ async def delete_service(
     else:
         await db.delete(service)
     await db.commit()
-    await db.refresh(service)
+    if not hard_delete:
+        await db.refresh(service)
     return service

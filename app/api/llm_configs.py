@@ -14,6 +14,23 @@ from app.schemas.llm_config import LlmSchema, UpdateLlmSchema, CreateLlmSchema
 
 router = APIRouter()
 
+
+def _apply_group_filter(query, Model, user: User):
+    if user.is_superuser:
+        return query
+    if user.group_id is not None:
+        return query.filter(Model.group_id == user.group_id)
+    return query.filter(Model.created_by == user.id)
+
+
+def _check_access(resource, user: User) -> bool:
+    if user.is_superuser:
+        return True
+    if user.group_id is not None:
+        return resource.group_id == user.group_id
+    return resource.created_by == user.id
+
+
 @router.get("/llm-configs", response_model=List[LlmSchema])
 async def get_llm_config_list(
     is_active: Optional[bool] = None,
@@ -22,6 +39,7 @@ async def get_llm_config_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(LlmConfig)
+    query = _apply_group_filter(query, LlmConfig, user)
     if is_active is not None:
         query = query.filter(LlmConfig.is_active == is_active)
     if include_deleted is None or include_deleted is False:
@@ -37,7 +55,8 @@ async def create_llm_config(
 ):
     new_llm = LlmConfig(
         **create_llm.model_dump(),
-        created_by=user.id
+        created_by=user.id,
+        group_id=user.group_id,
     )
     db.add(new_llm)
     await db.commit()
@@ -69,7 +88,7 @@ async def get_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm:
+    if not llm or not _check_access(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     return llm
 
@@ -82,7 +101,7 @@ async def update_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm:
+    if not llm or not _check_access(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(llm, key, value)
@@ -101,7 +120,7 @@ async def delete_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm:
+    if not llm or not _check_access(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     if not hard_delete:
         llm.deleted_by = user.id
@@ -110,6 +129,7 @@ async def delete_llm_config(
         await db.delete(llm)
     
     await db.commit()
-    await db.refresh(llm)
+    if not hard_delete:
+        await db.refresh(llm)
     await llm_cache.refresh()
     return llm

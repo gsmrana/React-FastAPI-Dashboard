@@ -16,14 +16,16 @@ import Notes from "@/pages/Notes";
 import Todos from "@/pages/Todos";
 import Expenses from "@/pages/Expenses";
 import Services from "@/pages/Services";
+import LlmManager from "@/pages/LlmManager";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
 import AdminUsers from "@/pages/admin/Users";
-import AdminLlm from "@/pages/admin/LlmManager";
 import AdminConfig from "@/pages/admin/AppConfig";
 import AdminSystem from "@/pages/admin/SystemInfo";
 import AdminLogs from "@/pages/admin/Logs";
+
+import Groups from "@/pages/Groups";
 
 export const router = createBrowserRouter([
   {
@@ -44,12 +46,14 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: "/", element: <Dashboard /> },
-      { path: "/files", element: <Files /> },
-      { path: "/chat", element: <Chat /> },
-      { path: "/notes", element: <Notes /> },
       { path: "/todos", element: <Todos /> },
       { path: "/expenses", element: <Expenses /> },
+      { path: "/notes", element: <Notes /> },
+      { path: "/chat", element: <Chat /> },
+      { path: "/files", element: <Files /> },
       { path: "/services", element: <Services /> },
+      { path: "/llms", element: <LlmManager /> },
+      { path: "/groups", element: <Groups /> },
       { path: "/profile", element: <Profile /> },
       {
         path: "/admin",
@@ -64,14 +68,6 @@ export const router = createBrowserRouter([
         element: (
           <AdminRoute>
             <AdminUsers />
-          </AdminRoute>
-        ),
-      },
-      {
-        path: "/admin/llm",
-        element: (
-          <AdminRoute>
-            <AdminLlm />
           </AdminRoute>
         ),
       },

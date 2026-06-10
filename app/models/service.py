@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Boolean, Integer, String
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class Service(DbBase, AuditMixin):
+class Service(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "services"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False)

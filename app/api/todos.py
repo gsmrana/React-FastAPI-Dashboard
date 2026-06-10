@@ -13,6 +13,24 @@ from app.models.todo import Todo
 
 router = APIRouter()
 
+
+def _apply_group_filter(query, Model, user: User):
+    """Filter resources by group membership. Superusers see all."""
+    if user.is_superuser:
+        return query
+    if user.group_id is not None:
+        return query.filter(Model.group_id == user.group_id)
+    return query.filter(Model.created_by == user.id)
+
+
+def _check_access(resource, user: User) -> bool:
+    if user.is_superuser:
+        return True
+    if user.group_id is not None:
+        return resource.group_id == user.group_id
+    return resource.created_by == user.id
+
+
 @router.get("/todos", response_model=List[TodoSchema])
 async def get_todo_list(
     include_completed: Optional[bool] = None,
@@ -21,6 +39,7 @@ async def get_todo_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Todo)
+    query = _apply_group_filter(query, Todo, user)
     if include_deleted is None or include_deleted is False:
         query = query.filter(Todo.deleted_at == None)
     if include_completed is None or include_completed is False:
@@ -36,7 +55,8 @@ async def create_todo(
 ):
     new_todo = Todo(
         **create_todo.model_dump(),
-        created_by=user.id
+        created_by=user.id,
+        group_id=user.group_id,
     )
     db.add(new_todo)
     await db.commit()
@@ -51,7 +71,7 @@ async def get_todo(
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()
-    if not todo:
+    if not todo or not _check_access(todo, user):
         raise HTTPException(404, f"Todo id {todo_id} not found")
     return todo
 
@@ -64,7 +84,7 @@ async def update_todo(
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()
-    if not todo:
+    if not todo or not _check_access(todo, user):
         raise HTTPException(404, f"Todo id {todo_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(todo, key, value)
@@ -82,7 +102,7 @@ async def delete_todo(
 ):
     result = await db.execute(select(Todo).where(Todo.id == todo_id))
     todo = result.scalars().first()
-    if not todo:
+    if not todo or not _check_access(todo, user):
         raise HTTPException(404, f"Todo id {todo_id} not found")
     if not hard_delete:
         todo.deleted_by = user.id
@@ -90,5 +110,6 @@ async def delete_todo(
     else:
         await db.delete(todo)
     await db.commit()
-    await db.refresh(todo)
+    if not hard_delete:
+        await db.refresh(todo)
     return todo

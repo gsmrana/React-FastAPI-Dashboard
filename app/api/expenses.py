@@ -13,6 +13,23 @@ from app.models.expense import Expense
 
 router = APIRouter()
 
+
+def _apply_group_filter(query, Model, user: User):
+    if user.is_superuser:
+        return query
+    if user.group_id is not None:
+        return query.filter(Model.group_id == user.group_id)
+    return query.filter(Model.created_by == user.id)
+
+
+def _check_access(resource, user: User) -> bool:
+    if user.is_superuser:
+        return True
+    if user.group_id is not None:
+        return resource.group_id == user.group_id
+    return resource.created_by == user.id
+
+
 @router.get("/expenses", response_model=List[ExpenseSchema])
 async def expense_list(
     from_date: Optional[datetime] = None,
@@ -22,6 +39,7 @@ async def expense_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Expense)
+    query = _apply_group_filter(query, Expense, user)
     if from_date:
         query = query.filter(Expense.date >= from_date)
     if to_date:
@@ -39,7 +57,8 @@ async def create_expense(
 ):
     new_expense = Expense(
         **create_expense.model_dump(),
-        created_by=user.id
+        created_by=user.id,
+        group_id=user.group_id,
     )
     db.add(new_expense)
     await db.commit()
@@ -54,7 +73,7 @@ async def get_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense:
+    if not expense or not _check_access(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     return expense
 
@@ -67,7 +86,7 @@ async def update_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense:
+    if not expense or not _check_access(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(expense, key, value)
@@ -85,7 +104,7 @@ async def delete_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense:
+    if not expense or not _check_access(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     if not hard_delete:
         expense.deleted_by = user.id
@@ -93,5 +112,6 @@ async def delete_expense(
     else:
         await db.delete(expense)
     await db.commit()
-    await db.refresh(expense)
+    if not hard_delete:
+        await db.refresh(expense)
     return expense

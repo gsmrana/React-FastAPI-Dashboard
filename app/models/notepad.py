@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class Notepad(DbBase, AuditMixin):
+class Notepad(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "notepads"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)

@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Boolean, Integer, String, Float
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class LlmConfig(DbBase, AuditMixin):
+class LlmConfig(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "llm_configs"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     provider = Column(Integer, nullable=False) # i.e OpenAI, Anthropic, Azure

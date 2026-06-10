@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Boolean, Integer, String, Text, DateTime
 from app.db.async_db import DbBase
+from app.models.group_mixin import GroupMixin
 from app.models.audit_mixin import AuditMixin
 
 
-class Todo(DbBase, AuditMixin):
+class Todo(DbBase, GroupMixin, AuditMixin):
     __tablename__ = "todos"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False)
