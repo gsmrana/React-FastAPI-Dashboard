@@ -7,6 +7,10 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
     group_id: Optional[int] = None
     group_role: Optional[str] = None
 
+class AdminUserRead(UserRead):
+    """Extended UserRead for admin endpoints — includes group name."""
+    group_name: Optional[str] = None
+
 class UserCreate(schemas.BaseUserCreate):
     full_name: Optional[str] = ""
 

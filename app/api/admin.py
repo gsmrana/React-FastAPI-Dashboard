@@ -12,7 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import config
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead
+from app.models.group import Group
+from app.schemas.user import UserCreate, UserRead, AdminUserRead
 from app.db.async_db import get_async_db
 from app.core.users import (
     UserManager,
@@ -80,7 +81,7 @@ async def download_applog(
         media_type='text/plain'
     )
 
-@router.get("/admin/users", response_model=List[UserRead])
+@router.get("/admin/users", response_model=List[AdminUserRead])
 async def user_list(
     offset: int = None,
     limit: int = None,
@@ -94,7 +95,22 @@ async def user_list(
     )
     result = await db.execute(query)
     users = result.scalars().all()
-    return users
+
+    # fetch all referenced groups in one query
+    group_ids = {u.group_id for u in users if u.group_id is not None}
+    group_names: dict[int, str] = {}
+    if group_ids:
+        g_result = await db.execute(select(Group).where(Group.id.in_(group_ids)))
+        for g in g_result.scalars().all():
+            group_names[g.id] = g.name
+
+    return [
+        AdminUserRead(
+            **UserRead.model_validate(u).model_dump(),
+            group_name=group_names.get(u.group_id) if u.group_id else None,
+        )
+        for u in users
+    ]
 
 @router.post("/admin/users", response_model=UserRead)
 async def user_create(
@@ -122,17 +138,27 @@ async def user_create(
         )
     return created_user
 
-@router.post("/admin/user-by-email", response_model=UserRead)
+@router.post("/admin/user-by-email", response_model=AdminUserRead)
 async def find_user_by_email(
     email: str,
     admin: User = Depends(current_active_superuser),
     user_manager: UserManager = Depends(get_user_manager),
+    db: AsyncSession = Depends(get_async_db),
 ):
     try:
         user = await user_manager.get_by_email(email)
-        return user
     except exceptions.UserNotExists:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="USER_NOT_FOUND.",
         )
+    group_name: str | None = None
+    if user.group_id is not None:
+        g_result = await db.execute(select(Group).where(Group.id == user.group_id))
+        g = g_result.scalars().first()
+        if g:
+            group_name = g.name
+    return AdminUserRead(
+        **UserRead.model_validate(user).model_dump(),
+        group_name=group_name,
+    )

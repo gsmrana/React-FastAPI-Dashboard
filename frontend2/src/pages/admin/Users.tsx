@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { useAdminUsers, useCreateAdminUser, useFindUserByEmail } from "@/api/admin";
 import { toastError } from "@/lib/api";
-import type { UserRead } from "@/types/api";
+import type { AdminUserRead } from "@/types/api";
 
 const createSchema = z.object({
   email: z.string().email(),
@@ -48,7 +48,7 @@ export default function Users() {
   const find = useFindUserByEmail();
   const [open, setOpen] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
-  const [found, setFound] = useState<UserRead | null>(null);
+  const [found, setFound] = useState<AdminUserRead | null>(null);
 
   const form = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
@@ -120,6 +120,8 @@ export default function Users() {
                   <TableHead>Email</TableHead>
                   <TableHead className="hidden md:table-cell">Name</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="hidden lg:table-cell">Role</TableHead>
+                  <TableHead className="hidden lg:table-cell">Group</TableHead>
                   <TableHead className="hidden lg:table-cell">ID</TableHead>
                 </TableRow>
               </TableHeader>
@@ -130,14 +132,36 @@ export default function Users() {
                     <TableCell className="hidden md:table-cell">{u.full_name}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {u.is_superuser && <Badge>Admin</Badge>}
+                        {!u.is_active && <Badge variant="destructive">Inactive</Badge>}
                         {u.is_verified ? (
                           <Badge variant="secondary">Verified</Badge>
                         ) : (
                           <Badge variant="outline">Unverified</Badge>
                         )}
-                        {!u.is_active && <Badge variant="destructive">Inactive</Badge>}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {u.is_superuser ? (
+                          <Badge variant="default">Admin</Badge>
+                        ) : (
+                          <Badge variant="secondary">User</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {u.group_name ? (
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline">{u.group_name}</Badge>
+                          {u.group_role && (
+                            <Badge variant={u.group_role === "owner" ? "secondary" : "outline"}>
+                              {u.group_role}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="hidden lg:table-cell font-mono text-xs text-muted-foreground">
                       {u.id}
@@ -224,13 +248,21 @@ export default function Users() {
   );
 }
 
-function UserInline({ user }: { user: UserRead }) {
+function UserInline({ user }: { user: AdminUserRead }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <span className="font-medium">{user.email}</span>
       <span className="text-muted-foreground">{user.full_name}</span>
       {user.is_superuser && <Badge>Admin</Badge>}
       {user.is_verified ? <Badge variant="secondary">Verified</Badge> : <Badge variant="outline">Unverified</Badge>}
+      {user.group_name && (
+        <>
+          <Badge variant="outline">{user.group_name}</Badge>
+          {user.group_role && (
+            <Badge variant={user.group_role === "owner" ? "default" : "secondary"}>{user.group_role}</Badge>
+          )}
+        </>
+      )}
       <span className="font-mono text-xs text-muted-foreground">{user.id}</span>
     </div>
   );

@@ -21,6 +21,11 @@ export interface User {
   group_role?: 'owner' | 'member' | null;
 }
 
+/** Extended User returned by admin endpoints — includes group_name. */
+export interface AdminUser extends User {
+  group_name?: string | null;
+}
+
 export interface GroupMember {
   id: string;
   email: string;

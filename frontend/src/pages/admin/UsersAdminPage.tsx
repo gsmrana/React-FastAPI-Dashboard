@@ -30,6 +30,7 @@ import { adminApi } from '@/api/admin';
 import PageHeader from '@/components/common/PageHeader';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { extractError } from '@/api/client';
+import type { AdminUser } from '@/types';
 
 export default function UsersAdminPage() {
   const qc = useQueryClient();
@@ -38,7 +39,7 @@ export default function UsersAdminPage() {
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
   const [searchEmail, setSearchEmail] = useState('');
-  const [foundUser, setFoundUser] = useState<Record<string, unknown> | null>(null);
+  const [foundUser, setFoundUser] = useState<AdminUser | null>(null);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -78,7 +79,7 @@ export default function UsersAdminPage() {
     if (!searchEmail.trim()) return;
     try {
       const u = await adminApi.userByEmail(searchEmail.trim());
-      setFoundUser(u as unknown as Record<string, unknown>);
+      setFoundUser(u);
     } catch (e) {
       setFoundUser(null);
       enqueueSnackbar(extractError(e, 'User not found'), { variant: 'error' });
@@ -112,19 +113,19 @@ export default function UsersAdminPage() {
             </Button>
           </Stack>
           {foundUser && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2">Found:</Typography>
-              <pre
-                style={{
-                  fontSize: 12,
-                  background: 'rgba(128,128,128,0.08)',
-                  padding: 12,
-                  borderRadius: 6,
-                  overflowX: 'auto',
-                }}
-              >
-                {JSON.stringify(foundUser, null, 2)}
-              </pre>
+            <Box sx={{ mt: 2, p: 1.5, borderRadius: 1, bgcolor: 'action.hover' }}>
+              <Typography variant="subtitle2" gutterBottom>Found:</Typography>
+              <Stack direction="row" flexWrap="wrap" gap={1} alignItems="center">
+                <Typography variant="body2" fontWeight={600}>{foundUser.email}</Typography>
+                {foundUser.full_name && <Typography variant="body2" color="text.secondary">{foundUser.full_name}</Typography>}
+                {!foundUser.is_active && <Chip size="small" color="default" label="Inactive" />}
+                {/* <Chip size="small" label={foundUser.is_active ? 'Active' : 'Inactive'} color={foundUser.is_active ? 'success' : 'default'} /> */}
+                <Chip size="small" label={foundUser.is_verified ? 'Verified' : 'Unverified'} color={foundUser.is_verified ? 'primary' : 'warning'} />
+                {foundUser.is_superuser && <Chip size="small" color="secondary" label="Admin" />}
+                {foundUser.group_name && <Chip size="small" variant="outlined" label={foundUser.group_name} />}
+                {foundUser.group_role && <Chip size="small" color={foundUser.group_role === 'owner' ? 'primary' : 'default'} label={foundUser.group_role} />}
+                <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>{foundUser.id}</Typography>
+              </Stack>
             </Box>
           )}
         </CardContent>
@@ -142,6 +143,7 @@ export default function UsersAdminPage() {
                   <TableCell>Name</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Role</TableCell>
+                  <TableCell>Group</TableCell>
                   <TableCell>ID</TableCell>
                 </TableRow>
               </TableHead>
@@ -152,11 +154,12 @@ export default function UsersAdminPage() {
                     <TableCell>{u.full_name || '—'}</TableCell>
                     <TableCell>
                       <Stack direction="row" gap={0.5}>
-                        <Chip
+                        {/* <Chip
                           size="small"
                           label={u.is_active ? 'Active' : 'Inactive'}
                           color={u.is_active ? 'success' : 'default'}
-                        />
+                        /> */}
+                        {!u.is_active && <Chip size="small" color="default" label="Inactive" />}
                         <Chip
                           size="small"
                           label={u.is_verified ? 'Verified' : 'Unverified'}
@@ -168,17 +171,33 @@ export default function UsersAdminPage() {
                       {u.is_superuser ? (
                         <Chip size="small" color="secondary" label="Admin" />
                       ) : (
-                        <Chip size="small" label="User" />
+                        <Chip size="small" color="default" label="User" />
                       )}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 11, fontFamily: 'monospace' }}>
-                      {String(u.id).slice(0, 8)}…
+                    <TableCell>
+                      {u.group_name ? (
+                        <Stack direction="row" gap={0.5} flexWrap="wrap">
+                          <Chip size="small" variant="outlined" label={u.group_name} />
+                          {u.group_role && (
+                            <Chip
+                              size="small"
+                              color={u.group_role === 'owner' ? 'primary' : 'default'}
+                              label={u.group_role}
+                            />
+                          )}
+                        </Stack>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">—</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 11, fontFamily: 'monospace', color: 'text.secondary' }}>
+                      {u.id}
                     </TableCell>
                   </TableRow>
                 ))}
                 {(users.data || []).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       No users
                     </TableCell>
                   </TableRow>

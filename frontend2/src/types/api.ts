@@ -11,6 +11,11 @@ export interface UserRead {
   group_role?: "owner" | "member" | null;
 }
 
+/** Extended UserRead returned by admin endpoints — includes group_name. */
+export interface AdminUserRead extends UserRead {
+  group_name?: string | null;
+}
+
 export interface GroupMember {
   id: string;
   email: string;

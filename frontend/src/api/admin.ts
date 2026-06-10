@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { User } from '@/types';
+import type { User, AdminUser } from '@/types';
 
 export const adminApi = {
   sysinfo: async () => (await apiClient.get('/admin/sysinfo')).data,
@@ -8,7 +8,7 @@ export const adminApi = {
   applogDownloadUrl: () => '/admin/applog/download',
 
   listUsers: async (params?: { offset?: number; limit?: number }) => {
-    const { data } = await apiClient.get<User[]>('/admin/users', { params });
+    const { data } = await apiClient.get<AdminUser[]>('/admin/users', { params });
     return data;
   },
   createUser: async (payload: {
@@ -21,7 +21,7 @@ export const adminApi = {
   }) => (await apiClient.post<User>('/admin/users', payload)).data,
 
   userByEmail: async (email: string) => {
-    const { data } = await apiClient.post<User>(
+    const { data } = await apiClient.post<AdminUser>(
       `/admin/user-by-email`,
       undefined,
       { params: { email } }

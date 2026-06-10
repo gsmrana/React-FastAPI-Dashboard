@@ -193,7 +193,7 @@ export default function GroupsPage() {
   if (!group) {
     return (
       <Box maxWidth={480} mx="auto" mt={6}>
-        <PageHeader title="Group" icon={<GroupIcon />} />
+        <PageHeader title="Group"/>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>Create a Group</Typography>
@@ -233,7 +233,7 @@ export default function GroupsPage() {
   // ── Has group state ─────────────────────────────────────────────────────────
   return (
     <Box maxWidth={640}>
-      <PageHeader title="Group" icon={<GroupIcon />} />
+      <PageHeader title="Group" />
 
       {/* Group header card */}
       <Card sx={{ mb: 2 }}>

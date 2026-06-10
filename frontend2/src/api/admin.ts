@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, API_BASE } from "@/lib/api";
-import type { AppConfig, SysInfo, UserRead } from "@/types/api";
+import type { AppConfig, SysInfo, UserRead, AdminUserRead } from "@/types/api";
 
 export function useSysInfo() {
   return useQuery({
@@ -42,7 +42,7 @@ export function useAdminUsers(params?: { offset?: number; limit?: number }) {
   return useQuery({
     queryKey: ["admin", "users", params],
     queryFn: async () => {
-      const { data } = await api.get<UserRead[]>("/admin/users", { params });
+      const { data } = await api.get<AdminUserRead[]>("/admin/users", { params });
       return data;
     },
   });
@@ -51,7 +51,7 @@ export function useAdminUsers(params?: { offset?: number; limit?: number }) {
 export function useFindUserByEmail() {
   return useMutation({
     mutationFn: async (email: string) => {
-      const { data } = await api.post<UserRead>(
+      const { data } = await api.post<AdminUserRead>(
         `/admin/user-by-email`,
         null,
         { params: { email } },
