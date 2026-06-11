@@ -37,11 +37,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useDocuments,
   useUploadDocument,
   useRenameDocument,
   useDeleteDocument,
+  useUpdateDocumentGroup,
   thumbnailUrl,
   viewUrl,
   downloadUrl,
@@ -55,6 +59,9 @@ export default function Files() {
   const upload = useUploadDocument();
   const rename = useRenameDocument();
   const del = useDeleteDocument();
+  const updateGroup = useUpdateDocumentGroup();
+  const user = useAuthStore((s) => s.user);
+  const [uploadGroup, setUploadGroup] = useState<number | null>(user?.group_id ?? null);
   const [search, setSearch] = useState("");
   const [progress, setProgress] = useState<number | null>(null);
   const [previewing, setPreviewing] = useState<Document | null>(null);
@@ -73,7 +80,7 @@ export default function Files() {
     if (!files.length) return;
     setProgress(0);
     try {
-      await upload.mutateAsync({ files, onProgress: setProgress });
+      await upload.mutateAsync({ files, group_id: uploadGroup, onProgress: setProgress });
       toast.success(`Uploaded ${files.length} file${files.length === 1 ? "" : "s"}`);
     } catch (e) {
       toastError(e);
@@ -101,6 +108,9 @@ export default function Files() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+        </div>
+        <div className="w-48">
+          <GroupSelect value={uploadGroup} onChange={setUploadGroup} />
         </div>
         <Button onClick={open} disabled={upload.isPending}>
           {upload.isPending ? (
@@ -319,7 +329,9 @@ function FileCard({
               : ""}
           </span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex items-center justify-between gap-1">
+          <GroupBadge groupId={doc.group_id} />
+          <div className="flex gap-1">
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onPreview} title="Preview">
             <Eye className="h-3.5 w-3.5" />
           </Button>
@@ -340,6 +352,7 @@ function FileCard({
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

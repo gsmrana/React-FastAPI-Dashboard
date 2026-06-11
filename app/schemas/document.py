@@ -32,6 +32,10 @@ class UpdateDocumentSchema(BaseModel):
     is_starred: Optional[int] = None
     tags: Optional[str] = None
     description: Optional[str] = None
+    group_id: Optional[int] = None
+
+class DocumentGroupUpdateSchema(BaseModel):
+    group_id: Optional[int] = None
 
 class DocumentRequest(BaseModel):
     filename: str

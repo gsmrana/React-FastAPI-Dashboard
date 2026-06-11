@@ -53,6 +53,9 @@ export interface AuditFields {
   group_id?: number | null;
 }
 
+/** Audit fields that are always server-managed and never sent by the client. */
+type ServerAuditFields = Omit<AuditFields, "group_id">;
+
 export interface Todo extends AuditFields {
   id: number;
   title: string;
@@ -66,8 +69,8 @@ export interface Todo extends AuditFields {
   deadline_at?: string | null;
   remind_at?: string | null;
 }
-export type CreateTodo = Partial<Omit<Todo, "id" | keyof AuditFields>> & { title: string };
-export type UpdateTodo = Partial<Omit<Todo, "id" | keyof AuditFields>>;
+export type CreateTodo = Partial<Omit<Todo, "id" | keyof ServerAuditFields>> & { title: string };
+export type UpdateTodo = Partial<Omit<Todo, "id" | keyof ServerAuditFields>>;
 
 export interface Note extends AuditFields {
   id: number;
@@ -77,8 +80,8 @@ export interface Note extends AuditFields {
   is_starred: boolean;
   tags?: string | null;
 }
-export type CreateNote = Partial<Omit<Note, "id" | keyof AuditFields>> & { title: string };
-export type UpdateNote = Partial<Omit<Note, "id" | keyof AuditFields>>;
+export type CreateNote = Partial<Omit<Note, "id" | keyof ServerAuditFields>> & { title: string };
+export type UpdateNote = Partial<Omit<Note, "id" | keyof ServerAuditFields>>;
 
 export interface Expense extends AuditFields {
   id: number;
@@ -92,13 +95,13 @@ export interface Expense extends AuditFields {
   amount: number;
   currency: string;
 }
-export type CreateExpense = Partial<Omit<Expense, "id" | keyof AuditFields>> & {
+export type CreateExpense = Partial<Omit<Expense, "id" | keyof ServerAuditFields>> & {
   title: string;
   amount: number;
   date: string;
   currency: string;
 };
-export type UpdateExpense = Partial<Omit<Expense, "id" | keyof AuditFields>>;
+export type UpdateExpense = Partial<Omit<Expense, "id" | keyof ServerAuditFields>>;
 
 export interface Service extends AuditFields {
   id: number;
@@ -111,8 +114,8 @@ export interface Service extends AuditFields {
   category?: string | null;
   tags?: string | null;
 }
-export type CreateService = Partial<Omit<Service, "id" | keyof AuditFields>> & { name: string };
-export type UpdateService = Partial<Omit<Service, "id" | keyof AuditFields>>;
+export type CreateService = Partial<Omit<Service, "id" | keyof ServerAuditFields>> & { name: string };
+export type UpdateService = Partial<Omit<Service, "id" | keyof ServerAuditFields>>;
 
 export interface LlmConfig extends AuditFields {
   id: number;
@@ -146,6 +149,7 @@ export interface Document {
   description?: string | null;
   created_at?: string | null;
   modified_at?: string | null;
+  group_id?: number | null;
 }
 
 export interface ChatRequest {

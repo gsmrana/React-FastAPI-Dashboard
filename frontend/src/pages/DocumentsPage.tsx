@@ -32,7 +32,10 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 function isImage(filename: string) {
   return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(filename);
@@ -41,6 +44,8 @@ function isImage(filename: string) {
 export default function DocumentsPage() {
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
+  const [uploadGroup, setUploadGroup] = useState<number | null>(user?.group_id ?? null);
   const [search, setSearch] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [renameDoc, setRenameDoc] = useState<Document | null>(null);
@@ -54,7 +59,7 @@ export default function DocumentsPage() {
 
   const uploadM = useMutation({
     mutationFn: (files: File[]) =>
-      documentsApi.upload(files, (pct) => setUploadProgress(pct)),
+      documentsApi.upload(files, uploadGroup, (pct) => setUploadProgress(pct)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['documents'] });
       enqueueSnackbar('Upload complete', { variant: 'success' });
@@ -106,6 +111,9 @@ export default function DocumentsPage() {
               onChange={(e) => setSearch(e.target.value)}
               sx={{ minWidth: { xs: '100%', sm: 220 } }}
             />
+            <Box sx={{ minWidth: 180 }}>
+              <GroupField value={uploadGroup} onChange={setUploadGroup} />
+            </Box>
             <Button
               variant="contained"
               startIcon={<CloudUpload />}
@@ -207,6 +215,9 @@ export default function DocumentsPage() {
                   <Typography variant="caption" color="text.secondary">
                     {d.filesize}
                   </Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    <GroupChip groupId={d.group_id} />
+                  </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
                   <Tooltip title="Preview">

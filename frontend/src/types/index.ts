@@ -10,6 +10,9 @@ export interface AuditFields {
   group_id?: number | null;
 }
 
+/** Audit fields that are always server-managed and never sent by the client. */
+type ServerAuditFields = Omit<AuditFields, 'group_id'>;
+
 export interface User {
   id: string;
   email: string;
@@ -79,7 +82,7 @@ export interface Todo extends AuditFields {
   remind_at?: string | null;
 }
 
-export type CreateTodo = Omit<Todo, 'id' | keyof AuditFields>;
+export type CreateTodo = Omit<Todo, 'id' | keyof ServerAuditFields>;
 export type UpdateTodo = Partial<CreateTodo>;
 
 export interface Expense extends AuditFields {
@@ -95,7 +98,7 @@ export interface Expense extends AuditFields {
   currency: string;
 }
 
-export type CreateExpense = Omit<Expense, 'id' | keyof AuditFields>;
+export type CreateExpense = Omit<Expense, 'id' | keyof ServerAuditFields>;
 export type UpdateExpense = Partial<CreateExpense>;
 
 export interface Note extends AuditFields {
@@ -107,7 +110,7 @@ export interface Note extends AuditFields {
   tags: string;
 }
 
-export type CreateNote = Omit<Note, 'id' | keyof AuditFields>;
+export type CreateNote = Omit<Note, 'id' | keyof ServerAuditFields>;
 export type UpdateNote = Partial<CreateNote>;
 
 export interface Service extends AuditFields {
@@ -122,7 +125,7 @@ export interface Service extends AuditFields {
   tags: string;
 }
 
-export type CreateService = Omit<Service, 'id' | keyof AuditFields>;
+export type CreateService = Omit<Service, 'id' | keyof ServerAuditFields>;
 export type UpdateService = Partial<CreateService>;
 
 export interface LLMConfig extends AuditFields {
@@ -154,6 +157,7 @@ export interface Document {
   description?: string;
   created_at?: string;
   modified_at?: string;
+  group_id?: number | null;
 }
 
 export interface ChatSession {

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.todo import TodoSchema, UpdateTodoSchema, CreateTodoSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
-from app.api.common import apply_authorized_filter, is_authorized
+from app.api.common import apply_authorized_filter, is_authorized, resolve_group_id
 from app.models.user import User
 from app.models.todo import Todo
 
@@ -37,10 +37,16 @@ async def create_todo(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    effective_group = resolve_group_id(
+        create_todo.group_id,
+        "group_id" in create_todo.model_fields_set,
+        user,
+    )
+    data = create_todo.model_dump(exclude={"group_id"})
     new_todo = Todo(
-        **create_todo.model_dump(),
+        **data,
         created_by=user.id,
-        group_id=user.group_id,
+        group_id=effective_group,
     )
     db.add(new_todo)
     await db.commit()
@@ -70,7 +76,10 @@ async def update_todo(
     todo = result.scalars().first()
     if not todo or not is_authorized(todo, user):
         raise HTTPException(404, f"Todo id {todo_id} not found")
-    for key, value in updates.model_dump(exclude_unset=True).items():
+    update_data = updates.model_dump(exclude_unset=True)
+    if "group_id" in update_data:
+        update_data["group_id"] = resolve_group_id(update_data["group_id"], True, user)
+    for key, value in update_data.items():
         setattr(todo, key, value)
     todo.updated_by = user.id
     await db.commit()

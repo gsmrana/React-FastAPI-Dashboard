@@ -30,6 +30,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/empty-state";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useServices,
   useCreateService,
@@ -52,6 +55,7 @@ export default function Services() {
   const [showPwd, setShowPwd] = useState<Record<number, boolean>>({});
 
   const form = useForm<ServiceValues>({ resolver: zodResolver(serviceSchema) });
+  const user = useAuthStore((s) => s.user);
 
   const filtered = (list.data ?? []).filter(
     (s) =>
@@ -63,7 +67,7 @@ export default function Services() {
 
   const openCreate = () => {
     setEditing(null);
-    form.reset({ name: "", url: "", username: "", password: "" });
+    form.reset({ name: "", url: "", username: "", password: "", group_id: user?.group_id ?? null });
     setOpen(true);
   };
   const openEdit = (s: Service) => {
@@ -77,6 +81,7 @@ export default function Services() {
       category: s.category || "",
       tags: s.tags || "",
       is_starred: s.is_starred,
+      group_id: s.group_id ?? null,
     });
     setOpen(true);
   };
@@ -197,6 +202,9 @@ export default function Services() {
                     ))}
                   </div>
                 )}
+                <div className="flex flex-wrap gap-1">
+                  <GroupBadge groupId={s.group_id} />
+                </div>
                 <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(s)}>
                     <Pencil className="h-3.5 w-3.5" />
@@ -250,6 +258,13 @@ export default function Services() {
               <div className="col-span-2">
                 <Label>Notes</Label>
                 <Textarea rows={3} {...form.register("notes")} />
+              </div>
+              <div className="col-span-2">
+                <Label>Group</Label>
+                <GroupSelect
+                  value={form.watch("group_id")}
+                  onChange={(v) => form.setValue("group_id", v)}
+                />
               </div>
             </div>
             <DialogFooter>

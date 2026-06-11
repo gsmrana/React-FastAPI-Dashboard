@@ -2,7 +2,7 @@ import io
 import shutil
 import mimetypes
 from PIL import Image
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, UploadFile, Depends, File
@@ -13,12 +13,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import config
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
-from app.api.common import apply_authorized_filter, is_authorized
+from app.api.common import apply_authorized_filter, is_authorized, resolve_group_id
 from app.models.user import User
 from app.models.document import Document
 from app.schemas.document import (
     DocumentRequest,
     DocumentSchema,
+    DocumentGroupUpdateSchema,
     RenameRequest,
 )
 
@@ -97,9 +98,11 @@ async def document_list(
 @router.post("/documents/upload", response_model=List[DocumentSchema])
 async def upload_files(
     files: list[UploadFile] = File(...),
+    group_id: Optional[int] = None,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    effective_group = resolve_group_id(group_id, group_id is not None, user)
     created_docs = []
     for file in files:
         store_filepath = UPLOAD_DIR / file.filename
@@ -114,7 +117,7 @@ async def upload_files(
             filepath=str(store_filepath),
             filesize=filesize,
             created_by=user.id,
-            group_id=user.group_id,
+            group_id=effective_group,
         )
         db.add(doc)
         created_docs.append((doc, store_filepath))
@@ -204,6 +207,24 @@ async def download_file(
         filename=file_path.name,
         media_type=media_type or "application/octet-stream"
     )
+
+
+@router.patch("/documents/{document_id}/group", response_model=DocumentSchema)
+async def update_document_group(
+    document_id: int,
+    body: DocumentGroupUpdateSchema,
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    result = await db.execute(select(Document).where(Document.id == document_id, Document.deleted_at == None))
+    doc = result.scalars().first()
+    if not doc or not is_authorized(doc, user):
+        raise FILE_NOT_FOUND_EXC
+    doc.group_id = resolve_group_id(body.group_id, True, user)
+    doc.updated_by = user.id
+    await db.commit()
+    await db.refresh(doc)
+    return _doc_to_schema(doc)
 
 
 @router.patch("/documents", response_model=DocumentSchema)

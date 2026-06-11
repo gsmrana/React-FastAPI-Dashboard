@@ -38,6 +38,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/empty-state";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useExpenses,
   useCreateExpense,
@@ -67,6 +70,7 @@ export default function Expenses() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
   const form = useForm<ExpenseValues>({ resolver: zodResolver(expenseSchema) });
+  const user = useAuthStore((s) => s.user);
 
   const items = list.data ?? [];
   const total = items.reduce((s, e) => s + e.amount, 0);
@@ -101,6 +105,7 @@ export default function Expenses() {
       amount: 0,
       currency: "USD",
       date: format(new Date(), "yyyy-MM-dd"),
+      group_id: user?.group_id ?? null,
     });
     setOpen(true);
   };
@@ -116,6 +121,7 @@ export default function Expenses() {
       payment_method: e.payment_method || "",
       amount: e.amount,
       currency: e.currency,
+      group_id: e.group_id ?? null,
     });
     setOpen(true);
   };
@@ -265,6 +271,7 @@ export default function Expenses() {
                   <TableHead>Title</TableHead>
                   <TableHead className="hidden md:table-cell">Category</TableHead>
                   <TableHead className="hidden lg:table-cell">Payment</TableHead>
+                  <TableHead className="hidden lg:table-cell">Group</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead className="w-20" />
                 </TableRow>
@@ -279,6 +286,9 @@ export default function Expenses() {
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-muted-foreground">
                       {e.payment_method}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <GroupBadge groupId={e.group_id} />
                     </TableCell>
                     <TableCell className="text-right font-mono">
                       {e.currency} {e.amount.toFixed(2)}
@@ -348,6 +358,13 @@ export default function Expenses() {
               <div className="col-span-2">
                 <Label>Description</Label>
                 <Textarea rows={2} {...form.register("description")} />
+              </div>
+              <div className="col-span-2">
+                <Label>Group</Label>
+                <GroupSelect
+                  value={form.watch("group_id")}
+                  onChange={(v) => form.setValue("group_id", v)}
+                />
               </div>
             </div>
             <DialogFooter>

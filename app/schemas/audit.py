@@ -4,6 +4,8 @@ from app.schemas.datetime_format import DbDatetime
 
 
 class AuditSchema():
+    group_id: Optional[int] = None
+
     created_at: DbDatetime
     updated_at: Optional[DbDatetime]
     deleted_at: Optional[DbDatetime]

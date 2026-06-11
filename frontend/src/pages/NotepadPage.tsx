@@ -42,11 +42,15 @@ import LoadingScreen from '@/components/common/LoadingScreen';
 import EmptyState from '@/components/common/EmptyState';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Markdown from '@/components/common/Markdown';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function NotepadPage() {
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -58,6 +62,7 @@ export default function NotepadPage() {
     category: 0,
     is_starred: 0,
     tags: '',
+    group_id: null,
   });
   const [mode, setMode] = useState<'edit' | 'preview' | 'split'>('split');
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -109,7 +114,7 @@ export default function NotepadPage() {
   // Sync draft with selected note
   useEffect(() => {
     if (selectedId == null) {
-      setDraft({ title: '', content: '', category: 0, is_starred: 0, tags: '' });
+      setDraft({ title: '', content: '', category: 0, is_starred: 0, tags: '', group_id: null });
       return;
     }
     const n = (notes.data || []).find((x) => x.id === selectedId);
@@ -121,6 +126,7 @@ export default function NotepadPage() {
         category: n.category,
         is_starred: n.is_starred,
         tags: n.tags,
+        group_id: n.group_id ?? null,
       });
     }
   }, [selectedId, notes.data]);
@@ -132,6 +138,7 @@ export default function NotepadPage() {
       category: 0,
       is_starred: 0,
       tags: '',
+      group_id: user?.group_id ?? null,
     });
     if (isMobile) setMobileListOpen(false);
   };
@@ -213,6 +220,7 @@ export default function NotepadPage() {
                   >
                     {dayjs(n.updated_at || n.created_at).format('MMM D, HH:mm')}
                   </Typography>
+                  <GroupChip groupId={n.group_id} size="small" />
                 </Box>
               </ListItemButton>
             ))}
@@ -325,6 +333,10 @@ export default function NotepadPage() {
               onChange={(e) => setDraft({ ...draft, tags: e.target.value })}
               placeholder="comma,separated"
               sx={{ flex: 1, minWidth: 160 }}
+            />
+            <GroupField
+              value={draft.group_id}
+              onChange={(v) => setDraft({ ...draft, group_id: v })}
             />
             <Chip
               size="small"

@@ -35,6 +35,7 @@ class CreateTodoSchema(BaseModel):
     repeat_type: Optional[int] = 0
     deadline_at: Optional[DbDatetime] = None
     remind_at: Optional[DbDatetime] = None
+    group_id: Optional[int] = None
 
 class UpdateTodoSchema(BaseModel):
     title: Optional[str] = None
@@ -49,3 +50,4 @@ class UpdateTodoSchema(BaseModel):
     repeat_type: Optional[int] = None
     deadline_at: Optional[DbDatetime] = None
     remind_at: Optional[DbDatetime] = None
+    group_id: Optional[int] = None

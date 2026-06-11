@@ -28,6 +28,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/empty-state";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useTodos,
   useCreateTodo,
@@ -53,6 +56,7 @@ export default function Todos() {
   const [open, setOpen] = useState(false);
 
   const form = useForm<TodoValues>({ resolver: zodResolver(todoSchema) });
+  const user = useAuthStore((s) => s.user);
 
   const filtered = useMemo(() => {
     return (list.data ?? []).filter((t) => {
@@ -86,7 +90,7 @@ export default function Todos() {
 
   const openCreate = () => {
     setEditing(null);
-    form.reset({ title: "", priority: "medium" });
+    form.reset({ title: "", priority: "medium", group_id: user?.group_id ?? null });
     setOpen(true);
   };
   const openEdit = (t: Todo) => {
@@ -102,6 +106,7 @@ export default function Todos() {
       deadline_at: t.deadline_at?.slice(0, 16) || "",
       remind_at: t.remind_at?.slice(0, 16) || "",
       repeat_type: t.repeat_type || "",
+      group_id: t.group_id ?? null,
     });
     setOpen(true);
   };
@@ -184,6 +189,7 @@ export default function Todos() {
                       >
                         {t.title}
                       </button>
+                      <GroupBadge groupId={t.group_id} />
                       {t.priority && (
                         <Badge
                           variant={
@@ -295,6 +301,13 @@ export default function Todos() {
               <div>
                 <Label>Remind at</Label>
                 <Input type="datetime-local" {...form.register("remind_at")} />
+              </div>
+              <div className="col-span-2">
+                <Label>Group</Label>
+                <GroupSelect
+                  value={form.watch("group_id")}
+                  onChange={(v) => form.setValue("group_id", v)}
+                />
               </div>
             </div>
             <DialogFooter>

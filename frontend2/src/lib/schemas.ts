@@ -52,6 +52,7 @@ export const todoSchema = z.object({
   deadline_at: z.string().optional(),
   remind_at: z.string().optional(),
   repeat_type: z.string().optional(),
+  group_id: z.number().nullable().optional(),
 });
 export type TodoValues = z.infer<typeof todoSchema>;
 
@@ -61,6 +62,7 @@ export const noteSchema = z.object({
   category: z.string().optional(),
   tags: z.string().optional(),
   is_starred: z.boolean().optional(),
+  group_id: z.number().nullable().optional(),
 });
 export type NoteValues = z.infer<typeof noteSchema>;
 
@@ -74,6 +76,7 @@ export const expenseSchema = z.object({
   payment_method: z.string().optional(),
   amount: z.coerce.number().nonnegative(),
   currency: z.string().min(1, "Currency required"),
+  group_id: z.number().nullable().optional(),
 });
 export type ExpenseValues = z.infer<typeof expenseSchema>;
 
@@ -86,6 +89,7 @@ export const serviceSchema = z.object({
   category: z.string().optional(),
   tags: z.string().optional(),
   is_starred: z.boolean().optional(),
+  group_id: z.number().nullable().optional(),
 });
 export type ServiceValues = z.infer<typeof serviceSchema>;
 

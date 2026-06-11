@@ -42,7 +42,10 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const emptyForm: CreateTodo = {
   title: '',
@@ -55,11 +58,13 @@ const emptyForm: CreateTodo = {
   repeat_type: 0,
   deadline_at: null,
   remind_at: null,
+  group_id: null,
 };
 
 export default function TodosPage() {
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
   const [includeCompleted, setIncludeCompleted] = useState(true);
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [search, setSearch] = useState('');
@@ -117,7 +122,7 @@ export default function TodosPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, group_id: user?.group_id ?? null });
     setOpen(true);
   };
 
@@ -134,6 +139,7 @@ export default function TodosPage() {
       repeat_type: t.repeat_type,
       deadline_at: t.deadline_at,
       remind_at: t.remind_at,
+      group_id: t.group_id ?? null,
     });
     setOpen(true);
   };
@@ -381,6 +387,10 @@ export default function TodosPage() {
               }
               label="Starred"
             />
+            <GroupField
+              value={form.group_id}
+              onChange={(v) => setForm({ ...form, group_id: v })}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -478,6 +488,7 @@ function TodoCard({
                 .map((t) => (
                   <Chip key={t} size="small" label={t} variant="outlined" />
                 ))}
+            <GroupChip groupId={todo.group_id} />
           </Stack>
         </Box>
         <IconButton size="small" onClick={onEdit}>

@@ -41,7 +41,10 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const emptyForm: CreateExpense = {
   title: '',
@@ -53,11 +56,13 @@ const emptyForm: CreateExpense = {
   payment_method: 0,
   amount: 0,
   currency: 'BDT',
+  group_id: null,
 };
 
 export default function ExpensesPage() {
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
   const [from, setFrom] = useState<Dayjs | null>(dayjs().startOf('month'));
   const [to, setTo] = useState<Dayjs | null>(dayjs().endOf('month'));
   const [includeDeleted, setIncludeDeleted] = useState(false);
@@ -124,7 +129,7 @@ export default function ExpensesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, group_id: user?.group_id ?? null });
     setOpen(true);
   };
   const openEdit = (e: Expense) => {
@@ -139,6 +144,7 @@ export default function ExpensesPage() {
       payment_method: e.payment_method,
       amount: e.amount,
       currency: e.currency,
+      group_id: e.group_id ?? null,
     });
     setOpen(true);
   };
@@ -252,6 +258,7 @@ export default function ExpensesPage() {
                 <TableCell>Title</TableCell>
                 <TableCell>Category</TableCell>
                 <TableCell>Payment</TableCell>
+                <TableCell>Group</TableCell>
                 <TableCell align="right">Amount</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -281,6 +288,9 @@ export default function ExpensesPage() {
                   </TableCell>
                   <TableCell>
                     {labelOf(EXPENSE_PAYMENT_METHODS, e.payment_method)}
+                  </TableCell>
+                  <TableCell>
+                    <GroupChip groupId={e.group_id} />
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600 }}>
                     {Number(e.amount).toFixed(2)} {e.currency}
@@ -387,6 +397,10 @@ export default function ExpensesPage() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               multiline
               minRows={2}
+            />
+            <GroupField
+              value={form.group_id}
+              onChange={(v) => setForm({ ...form, group_id: v })}
             />
           </Stack>
         </DialogContent>

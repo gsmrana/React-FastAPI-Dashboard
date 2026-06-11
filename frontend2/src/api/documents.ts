@@ -19,19 +19,35 @@ export function useUploadDocument() {
   return useMutation({
     mutationFn: async ({
       files,
+      group_id,
       onProgress,
     }: {
       files: File[];
+      group_id?: number | null;
       onProgress?: (pct: number) => void;
     }) => {
       const fd = new FormData();
       for (const f of files) fd.append("files", f);
+      const params: Record<string, unknown> = {};
+      if (group_id !== undefined) params.group_id = group_id;
       const { data } = await api.post("/documents/upload", fd, {
         headers: { "Content-Type": "multipart/form-data" },
+        params,
         onUploadProgress: (evt) => {
           if (evt.total && onProgress) onProgress(Math.round((evt.loaded * 100) / evt.total));
         },
       });
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useUpdateDocumentGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, group_id }: { id: number; group_id: number | null }) => {
+      const { data } = await api.patch<Document>(`/documents/${id}/group`, { group_id });
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),

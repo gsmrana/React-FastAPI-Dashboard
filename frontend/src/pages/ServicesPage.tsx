@@ -40,7 +40,10 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const emptyForm: CreateService = {
   name: '',
@@ -51,11 +54,13 @@ const emptyForm: CreateService = {
   is_starred: false,
   category: 0,
   tags: '',
+  group_id: null,
 };
 
 export default function ServicesPage() {
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
@@ -110,7 +115,7 @@ export default function ServicesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, group_id: user?.group_id ?? null });
     setShowPwd(false);
     setOpen(true);
   };
@@ -125,6 +130,7 @@ export default function ServicesPage() {
       is_starred: s.is_starred,
       category: s.category,
       tags: s.tags,
+      group_id: s.group_id ?? null,
     });
     setShowPwd(false);
     setOpen(true);
@@ -286,6 +292,9 @@ export default function ServicesPage() {
                           ))}
                       </Stack>
                     )}
+                    <Stack direction="row" gap={0.5} sx={{ mt: 1 }}>
+                      <GroupChip groupId={s.group_id} />
+                    </Stack>
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'flex-end', px: 2 }}>
                     <IconButton size="small" onClick={() => openEdit(s)}>
@@ -374,6 +383,10 @@ export default function ServicesPage() {
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               multiline
               minRows={2}
+            />
+            <GroupField
+              value={form.group_id}
+              onChange={(v) => setForm({ ...form, group_id: v })}
             />
           </Stack>
         </DialogContent>

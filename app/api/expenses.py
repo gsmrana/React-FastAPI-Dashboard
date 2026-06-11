@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.expense import ExpenseSchema, UpdateExpenseSchema, CreateExpenseSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
-from app.api.common import apply_authorized_filter, is_authorized
+from app.api.common import apply_authorized_filter, is_authorized, resolve_group_id
 from app.models.user import User
 from app.models.expense import Expense
 
@@ -40,10 +40,16 @@ async def create_expense(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    effective_group = resolve_group_id(
+        create_expense.group_id,
+        "group_id" in create_expense.model_fields_set,
+        user,
+    )
+    data = create_expense.model_dump(exclude={"group_id"})
     new_expense = Expense(
-        **create_expense.model_dump(),
+        **data,
         created_by=user.id,
-        group_id=user.group_id,
+        group_id=effective_group,
     )
     db.add(new_expense)
     await db.commit()
@@ -73,7 +79,10 @@ async def update_expense(
     expense = result.scalars().first()
     if not expense or not is_authorized(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
-    for key, value in updates.model_dump(exclude_unset=True).items():
+    update_data = updates.model_dump(exclude_unset=True)
+    if "group_id" in update_data:
+        update_data["group_id"] = resolve_group_id(update_data["group_id"], True, user)
+    for key, value in update_data.items():
         setattr(expense, key, value)
     expense.updated_by = user.id
     await db.commit()

@@ -30,6 +30,7 @@ class CreateExpenseSchema(BaseModel):
     payment_method: int
     amount: float
     currency: Optional[str] = "BDT"
+    group_id: Optional[int] = None
 
 class UpdateExpenseSchema(BaseModel):
     title: Optional[str] = None
@@ -42,3 +43,4 @@ class UpdateExpenseSchema(BaseModel):
     payment_method: Optional[int] = None
     amount: Optional[float] = None
     currency: Optional[str] = None
+    group_id: Optional[int] = None

@@ -19,6 +19,7 @@ class CreateNoteSchema(BaseModel):
     category: Optional[int] = 0
     is_starred: Optional[int] = 0
     tags: Optional[str] = ""
+    group_id: Optional[int] = None
 
 class UpdateNoteSchema(BaseModel):
     title: Optional[str] = None
@@ -26,3 +27,4 @@ class UpdateNoteSchema(BaseModel):
     category: Optional[int] = None
     is_starred: Optional[int] = None
     tags: Optional[str] = None
+    group_id: Optional[int] = None

@@ -28,6 +28,7 @@ class CreateServiceSchema(BaseModel):
     is_starred: Optional[bool] = False
     category: Optional[int] = 0
     tags: Optional[str] = ""
+    group_id: Optional[int] = None
 
 class UpdateServiceSchema(BaseModel):
     name: Optional[str] = None
@@ -39,3 +40,4 @@ class UpdateServiceSchema(BaseModel):
     is_starred: Optional[bool] = None
     category: Optional[int] = None
     tags: Optional[str] = None
+    group_id: Optional[int] = None

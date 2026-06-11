@@ -20,6 +20,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/empty-state";
 import { Markdown } from "@/components/markdown";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useNotes,
   useCreateNote,
@@ -37,6 +40,7 @@ export default function Notes() {
   const [editing, setEditing] = useState<Note | null>(null);
   const [open, setOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
   const includeDel = tab === "trash";
   const list = useNotes({ include_deleted: includeDel });
@@ -61,7 +65,7 @@ export default function Notes() {
 
   const openCreate = () => {
     setEditing(null);
-    form.reset({ title: "", content: "", category: "", tags: "", is_starred: false });
+    form.reset({ title: "", content: "", category: "", tags: "", is_starred: false, group_id: user?.group_id ?? null });
     setOpen(true);
     setPreviewMode(false);
   };
@@ -73,6 +77,7 @@ export default function Notes() {
       category: n.category || "",
       tags: n.tags || "",
       is_starred: n.is_starred,
+      group_id: n.group_id ?? null,
     });
     setOpen(true);
     setPreviewMode(false);
@@ -166,6 +171,9 @@ export default function Notes() {
                     ))}
                   </div>
                 )}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  <GroupBadge groupId={n.group_id} />
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -193,6 +201,13 @@ export default function Notes() {
               <div>
                 <Label>Tags (comma separated)</Label>
                 <Input {...form.register("tags")} />
+              </div>
+              <div className="col-span-2">
+                <Label>Group</Label>
+                <GroupSelect
+                  value={form.watch("group_id")}
+                  onChange={(v) => form.setValue("group_id", v)}
+                />
               </div>
             </div>
             <div>
