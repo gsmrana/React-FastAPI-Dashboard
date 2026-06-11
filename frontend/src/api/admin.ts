@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { User, AdminUser } from '@/types';
+import type { User, AdminUser, AdminUserUpdate, GroupSummary } from '@/types';
 
 export const adminApi = {
   sysinfo: async () => (await apiClient.get('/admin/sysinfo')).data,
@@ -19,6 +19,17 @@ export const adminApi = {
     is_superuser?: boolean;
     is_verified?: boolean;
   }) => (await apiClient.post<User>('/admin/users', payload)).data,
+
+  updateUser: async (id: string, payload: AdminUserUpdate) =>
+    (await apiClient.patch<AdminUser>(`/admin/users/${id}`, payload)).data,
+
+  deleteUser: async (id: string) =>
+    apiClient.delete(`/admin/users/${id}`),
+
+  listGroups: async () => {
+    const { data } = await apiClient.get<GroupSummary[]>('/admin/groups');
+    return data;
+  },
 
   userByEmail: async (email: string) => {
     const { data } = await apiClient.post<AdminUser>(

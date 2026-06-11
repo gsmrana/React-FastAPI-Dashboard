@@ -16,6 +16,12 @@ export interface AdminUserRead extends UserRead {
   group_name?: string | null;
 }
 
+export interface GroupSummary {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
 export interface GroupMember {
   id: string;
   email: string;

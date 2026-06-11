@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format, parseISO } from "date-fns";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -27,7 +44,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAdminUsers, useCreateAdminUser, useFindUserByEmail } from "@/api/admin";
+import {
+  useAdminUsers,
+  useCreateAdminUser,
+  useAdminGroups,
+  useUpdateAdminUser,
+  useDeleteAdminUser,
+  useFindUserByEmail,
+} from "@/api/admin";
 import { toastError } from "@/lib/api";
 import type { AdminUserRead } from "@/types/api";
 
@@ -40,20 +64,57 @@ const createSchema = z.object({
 });
 type CreateValues = z.infer<typeof createSchema>;
 
+const editSchema = z.object({
+  email: z.string().email().optional(),
+  full_name: z.string().optional(),
+  password: z.string().min(6).optional().or(z.literal("")),
+  is_active: z.boolean().optional(),
+  is_superuser: z.boolean().optional(),
+  is_verified: z.boolean().optional(),
+  group_id: z.number().nullable().optional(),
+  group_role: z.enum(["owner", "member"]).nullable().optional(),
+  remove_from_group: z.boolean().optional(),
+});
+type EditValues = z.infer<typeof editSchema>;
+
 export default function Users() {
   const [offset, setOffset] = useState(0);
   const limit = 25;
   const list = useAdminUsers({ offset, limit });
   const create = useCreateAdminUser();
   const find = useFindUserByEmail();
+  const groups = useAdminGroups();
+  const update = useUpdateAdminUser();
+  const remove = useDeleteAdminUser();
   const [open, setOpen] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
   const [found, setFound] = useState<AdminUserRead | null>(null);
+  const [editUser, setEditUser] = useState<AdminUserRead | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUserRead | null>(null);
 
   const form = useForm<CreateValues>({
     resolver: zodResolver(createSchema),
     defaultValues: { is_superuser: false, is_verified: true },
   });
+
+  const editForm = useForm<EditValues>({
+    resolver: zodResolver(editSchema),
+  });
+
+  const openEdit = (u: AdminUserRead) => {
+    setEditUser(u);
+    editForm.reset({
+      email: u.email,
+      full_name: u.full_name ?? "",
+      password: "",
+      is_active: u.is_active,
+      is_superuser: u.is_superuser,
+      is_verified: u.is_verified,
+      group_id: u.group_id ?? null,
+      group_role: u.group_role ?? null,
+      remove_from_group: false,
+    });
+  };
 
   const onSubmit = async (vals: CreateValues) => {
     try {
@@ -61,6 +122,30 @@ export default function Users() {
       toast.success("User created");
       setOpen(false);
       form.reset();
+    } catch (e) {
+      toastError(e);
+    }
+  };
+
+  const onEdit = async (vals: EditValues) => {
+    if (!editUser) return;
+    try {
+      const payload = { ...vals };
+      if (!payload.password) delete payload.password;
+      await update.mutateAsync({ id: editUser.id, payload });
+      toast.success("User updated");
+      setEditUser(null);
+    } catch (e) {
+      toastError(e);
+    }
+  };
+
+  const onDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await remove.mutateAsync(deleteTarget.id);
+      toast.success("User deleted");
+      setDeleteTarget(null);
     } catch (e) {
       toastError(e);
     }
@@ -123,6 +208,7 @@ export default function Users() {
                   <TableHead className="hidden lg:table-cell">Role</TableHead>
                   <TableHead className="hidden lg:table-cell">Group</TableHead>
                   <TableHead className="hidden lg:table-cell">ID</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -165,6 +251,27 @@ export default function Users() {
                     </TableCell>
                     <TableCell className="hidden lg:table-cell font-mono text-xs text-muted-foreground">
                       {u.id}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => openEdit(u)}
+                          title="Edit user"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTarget(u)}
+                          title="Delete user"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -244,6 +351,136 @@ export default function Users() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ── Edit User Dialog ─────────────────────────────────── */}
+      <Dialog open={!!editUser} onOpenChange={(open) => { if (!open) setEditUser(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit user</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={editForm.handleSubmit(onEdit)} className="space-y-3">
+            <div>
+              <Label>Email</Label>
+              <Input type="email" {...editForm.register("email")} />
+            </div>
+            <div>
+              <Label>Full name</Label>
+              <Input {...editForm.register("full_name")} />
+            </div>
+            <div>
+              <Label>New password (leave blank to keep)</Label>
+              <Input type="password" {...editForm.register("password")} />
+            </div>
+            <div className="flex flex-wrap gap-6">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={!!editForm.watch("is_active")}
+                  onCheckedChange={(v) => editForm.setValue("is_active", v)}
+                />
+                <Label>Active</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={!!editForm.watch("is_superuser")}
+                  onCheckedChange={(v) => editForm.setValue("is_superuser", v)}
+                />
+                <Label>Admin</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={!!editForm.watch("is_verified")}
+                  onCheckedChange={(v) => editForm.setValue("is_verified", v)}
+                />
+                <Label>Verified</Label>
+              </div>
+            </div>
+            <div>
+              <Label>Group</Label>
+              <Select
+                value={
+                  editForm.watch("remove_from_group")
+                    ? "__none__"
+                    : (editForm.watch("group_id")?.toString() ?? "__none__")
+                }
+                onValueChange={(val) => {
+                  if (val === "__none__") {
+                    editForm.setValue("group_id", null);
+                    editForm.setValue("group_role", null);
+                    editForm.setValue("remove_from_group", true);
+                  } else {
+                    editForm.setValue("group_id", Number(val));
+                    editForm.setValue("remove_from_group", false);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select group..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None (remove from group)</SelectItem>
+                  {(groups.data ?? []).map((g) => (
+                    <SelectItem key={g.id} value={g.id.toString()}>{g.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {!editForm.watch("remove_from_group") && editForm.watch("group_id") && (
+              <div>
+                <Label>Group role</Label>
+                <Select
+                  value={editForm.watch("group_role") ?? "member"}
+                  onValueChange={(val) =>
+                    editForm.setValue("group_role", val as "owner" | "member")
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="owner">Owner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditUser(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={update.isPending}>
+                {update.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirmation ───────────────────────────────────────────── */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deleteTarget?.email}</strong>? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={onDelete}
+              disabled={remove.isPending}
+            >
+              {remove.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -26,6 +26,24 @@ export interface AdminUser extends User {
   group_name?: string | null;
 }
 
+export interface GroupSummary {
+  id: number;
+  name: string;
+  description?: string | null;
+}
+
+export interface AdminUserUpdate {
+  email?: string;
+  password?: string;
+  full_name?: string;
+  is_active?: boolean;
+  is_superuser?: boolean;
+  is_verified?: boolean;
+  group_id?: number | null;
+  group_role?: 'owner' | 'member' | null;
+  remove_from_group?: boolean;
+}
+
 export interface GroupMember {
   id: string;
   email: string;

@@ -77,3 +77,50 @@ export function useCreateAdminUser() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
   });
 }
+
+export function useAdminGroups() {
+  return useQuery({
+    queryKey: ["admin", "groups"],
+    queryFn: async () => {
+      const { data } = await api.get<import("@/types/api").GroupSummary[]>("/admin/groups");
+      return data;
+    },
+  });
+}
+
+export function useUpdateAdminUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: {
+        email?: string;
+        password?: string;
+        full_name?: string;
+        is_active?: boolean;
+        is_superuser?: boolean;
+        is_verified?: boolean;
+        group_id?: number | null;
+        group_role?: "owner" | "member" | null;
+        remove_from_group?: boolean;
+      };
+    }) => {
+      const { data } = await api.patch<AdminUserRead>(`/admin/users/${id}`, payload);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
+export function useDeleteAdminUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/admin/users/${id}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
