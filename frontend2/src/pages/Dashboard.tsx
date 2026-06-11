@@ -60,7 +60,7 @@ export default function Dashboard() {
   const openTodos = todos.data?.filter((t) => !t.is_completed).length ?? 0;
   const completedTodos = todos.data?.filter((t) => t.is_completed).length ?? 0;
   const totalExpenses = (expenses.data ?? []).reduce((s, e) => s + (e.amount ?? 0), 0);
-  const currency = expenses.data?.[0]?.currency || "USD";
+  const currency = expenses.data?.[0]?.currency || "BDT";
 
   // Build daily expense series
   const byDay = new Map<string, number>();

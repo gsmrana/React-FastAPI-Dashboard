@@ -46,12 +46,12 @@ import { extractError } from '@/api/client';
 const emptyForm: CreateLLMConfig = {
   provider: 0,
   category: 0,
-  is_active: false,
+  is_active: true,
   title: '',
   model_name: '',
   api_endpoint: '',
   api_key: '',
-  temperature: 0.5,
+  temperature: 0.7,
   notes: '',
   is_starred: false,
   tags: '',
@@ -312,7 +312,7 @@ export default function LlmManagerPage() {
               </Typography>
               <Slider
                 min={0}
-                max={2}
+                max={1}
                 step={0.1}
                 value={form.temperature}
                 onChange={(_, v) => setForm({ ...form, temperature: v as number })}

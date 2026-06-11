@@ -322,7 +322,7 @@ function FileCard({
           {doc.filename}
         </div>
         <div className="text-xs text-muted-foreground flex items-center justify-between">
-          <span>{formatBytes(doc.filesize)}</span>
+          <span>{doc.filesize}</span>
           <span>
             {doc.modified_at
               ? format(parseISO(doc.modified_at), "MMM d")

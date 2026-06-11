@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, parseISO, subDays } from "date-fns";
+import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { Plus, Trash2, Pencil, DollarSign, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -60,8 +60,8 @@ const CHART_COLORS = [
 ];
 
 export default function Expenses() {
-  const [from, setFrom] = useState(format(subDays(new Date(), 30), "yyyy-MM-dd"));
-  const [to, setTo] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [from, setFrom] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [to, setTo] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
   const list = useExpenses({ from_date: from, to_date: to });
   const create = useCreateExpense();
   const update = useUpdateExpense();
@@ -74,7 +74,7 @@ export default function Expenses() {
 
   const items = list.data ?? [];
   const total = items.reduce((s, e) => s + e.amount, 0);
-  const currency = items[0]?.currency || "USD";
+  const currency = items[0]?.currency || "BDT";
 
   const byDay = useMemo(() => {
     const m = new Map<string, number>();
@@ -103,7 +103,7 @@ export default function Expenses() {
     form.reset({
       title: "",
       amount: 0,
-      currency: "USD",
+      currency: "BDT",
       date: format(new Date(), "yyyy-MM-dd"),
       group_id: user?.group_id ?? null,
     });
@@ -337,7 +337,7 @@ export default function Expenses() {
               </div>
               <div>
                 <Label>Currency</Label>
-                <Input {...form.register("currency")} placeholder="USD" />
+                <Input {...form.register("currency")} placeholder="BDT" />
               </div>
               <div>
                 <Label>Category</Label>

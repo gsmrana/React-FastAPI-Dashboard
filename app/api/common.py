@@ -22,7 +22,7 @@ def resolve_group_id(schema_group_id: Optional[int], field_was_set: bool, user: 
     """
     if not field_was_set:
         return user.group_id
-    # explicit null means personal (no group)
+    # explicit null means private (no group)
     if schema_group_id is None:
         return None
     # must match the user's own group

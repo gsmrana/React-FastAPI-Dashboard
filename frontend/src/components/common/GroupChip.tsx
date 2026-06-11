@@ -9,7 +9,7 @@ interface GroupChipProps {
 }
 
 /**
- * Shows a small MUI Chip with the group name or "Personal".
+ * Shows a small MUI Chip with the group name or "Private".
  * Only renders when the logged-in user belongs to a group.
  */
 export default function GroupChip({ groupId, size = 'small' }: GroupChipProps) {
@@ -37,7 +37,7 @@ export default function GroupChip({ groupId, size = 'small' }: GroupChipProps) {
   return (
     <Chip
       size={size}
-      label="Personal"
+      label="Private"
       variant="outlined"
       sx={{ color: 'text.secondary', borderColor: 'divider' }}
     />

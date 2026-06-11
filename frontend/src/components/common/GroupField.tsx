@@ -11,7 +11,7 @@ interface GroupFieldProps {
 
 /**
  * Renders an MUI select for group assignment when the logged-in user belongs to a group.
- * Options: "Personal (No Group)" → null, or the user's group name → group_id.
+ * Options: "Private (No Group)" → null, or the user's group name → group_id.
  * Returns null when the user has no group (nothing to choose from).
  */
 export default function GroupField({ value, onChange, disabled }: GroupFieldProps) {
@@ -25,10 +25,10 @@ export default function GroupField({ value, onChange, disabled }: GroupFieldProp
 
   if (!user?.group_id) return null;
 
-  const selectValue = value === null || value === undefined ? 'personal' : String(value);
+  const selectValue = value === null || value === undefined ? 'private' : String(value);
 
   function handleChange(raw: string) {
-    onChange(raw === 'personal' ? null : Number(raw));
+    onChange(raw === 'private' ? null : Number(raw));
   }
 
   return (
@@ -41,7 +41,7 @@ export default function GroupField({ value, onChange, disabled }: GroupFieldProp
       fullWidth
       size="small"
     >
-      <MenuItem value="personal">Personal (No Group)</MenuItem>
+      <MenuItem value="private">Private (No Group)</MenuItem>
       <MenuItem value={String(user.group_id)}>
         {groupQuery.data?.name ?? `Group #${user.group_id}`}
       </MenuItem>

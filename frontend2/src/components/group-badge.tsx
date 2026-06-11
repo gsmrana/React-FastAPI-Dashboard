@@ -7,9 +7,9 @@ interface GroupBadgeProps {
 }
 
 /**
- * Displays a small badge showing "Group: {name}" or "Personal" next to list items.
+ * Displays a small badge showing "Group: {name}" or "Private" next to list items.
  * Only renders when the logged-in user belongs to a group (otherwise everything is
- * personal and the label would be redundant).
+ * private and the label would be redundant).
  */
 export function GroupBadge({ groupId }: GroupBadgeProps) {
   const user = useAuthStore((s) => s.user);
@@ -28,7 +28,7 @@ export function GroupBadge({ groupId }: GroupBadgeProps) {
 
   return (
     <Badge variant="outline" className="text-xs font-normal shrink-0 text-muted-foreground">
-      Personal
+      Private
     </Badge>
   );
 }
