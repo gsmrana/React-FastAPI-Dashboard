@@ -9,7 +9,7 @@ class LlmConfig(DbBase, GroupMixin, AuditMixin):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     provider = Column(Integer, nullable=False) # i.e OpenAI, Anthropic, Azure
     category = Column(Integer, nullable=False) # i.e LLM, Embeddings
-    is_active = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
     
     title = Column(String, nullable=False)
     model_name = Column(String, nullable=False)

@@ -9,7 +9,7 @@ class Group(DbBase):
     __tablename__ = "groups"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
     description = Column(String, default="", nullable=False)
 
     # owner — points to a user; use UUID type matching fastapi-users

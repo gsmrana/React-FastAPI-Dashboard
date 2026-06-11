@@ -7,27 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.service import ServiceSchema, UpdateServiceSchema, CreateServiceSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
+from app.api.common import apply_authorized_filter, is_authorized
 from app.models.user import User
 from app.models.service import Service
 
 
 router = APIRouter()
-
-
-def _apply_group_filter(query, Model, user: User):
-    if user.is_superuser:
-        return query
-    if user.group_id is not None:
-        return query.filter(Model.group_id == user.group_id)
-    return query.filter(Model.created_by == user.id)
-
-
-def _check_access(resource, user: User) -> bool:
-    if user.is_superuser:
-        return True
-    if user.group_id is not None:
-        return resource.group_id == user.group_id
-    return resource.created_by == user.id
 
 
 @router.get("/services", response_model=List[ServiceSchema])
@@ -37,7 +22,7 @@ async def get_service_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Service)
-    query = _apply_group_filter(query, Service, user)
+    query = apply_authorized_filter(query, Service, user)
     if include_deleted is None or include_deleted is False:
         query = query.filter(Service.deleted_at == None)
     result = await db.execute(query)
@@ -67,7 +52,7 @@ async def get_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service or not _check_access(service, user):
+    if not service or not is_authorized(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     return service
 
@@ -80,7 +65,7 @@ async def update_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service or not _check_access(service, user):
+    if not service or not is_authorized(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(service, key, value)
@@ -98,7 +83,7 @@ async def delete_service(
 ):
     result = await db.execute(select(Service).where(Service.id == service_id))
     service = result.scalars().first()
-    if not service or not _check_access(service, user):
+    if not service or not is_authorized(service, user):
         raise HTTPException(404, f"Service id {service_id} not found")
     if not hard_delete:
         service.deleted_by = user.id

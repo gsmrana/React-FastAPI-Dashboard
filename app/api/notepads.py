@@ -7,27 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.notepad import NoteSchema, UpdateNoteSchema, CreateNoteSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
+from app.api.common import apply_authorized_filter, is_authorized
 from app.models.user import User
 from app.models.notepad import Notepad
 
 
 router = APIRouter()
-
-
-def _apply_group_filter(query, Model, user: User):
-    if user.is_superuser:
-        return query
-    if user.group_id is not None:
-        return query.filter(Model.group_id == user.group_id)
-    return query.filter(Model.created_by == user.id)
-
-
-def _check_access(resource, user: User) -> bool:
-    if user.is_superuser:
-        return True
-    if user.group_id is not None:
-        return resource.group_id == user.group_id
-    return resource.created_by == user.id
 
 
 @router.get("/notepads", response_model=List[NoteSchema])
@@ -37,7 +22,7 @@ async def note_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Notepad)
-    query = _apply_group_filter(query, Notepad, user)
+    query = apply_authorized_filter(query, Notepad, user)
     if include_deleted is None or include_deleted is False:
         query = query.filter(Notepad.deleted_at == None)
     result = await db.execute(query)
@@ -67,7 +52,7 @@ async def get_note(
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()
-    if not notepad or not _check_access(notepad, user):
+    if not notepad or not is_authorized(notepad, user):
         raise HTTPException(404, f"Note id {note_id} not found")
     return notepad
 
@@ -80,7 +65,7 @@ async def update_note(
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()
-    if not notepad or not _check_access(notepad, user):
+    if not notepad or not is_authorized(notepad, user):
         raise HTTPException(404, f"Note id {note_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(notepad, key, value)
@@ -98,7 +83,7 @@ async def delete_note(
 ):
     result = await db.execute(select(Notepad).where(Notepad.id == note_id))
     notepad = result.scalars().first()
-    if not notepad or not _check_access(notepad, user):
+    if not notepad or not is_authorized(notepad, user):
         raise HTTPException(404, f"Note id {note_id} not found")
     if not hard_delete:
         notepad.deleted_by = user.id

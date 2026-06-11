@@ -7,28 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.users import current_active_user
 from app.core.llm_cache import LlmCache, llm_cache, get_llm_cache
 from app.db.async_db import get_async_db
+from app.api.common import apply_authorized_filter, is_authorized
 from app.models.user import User
 from app.models.llm_config import LlmConfig
 from app.schemas.llm_config import LlmSchema, UpdateLlmSchema, CreateLlmSchema
 
 
 router = APIRouter()
-
-
-def _apply_group_filter(query, Model, user: User):
-    if user.is_superuser:
-        return query
-    if user.group_id is not None:
-        return query.filter(Model.group_id == user.group_id)
-    return query.filter(Model.created_by == user.id)
-
-
-def _check_access(resource, user: User) -> bool:
-    if user.is_superuser:
-        return True
-    if user.group_id is not None:
-        return resource.group_id == user.group_id
-    return resource.created_by == user.id
 
 
 @router.get("/llm-configs", response_model=List[LlmSchema])
@@ -39,7 +24,7 @@ async def get_llm_config_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(LlmConfig)
-    query = _apply_group_filter(query, LlmConfig, user)
+    query = apply_authorized_filter(query, LlmConfig, user)
     if is_active is not None:
         query = query.filter(LlmConfig.is_active == is_active)
     if include_deleted is None or include_deleted is False:
@@ -88,7 +73,7 @@ async def get_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm or not _check_access(llm, user):
+    if not llm or not is_authorized(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     return llm
 
@@ -101,7 +86,7 @@ async def update_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm or not _check_access(llm, user):
+    if not llm or not is_authorized(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(llm, key, value)
@@ -120,7 +105,7 @@ async def delete_llm_config(
 ):
     result = await db.execute(select(LlmConfig).where(LlmConfig.id == llm_id))
     llm = result.scalars().first()
-    if not llm or not _check_access(llm, user):
+    if not llm or not is_authorized(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
     if not hard_delete:
         llm.deleted_by = user.id

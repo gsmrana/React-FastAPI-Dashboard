@@ -7,27 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.expense import ExpenseSchema, UpdateExpenseSchema, CreateExpenseSchema
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
+from app.api.common import apply_authorized_filter, is_authorized
 from app.models.user import User
 from app.models.expense import Expense
 
 
 router = APIRouter()
-
-
-def _apply_group_filter(query, Model, user: User):
-    if user.is_superuser:
-        return query
-    if user.group_id is not None:
-        return query.filter(Model.group_id == user.group_id)
-    return query.filter(Model.created_by == user.id)
-
-
-def _check_access(resource, user: User) -> bool:
-    if user.is_superuser:
-        return True
-    if user.group_id is not None:
-        return resource.group_id == user.group_id
-    return resource.created_by == user.id
 
 
 @router.get("/expenses", response_model=List[ExpenseSchema])
@@ -39,7 +24,7 @@ async def expense_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Expense)
-    query = _apply_group_filter(query, Expense, user)
+    query = apply_authorized_filter(query, Expense, user)
     if from_date:
         query = query.filter(Expense.date >= from_date)
     if to_date:
@@ -73,7 +58,7 @@ async def get_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense or not _check_access(expense, user):
+    if not expense or not is_authorized(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     return expense
 
@@ -86,7 +71,7 @@ async def update_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense or not _check_access(expense, user):
+    if not expense or not is_authorized(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     for key, value in updates.model_dump(exclude_unset=True).items():
         setattr(expense, key, value)
@@ -104,7 +89,7 @@ async def delete_expense(
 ):
     result = await db.execute(select(Expense).where(Expense.id == expense_id))
     expense = result.scalars().first()
-    if not expense or not _check_access(expense, user):
+    if not expense or not is_authorized(expense, user):
         raise HTTPException(404, f"Expense id {expense_id} not found")
     if not hard_delete:
         expense.deleted_by = user.id

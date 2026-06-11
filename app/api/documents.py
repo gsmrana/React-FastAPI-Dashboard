@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import config
 from app.core.users import current_active_user
 from app.db.async_db import get_async_db
+from app.api.common import apply_authorized_filter, is_authorized
 from app.models.user import User
 from app.models.document import Document
 from app.schemas.document import (
@@ -61,22 +62,6 @@ def get_unique_filename(file_path):
     return unique_filename
 
 
-def _apply_group_filter(query, user: User):
-    if user.is_superuser:
-        return query
-    if user.group_id is not None:
-        return query.filter(Document.group_id == user.group_id)
-    return query.filter(Document.created_by == user.id)
-
-
-def _check_access(doc: Document, user: User) -> bool:
-    if user.is_superuser:
-        return True
-    if user.group_id is not None:
-        return doc.group_id == user.group_id
-    return doc.created_by == user.id
-
-
 def _doc_to_schema(doc: Document) -> DocumentSchema:
     file_path = Path(doc.filepath)
     filesize_str = get_formatted_size(doc.filesize) if doc.filesize else ""
@@ -103,7 +88,7 @@ async def document_list(
     db: AsyncSession = Depends(get_async_db),
 ):
     query = select(Document).filter(Document.deleted_at == None)
-    query = _apply_group_filter(query, user)
+    query = apply_authorized_filter(query, Document, user)
     result = await db.execute(query)
     docs = result.scalars().all()
     return [_doc_to_schema(d) for d in docs]
@@ -151,7 +136,7 @@ async def get_thumbnail(
 ):
     result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
     doc = result.scalars().first()
-    if not doc or not _check_access(doc, user):
+    if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
 
     file_path = Path(doc.filepath)
@@ -181,7 +166,7 @@ async def view_file(
 ):
     result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
     doc = result.scalars().first()
-    if not doc or not _check_access(doc, user):
+    if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
 
     file_path = Path(doc.filepath)
@@ -206,7 +191,7 @@ async def download_file(
 ):
     result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
     doc = result.scalars().first()
-    if not doc or not _check_access(doc, user):
+    if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
 
     file_path = Path(doc.filepath)
@@ -229,7 +214,7 @@ async def update_filename(
 ):
     result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
     doc = result.scalars().first()
-    if not doc or not _check_access(doc, user):
+    if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
 
     old_path = Path(doc.filepath)
@@ -255,7 +240,7 @@ async def delete_file(
 ):
     result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
     doc = result.scalars().first()
-    if not doc or not _check_access(doc, user):
+    if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
 
     file_path = Path(doc.filepath)
