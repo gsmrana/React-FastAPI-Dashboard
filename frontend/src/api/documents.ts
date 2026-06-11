@@ -22,21 +22,27 @@ export const documentsApi = {
     });
     return data;
   },
-  updateGroup: async (id: number | string, group_id: number | null) => {
-    const { data } = await apiClient.patch(`/documents/${id}/group`, { group_id });
-    return data as Document;
-  },
-  rename: async (filename: string, new_filename: string) => {
-    const { data } = await apiClient.patch('/documents', { filename, new_filename });
+  update: async (
+    id: number,
+    body: {
+      filename?: string;
+      category?: number;
+      is_starred?: number;
+      tags?: string;
+      description?: string;
+      group_id?: number | null;
+    },
+  ) => {
+    const { data } = await apiClient.patch<Document>(`/documents/${id}`, body);
     return data;
   },
-  remove: async (filename: string) => {
-    return apiClient.delete('/documents', { data: { filename } });
+  remove: async (id: number) => {
+    return apiClient.delete(`/documents/${id}`);
   },
-  thumbnailUrl: (filename: string, width = 160, height = 160) =>
-    `${API_BASE}/documents/thumbnail/${encodeURIComponent(filename)}?width=${width}&height=${height}`,
-  viewUrl: (filename: string) =>
-    `${API_BASE}/documents/view/${encodeURIComponent(filename)}`,
-  downloadUrl: (filename: string) =>
-    `${API_BASE}/documents/download/${encodeURIComponent(filename)}`,
+  thumbnailUrl: (id: number, width = 240, height = 240) =>
+    `${API_BASE}/documents/thumbnail/${id}?width=${width}&height=${height}`,
+  viewUrl: (id: number) =>
+    `${API_BASE}/documents/view/${id}`,
+  downloadUrl: (id: number) =>
+    `${API_BASE}/documents/download/${id}`,
 };

@@ -7,14 +7,14 @@ class DocumentSchema(BaseModel):
     id: int
     filename: str
     filepath: str
-    filesize: Optional[str] = ""
+    filesize: Optional[int] = 0
     
     category: Optional[int] = 0
     is_starred: Optional[int] = 0
     tags: Optional[str] = ""
     description: Optional[str] = ""
+    
     group_id: Optional[int] = None
-
     created_at: Optional[DbDatetime] = None
     modified_at: Optional[DbDatetime] = None
 
@@ -34,15 +34,4 @@ class UpdateDocumentSchema(BaseModel):
     is_starred: Optional[int] = None
     tags: Optional[str] = None
     description: Optional[str] = None
-    group_id: Optional[int] = None
-
-class DocumentGroupUpdateSchema(BaseModel):
-    group_id: Optional[int] = None
-
-class DocumentRequest(BaseModel):
-    filename: str
-
-class RenameRequest(BaseModel):
-    filename: str
-    new_filename: str
     group_id: Optional[int] = None

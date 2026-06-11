@@ -43,9 +43,8 @@ import { useAuthStore } from "@/stores/auth-store";
 import {
   useDocuments,
   useUploadDocument,
-  useRenameDocument,
+  useUpdateDocument,
   useDeleteDocument,
-  useUpdateDocumentGroup,
   thumbnailUrl,
   viewUrl,
   downloadUrl,
@@ -57,9 +56,8 @@ import type { Document } from "@/types/api";
 export default function Files() {
   const docs = useDocuments();
   const upload = useUploadDocument();
-  const rename = useRenameDocument();
+  const rename = useUpdateDocument();
   const del = useDeleteDocument();
-  const updateGroup = useUpdateDocumentGroup();
   const user = useAuthStore((s) => s.user);
   const [uploadGroup, setUploadGroup] = useState<number | null>(user?.group_id ?? null);
   const [search, setSearch] = useState("");
@@ -160,7 +158,7 @@ export default function Files() {
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {filtered.map((d) => (
             <FileCard
-              key={d.filename}
+              key={d.id}
               doc={d}
               onPreview={() => setPreviewing(d)}
               onRename={() => {
@@ -184,13 +182,13 @@ export default function Files() {
             <div className="space-y-3">
               {isImage(previewing.filename) ? (
                 <img
-                  src={viewUrl(previewing.filename)}
+                  src={viewUrl(previewing.id)}
                   alt={previewing.filename}
                   className="max-h-[70vh] mx-auto rounded"
                 />
               ) : isPdf(previewing.filename) ? (
                 <iframe
-                  src={viewUrl(previewing.filename)}
+                  src={viewUrl(previewing.id)}
                   className="w-full h-[70vh] rounded border"
                   title={previewing.filename}
                 />
@@ -202,7 +200,7 @@ export default function Files() {
               <DialogFooter>
                 <Button variant="outline" asChild>
                   <a
-                    href={downloadUrl(previewing.filename)}
+                    href={downloadUrl(previewing.id)}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -239,19 +237,16 @@ export default function Files() {
               onClick={async () => {
                 if (!renaming || !renameTo.trim()) return;
                 try {
-                  await rename.mutateAsync({ filename: renaming.filename, new_filename: renameTo });
-                  if (renaming.id !== undefined && renameGroup !== (renaming.group_id ?? null)) {
-                    await updateGroup.mutateAsync({ id: renaming.id!, group_id: renameGroup });
-                  }
+                  await rename.mutateAsync({ id: renaming.id, filename: renameTo, group_id: renameGroup });
                   toast.success("Renamed");
                   setRenaming(null);
                 } catch (e) {
                   toastError(e);
                 }
               }}
-              disabled={rename.isPending || updateGroup.isPending}
+              disabled={rename.isPending}
             >
-              {(rename.isPending || updateGroup.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+              {rename.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Rename
             </Button>
           </DialogFooter>
@@ -273,7 +268,7 @@ export default function Files() {
               onClick={async () => {
                 if (!deleting) return;
                 try {
-                  await del.mutateAsync(deleting.filename);
+                  await del.mutateAsync(deleting.id);
                   toast.success("Deleted");
                   setDeleting(null);
                 } catch (e) {
@@ -316,7 +311,7 @@ function FileCard({
       >
         {isImage(doc.filename) ? (
           <img
-            src={thumbnailUrl(doc.filename, 320, 320)}
+            src={thumbnailUrl(doc.id, 320, 320)}
             alt={doc.filename}
             loading="lazy"
             className="w-full h-full object-cover transition-transform group-hover:scale-105"
@@ -333,7 +328,7 @@ function FileCard({
           {doc.filename}
         </div>
         <div className="text-xs text-muted-foreground flex items-center justify-between">
-          <span>{doc.filesize}</span>
+          <span>{formatBytes(doc.filesize)}</span>
           <span>
             {doc.modified_at
               ? format(parseISO(doc.modified_at), "MMM d")
@@ -347,7 +342,7 @@ function FileCard({
             <Eye className="h-3.5 w-3.5" />
           </Button>
           <Button asChild size="icon" variant="ghost" className="h-7 w-7" title="Download">
-            <a href={downloadUrl(doc.filename)} target="_blank" rel="noreferrer">
+            <a href={downloadUrl(doc.id)} target="_blank" rel="noreferrer">
               <Download className="h-3.5 w-3.5" />
             </a>
           </Button>

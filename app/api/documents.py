@@ -17,10 +17,8 @@ from app.api.common import apply_authorized_filter, is_authorized, resolve_group
 from app.models.user import User
 from app.models.document import Document
 from app.schemas.document import (
-    DocumentRequest,
     DocumentSchema,
-    DocumentGroupUpdateSchema,
-    RenameRequest,
+    UpdateDocumentSchema,
 )
 
 ICON_MAP = [
@@ -63,26 +61,6 @@ def get_unique_filename(file_path):
     return unique_filename
 
 
-def _doc_to_schema(doc: Document) -> DocumentSchema:
-    file_path = Path(doc.filepath)
-    filesize_str = get_formatted_size(doc.filesize) if doc.filesize else ""
-    modified_at = None
-    if file_path.exists():
-        modified_at = datetime.fromtimestamp(file_path.stat().st_mtime)
-    return DocumentSchema(
-        id=doc.id,
-        filename=doc.filename,
-        filepath=doc.filepath,
-        filesize=filesize_str,
-        category=doc.category,
-        is_starred=doc.is_starred,
-        tags=doc.tags,
-        description=doc.description,
-        created_at=doc.created_at,
-        modified_at=modified_at,
-    )
-
-
 @router.get("/documents", response_model=List[DocumentSchema])
 async def document_list(
     user: User = Depends(current_active_user),
@@ -91,8 +69,7 @@ async def document_list(
     query = select(Document).filter(Document.deleted_at == None)
     query = apply_authorized_filter(query, Document, user)
     result = await db.execute(query)
-    docs = result.scalars().all()
-    return [_doc_to_schema(d) for d in docs]
+    return result.scalars().all()
 
 
 @router.post("/documents/upload", response_model=List[DocumentSchema])
@@ -126,18 +103,23 @@ async def upload_files(
     for doc, _ in created_docs:
         await db.refresh(doc)
 
-    return [_doc_to_schema(doc) for doc, _ in created_docs]
+    return [doc for doc, _ in created_docs]
 
 
-@router.get("/documents/thumbnail/{filename}")
+@router.get("/documents/thumbnail/{doc_id}")
 async def get_thumbnail(
-    filename: str,
+    doc_id: int,
     width: int = 100,
     height: int = 100,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
-    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id, 
+            Document.deleted_at == None
+        )
+    )
     doc = result.scalars().first()
     if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
@@ -161,13 +143,18 @@ async def get_thumbnail(
     return FileResponse(ICON_DIR / icon_filename(ext))
 
 
-@router.get("/documents/view/{filename}", response_class=FileResponse)
+@router.get("/documents/view/{doc_id}", response_class=FileResponse)
 async def view_file(
-    filename: str,
+    doc_id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
-    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id, 
+            Document.deleted_at == None
+        )
+    )
     doc = result.scalars().first()
     if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
@@ -186,13 +173,18 @@ async def view_file(
     )
 
 
-@router.get("/documents/download/{filename}", response_class=FileResponse)
+@router.get("/documents/download/{doc_id}", response_class=FileResponse)
 async def download_file(
-    filename: str,
+    doc_id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
-    result = await db.execute(select(Document).where(Document.filename == filename, Document.deleted_at == None))
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id, 
+            Document.deleted_at == None
+        )
+    )
     doc = result.scalars().first()
     if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
@@ -209,57 +201,57 @@ async def download_file(
     )
 
 
-@router.patch("/documents/{document_id}/group", response_model=DocumentSchema)
-async def update_document_group(
-    document_id: int,
-    body: DocumentGroupUpdateSchema,
+@router.patch("/documents/{doc_id}", response_model=DocumentSchema)
+async def update_metadata(
+    doc_id: int,
+    body: UpdateDocumentSchema,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
-    result = await db.execute(select(Document).where(Document.id == document_id, Document.deleted_at == None))
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id, 
+            Document.deleted_at == None
+        )
+    )
     doc = result.scalars().first()
     if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
+    
+    # Update only the fields that were provided in the request body
+    update_data = body.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(doc, key, value)
+    
+    # If filename is being updated, rename the file on disk as well
+    if body.filename and body.filename != doc.filename:
+        old_path = Path(doc.filepath)
+        if not old_path.exists():
+            raise FILE_NOT_FOUND_EXC
+        new_path = UPLOAD_DIR / body.filename
+        old_path.rename(new_path)
+        doc.filename = body.filename
+        doc.filepath = str(new_path)
+    
     doc.group_id = resolve_group_id(body.group_id, True, user)
     doc.updated_by = user.id
     await db.commit()
     await db.refresh(doc)
-    return _doc_to_schema(doc)
+    return doc
 
 
-@router.patch("/documents", response_model=DocumentSchema)
-async def update_filename(
-    doc_req: RenameRequest,
-    user: User = Depends(current_active_user),
-    db: AsyncSession = Depends(get_async_db),
-):
-    result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
-    doc = result.scalars().first()
-    if not doc or not is_authorized(doc, user):
-        raise FILE_NOT_FOUND_EXC
-
-    old_path = Path(doc.filepath)
-    if not old_path.exists():
-        raise FILE_NOT_FOUND_EXC
-
-    new_path = UPLOAD_DIR / doc_req.new_filename
-    old_path.rename(new_path)
-
-    doc.filename = doc_req.new_filename
-    doc.filepath = str(new_path)
-    doc.updated_by = user.id
-    await db.commit()
-    await db.refresh(doc)
-    return _doc_to_schema(doc)
-
-
-@router.delete("/documents", response_model=DocumentSchema)
+@router.delete("/documents/{doc_id}", response_model=DocumentSchema)
 async def delete_file(
-    doc_req: DocumentRequest,
+    doc_id: int,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
-    result = await db.execute(select(Document).where(Document.filename == doc_req.filename, Document.deleted_at == None))
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id, 
+            Document.deleted_at == None
+        )
+    )
     doc = result.scalars().first()
     if not doc or not is_authorized(doc, user):
         raise FILE_NOT_FOUND_EXC
@@ -272,4 +264,4 @@ async def delete_file(
     doc.deleted_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(doc)
-    return _doc_to_schema(doc)
+    return doc

@@ -147,10 +147,10 @@ export type CreateLLMConfig = Omit<LLMConfig, 'id' | keyof ServerAuditFields>;
 export type UpdateLLMConfig = Partial<CreateLLMConfig>;
 
 export interface Document {
-  id: string;
+  id: number;
   filename: string;
   filepath: string;
-  filesize: string;
+  filesize: number;
   category?: number;
   is_starred?: number;
   tags?: string;

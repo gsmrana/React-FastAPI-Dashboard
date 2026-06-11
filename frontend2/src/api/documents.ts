@@ -43,22 +43,20 @@ export function useUploadDocument() {
   });
 }
 
-export function useUpdateDocumentGroup() {
+export function useUpdateDocument() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, group_id }: { id: number; group_id: number | null }) => {
-      const { data } = await api.patch<Document>(`/documents/${id}/group`, { group_id });
-      return data;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
-  });
-}
-
-export function useRenameDocument() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (vals: { filename: string; new_filename: string }) => {
-      const { data } = await api.patch("/documents", vals);
+    mutationFn: async (vals: {
+      id: number;
+      filename?: string;
+      category?: number;
+      is_starred?: number;
+      tags?: string;
+      description?: string;
+      group_id?: number | null;
+    }) => {
+      const { id, ...body } = vals;
+      const { data } = await api.patch<Document>(`/documents/${id}`, body);
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
@@ -68,19 +66,19 @@ export function useRenameDocument() {
 export function useDeleteDocument() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (filename: string) => {
-      await api.delete("/documents", { data: { filename } });
+    mutationFn: async (id: number) => {
+      await api.delete(`/documents/${id}`);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 }
 
-export function thumbnailUrl(filename: string, width = 240, height = 240) {
-  return `${API_BASE}/documents/thumbnail/${encodeURIComponent(filename)}?width=${width}&height=${height}`;
+export function thumbnailUrl(id: number, width = 240, height = 240) {
+  return `${API_BASE}/documents/thumbnail/${id}?width=${width}&height=${height}`;
 }
-export function viewUrl(filename: string) {
-  return `${API_BASE}/documents/view/${encodeURIComponent(filename)}`;
+export function viewUrl(id: number) {
+  return `${API_BASE}/documents/view/${id}`;
 }
-export function downloadUrl(filename: string) {
-  return `${API_BASE}/documents/download/${encodeURIComponent(filename)}`;
+export function downloadUrl(id: number) {
+  return `${API_BASE}/documents/download/${id}`;
 }

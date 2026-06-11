@@ -139,12 +139,12 @@ export type CreateLlm = Partial<Omit<LlmConfig, "id" | keyof ServerAuditFields>>
 export type UpdateLlm = Partial<Omit<LlmConfig, "id" | keyof ServerAuditFields>>;
 
 export interface Document {
-  id?: number;
+  id: number;
   filename: string;
   filepath?: string;
   filesize: number;
-  category?: string | null;
-  is_starred?: boolean;
+  category?: number;
+  is_starred?: number;
   tags?: string | null;
   description?: string | null;
   created_at?: string | null;

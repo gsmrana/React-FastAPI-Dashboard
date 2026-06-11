@@ -36,6 +36,7 @@ import GroupField from '@/components/common/GroupField';
 import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatBytes } from '@/api/utils';
 
 function isImage(filename: string) {
   return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(filename);
@@ -70,8 +71,8 @@ export default function DocumentsPage() {
   });
 
   const renameM = useMutation({
-    mutationFn: (p: { filename: string; new_filename: string }) =>
-      documentsApi.rename(p.filename, p.new_filename),
+    mutationFn: (p: { id: number; new_filename: string; group_id: number | null }) =>
+      documentsApi.update(p.id, { filename: p.new_filename, group_id: p.group_id }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['documents'] });
       enqueueSnackbar('Renamed', { variant: 'success' });
@@ -79,14 +80,8 @@ export default function DocumentsPage() {
     },
     onError: (e) => enqueueSnackbar(extractError(e), { variant: 'error' }),
   });
-  const updateGroupM = useMutation({
-    mutationFn: (p: { id: string; group_id: number | null }) =>
-      documentsApi.updateGroup(p.id, p.group_id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['documents'] }),
-    onError: (e) => enqueueSnackbar(extractError(e), { variant: 'error' }),
-  });
   const deleteM = useMutation({
-    mutationFn: (filename: string) => documentsApi.remove(filename),
+    mutationFn: (id: number) => documentsApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['documents'] });
       enqueueSnackbar('File deleted', { variant: 'info' });
@@ -192,7 +187,7 @@ export default function DocumentsPage() {
       ) : (
         <Grid container spacing={2}>
           {filtered.map((d) => (
-            <Grid key={d.filename} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+            <Grid key={d.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Box
                   onClick={() => setPreviewDoc(d)}
@@ -207,7 +202,7 @@ export default function DocumentsPage() {
                   }}
                 >
                   <img
-                    src={documentsApi.thumbnailUrl(d.filename, 320, 320)}
+                    src={documentsApi.thumbnailUrl(d.id, 320, 320)}
                     alt={d.filename}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -220,7 +215,7 @@ export default function DocumentsPage() {
                     {d.filename}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {d.filesize}
+                    {formatBytes(d.filesize)}
                   </Typography>
                   <Box sx={{ mt: 0.5 }}>
                     <GroupChip groupId={d.group_id} />
@@ -236,7 +231,7 @@ export default function DocumentsPage() {
                     <IconButton
                       size="small"
                       component="a"
-                      href={documentsApi.downloadUrl(d.filename)}
+                      href={documentsApi.downloadUrl(d.id)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -292,20 +287,14 @@ export default function DocumentsPage() {
           <Button onClick={() => setRenameDoc(null)}>Cancel</Button>
           <Button
             variant="contained"
-            disabled={
-              !renameValue.trim() ||
-              renameM.isPending ||
-              updateGroupM.isPending
-            }
+            disabled={!renameValue.trim() || renameM.isPending}
             onClick={async () => {
               if (!renameDoc || !renameValue.trim()) return;
               await renameM.mutateAsync({
-                filename: renameDoc.filename,
+                id: renameDoc.id,
                 new_filename: renameValue.trim(),
+                group_id: renameGroup,
               });
-              if (renameGroup !== (renameDoc.group_id ?? null)) {
-                await updateGroupM.mutateAsync({ id: renameDoc.id, group_id: renameGroup });
-              }
             }}
           >
             Rename
@@ -335,7 +324,7 @@ export default function DocumentsPage() {
                   }}
                 >
                   <img
-                    src={documentsApi.viewUrl(previewDoc.filename)}
+                    src={documentsApi.viewUrl(previewDoc.id)}
                     alt={previewDoc.filename}
                     style={{ maxWidth: '100%', maxHeight: '100%' }}
                   />
@@ -343,7 +332,7 @@ export default function DocumentsPage() {
               ) : (
                 <iframe
                   title="preview"
-                  src={documentsApi.viewUrl(previewDoc.filename)}
+                  src={documentsApi.viewUrl(previewDoc.id)}
                   style={{ width: '100%', height: '100%', border: 0 }}
                 />
               )}
@@ -353,7 +342,7 @@ export default function DocumentsPage() {
         <DialogActions>
           <Button
             component="a"
-            href={previewDoc ? documentsApi.downloadUrl(previewDoc.filename) : '#'}
+            href={previewDoc ? documentsApi.downloadUrl(previewDoc.id) : '#'}
             target="_blank"
           >
             Download
@@ -370,7 +359,7 @@ export default function DocumentsPage() {
         message={`"${deleteDoc?.filename}" will be permanently deleted.`}
         destructive
         confirmText="Delete"
-        onConfirm={() => deleteDoc && deleteM.mutate(deleteDoc.filename)}
+        onConfirm={() => deleteDoc && deleteM.mutate(deleteDoc.id)}
         onClose={() => setDeleteDoc(null)}
       />
     </Box>
