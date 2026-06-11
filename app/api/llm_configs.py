@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.users import current_active_user
 from app.core.llm_cache import LlmCache, llm_cache, get_llm_cache
 from app.db.async_db import get_async_db
-from app.api.common import apply_authorized_filter, is_authorized
+from app.api.common import apply_authorized_filter, is_authorized, resolve_group_id
 from app.models.user import User
 from app.models.llm_config import LlmConfig
 from app.schemas.llm_config import LlmSchema, UpdateLlmSchema, CreateLlmSchema
@@ -38,10 +38,16 @@ async def create_llm_config(
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_db),
 ):
+    effective_group = resolve_group_id(
+        create_llm.group_id,
+        "group_id" in create_llm.model_fields_set,
+        user,
+    )
+    data = create_llm.model_dump(exclude={"group_id"})
     new_llm = LlmConfig(
-        **create_llm.model_dump(),
+        **data,
         created_by=user.id,
-        group_id=user.group_id,
+        group_id=effective_group,
     )
     db.add(new_llm)
     await db.commit()
@@ -88,7 +94,10 @@ async def update_llm_config(
     llm = result.scalars().first()
     if not llm or not is_authorized(llm, user):
         raise HTTPException(404, f"LLM config id {llm_id} not found")
-    for key, value in updates.model_dump(exclude_unset=True).items():
+    update_data = updates.model_dump(exclude_unset=True)
+    if "group_id" in update_data:
+        update_data["group_id"] = resolve_group_id(update_data["group_id"], True, user)
+    for key, value in update_data.items():
         setattr(llm, key, value)
         llm.updated_by = user.id
     await db.commit()

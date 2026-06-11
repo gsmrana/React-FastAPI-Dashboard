@@ -34,7 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/files', label: 'File Manager', icon: FilesIcon, group: 'Main' },
   { to: '/services', label: 'Service Manager', icon: ServiceIcon, group: 'Main' },
   { to: '/llms', label: 'LLM Manager', icon: LlmIcon, group: 'Main' },
-  { to: '/groups', label: 'Group Members', icon: GroupIcon, group: 'Main' },
+  { to: '/groups', label: 'Group Manager', icon: GroupIcon, group: 'Main' },
   // { to: '/profile', label: 'Profile', icon: ProfileIcon, group: 'Account' },
   { to: '/admin/users', label: 'User Manager', icon: UsersIcon, adminOnly: true, group: 'Admin' },
   { to: '/admin/app-config', label: 'App Config', icon: ConfigIcon, adminOnly: true, group: 'Admin' },

@@ -28,6 +28,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/empty-state";
+import { GroupSelect } from "@/components/group-select";
+import { GroupBadge } from "@/components/group-badge";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   useLlmConfigs,
   useCreateLlm,
@@ -49,10 +52,11 @@ export default function LlmManager() {
   const [showKey, setShowKey] = useState<Record<number, boolean>>({});
 
   const form = useForm<LlmValues>({ resolver: zodResolver(llmSchema) });
+  const user = useAuthStore((s) => s.user);
 
   const openCreate = () => {
     setEditing(null);
-    form.reset({ provider: "openai", title: "", model_name: "", is_active: true, temperature: 0.7 });
+    form.reset({ provider: "openai", title: "", model_name: "", is_active: true, temperature: 0.7, group_id: user?.group_id ?? null });
     setOpen(true);
   };
   const openEdit = (l: LlmConfig) => {
@@ -69,6 +73,7 @@ export default function LlmManager() {
       notes: l.notes || "",
       tags: l.tags || "",
       is_starred: l.is_starred,
+      group_id: l.group_id ?? null,
     });
     setOpen(true);
   };
@@ -128,6 +133,7 @@ export default function LlmManager() {
                   <TableHead>Provider</TableHead>
                   <TableHead>Model</TableHead>
                   <TableHead className="hidden lg:table-cell">API key</TableHead>
+                  <TableHead className="hidden md:table-cell">Group</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="w-20" />
                 </TableRow>
@@ -166,6 +172,9 @@ export default function LlmManager() {
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <GroupBadge groupId={l.group_id} />
                     </TableCell>
                     <TableCell>
                       <Switch
@@ -245,6 +254,13 @@ export default function LlmManager() {
               <div className="col-span-2">
                 <Label>Notes</Label>
                 <Textarea rows={2} {...form.register("notes")} />
+              </div>
+              <div className="col-span-2">
+                <Label>Group</Label>
+                <GroupSelect
+                  value={form.watch("group_id")}
+                  onChange={(v) => form.setValue("group_id", v)}
+                />
               </div>
             </div>
             <DialogFooter>

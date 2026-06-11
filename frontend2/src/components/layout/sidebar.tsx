@@ -33,7 +33,7 @@ const main = [
   { to: "/files", label: "File Manager", icon: FolderKanban },
   { to: "/services", label: "Service Manager", icon: Wrench },
   { to: "/llms", label: "LLM Manager", icon: Cpu },
-  { to: "/groups", label: "Group Members", icon: Users },
+  { to: "/groups", label: "Group Manager", icon: Users },
   // { to: "/profile", label: "Profile", icon: User },
 ];
 

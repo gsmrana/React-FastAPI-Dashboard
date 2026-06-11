@@ -131,12 +131,12 @@ export interface LlmConfig extends AuditFields {
   is_starred: boolean;
   tags?: string | null;
 }
-export type CreateLlm = Partial<Omit<LlmConfig, "id" | keyof AuditFields>> & {
+export type CreateLlm = Partial<Omit<LlmConfig, "id" | keyof ServerAuditFields>> & {
   provider: string;
   title: string;
   model_name: string;
 };
-export type UpdateLlm = Partial<Omit<LlmConfig, "id" | keyof AuditFields>>;
+export type UpdateLlm = Partial<Omit<LlmConfig, "id" | keyof ServerAuditFields>>;
 
 export interface Document {
   id?: number;

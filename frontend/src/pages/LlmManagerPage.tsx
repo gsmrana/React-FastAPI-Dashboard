@@ -41,7 +41,10 @@ import PageHeader from '@/components/common/PageHeader';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import EmptyState from '@/components/common/EmptyState';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import GroupField from '@/components/common/GroupField';
+import GroupChip from '@/components/common/GroupChip';
 import { extractError } from '@/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const emptyForm: CreateLLMConfig = {
   provider: 0,
@@ -55,9 +58,11 @@ const emptyForm: CreateLLMConfig = {
   notes: '',
   is_starred: false,
   tags: '',
+  group_id: null,
 };
 
 export default function LlmManagerPage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const [open, setOpen] = useState(false);
@@ -107,7 +112,7 @@ export default function LlmManagerPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, group_id: user?.group_id ?? null });
     setShowKey(false);
     setOpen(true);
   };
@@ -125,6 +130,7 @@ export default function LlmManagerPage() {
       notes: l.notes,
       is_starred: l.is_starred,
       tags: l.tags,
+      group_id: l.group_id ?? null,
     });
     setShowKey(false);
     setOpen(true);
@@ -197,7 +203,7 @@ export default function LlmManagerPage() {
                       variant="outlined"
                       label={labelOf(LLM_CATEGORIES, l.category)}
                     />
-                    {l.is_active && <Chip size="small" color="success" label="Active" />}
+                    <GroupChip groupId={l.group_id} />
                   </Stack>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     <strong>Model:</strong> {l.model_name}
@@ -338,6 +344,10 @@ export default function LlmManagerPage() {
                 />
               }
               label="Active"
+            />
+            <GroupField
+              value={form.group_id}
+              onChange={(v) => setForm({ ...form, group_id: v })}
             />
           </Stack>
         </DialogContent>

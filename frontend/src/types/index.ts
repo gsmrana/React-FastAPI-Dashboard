@@ -143,7 +143,7 @@ export interface LLMConfig extends AuditFields {
   tags: string;
 }
 
-export type CreateLLMConfig = Omit<LLMConfig, 'id' | keyof AuditFields>;
+export type CreateLLMConfig = Omit<LLMConfig, 'id' | keyof ServerAuditFields>;
 export type UpdateLLMConfig = Partial<CreateLLMConfig>;
 
 export interface Document {

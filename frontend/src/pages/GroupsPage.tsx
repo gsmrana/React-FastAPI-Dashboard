@@ -24,7 +24,6 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import GroupIcon from '@mui/icons-material/Group';
 import { useSnackbar } from 'notistack';
 import { useAuth } from '@/contexts/AuthContext';
 import PageHeader from '@/components/common/PageHeader';
@@ -233,8 +232,11 @@ export default function GroupsPage() {
   // ── Has group state ─────────────────────────────────────────────────────────
   return (
     <Box maxWidth={640}>
-      <PageHeader title="Group" />
-
+      <PageHeader
+      title="Group"
+      subtitle="Manage your group and its members"
+      />
+      
       {/* Group header card */}
       <Card sx={{ mb: 2 }}>
         <CardContent>

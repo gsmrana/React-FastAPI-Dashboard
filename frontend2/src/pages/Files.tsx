@@ -67,6 +67,7 @@ export default function Files() {
   const [previewing, setPreviewing] = useState<Document | null>(null);
   const [renaming, setRenaming] = useState<Document | null>(null);
   const [renameTo, setRenameTo] = useState("");
+  const [renameGroup, setRenameGroup] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<Document | null>(null);
 
   const filtered = useMemo(() => {
@@ -165,6 +166,7 @@ export default function Files() {
               onRename={() => {
                 setRenaming(d);
                 setRenameTo(d.filename);
+                setRenameGroup(d.group_id ?? null);
               }}
               onDelete={() => setDeleting(d)}
             />
@@ -219,9 +221,15 @@ export default function Files() {
           <DialogHeader>
             <DialogTitle>Rename file</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label>New filename</Label>
-            <Input value={renameTo} onChange={(e) => setRenameTo(e.target.value)} />
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>New filename</Label>
+              <Input value={renameTo} onChange={(e) => setRenameTo(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Group</Label>
+              <GroupSelect value={renameGroup} onChange={setRenameGroup} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenaming(null)}>
@@ -232,15 +240,18 @@ export default function Files() {
                 if (!renaming || !renameTo.trim()) return;
                 try {
                   await rename.mutateAsync({ filename: renaming.filename, new_filename: renameTo });
+                  if (renaming.id !== undefined && renameGroup !== (renaming.group_id ?? null)) {
+                    await updateGroup.mutateAsync({ id: renaming.id!, group_id: renameGroup });
+                  }
                   toast.success("Renamed");
                   setRenaming(null);
                 } catch (e) {
                   toastError(e);
                 }
               }}
-              disabled={rename.isPending}
+              disabled={rename.isPending || updateGroup.isPending}
             >
-              {rename.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {(rename.isPending || updateGroup.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
               Rename
             </Button>
           </DialogFooter>
@@ -305,7 +316,7 @@ function FileCard({
       >
         {isImage(doc.filename) ? (
           <img
-            src={thumbnailUrl(doc.filename, 240, 240)}
+            src={thumbnailUrl(doc.filename, 320, 320)}
             alt={doc.filename}
             loading="lazy"
             className="w-full h-full object-cover transition-transform group-hover:scale-105"

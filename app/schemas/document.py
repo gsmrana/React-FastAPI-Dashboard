@@ -13,6 +13,7 @@ class DocumentSchema(BaseModel):
     is_starred: Optional[int] = 0
     tags: Optional[str] = ""
     description: Optional[str] = ""
+    group_id: Optional[int] = None
 
     created_at: Optional[DbDatetime] = None
     modified_at: Optional[DbDatetime] = None
@@ -25,6 +26,7 @@ class CreateDocumentSchema(BaseModel):
     is_starred: Optional[int] = 0
     tags: Optional[str] = ""
     description: Optional[str] = ""
+    group_id: Optional[int] = None
 
 class UpdateDocumentSchema(BaseModel):
     filename: Optional[str] = None
@@ -43,3 +45,4 @@ class DocumentRequest(BaseModel):
 class RenameRequest(BaseModel):
     filename: str
     new_filename: str
+    group_id: Optional[int] = None

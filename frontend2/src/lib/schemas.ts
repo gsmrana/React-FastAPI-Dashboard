@@ -105,6 +105,7 @@ export const llmSchema = z.object({
   notes: z.string().optional(),
   tags: z.string().optional(),
   is_starred: z.boolean().optional(),
+  group_id: z.number().nullable().optional(),
 });
 export type LlmValues = z.infer<typeof llmSchema>;
 

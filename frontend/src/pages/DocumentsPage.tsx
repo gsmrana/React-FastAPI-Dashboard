@@ -50,6 +50,7 @@ export default function DocumentsPage() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [renameDoc, setRenameDoc] = useState<Document | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [renameGroup, setRenameGroup] = useState<number | null>(null);
   const [deleteDoc, setDeleteDoc] = useState<Document | null>(null);
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -76,6 +77,12 @@ export default function DocumentsPage() {
       enqueueSnackbar('Renamed', { variant: 'success' });
       setRenameDoc(null);
     },
+    onError: (e) => enqueueSnackbar(extractError(e), { variant: 'error' }),
+  });
+  const updateGroupM = useMutation({
+    mutationFn: (p: { id: string; group_id: number | null }) =>
+      documentsApi.updateGroup(p.id, p.group_id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['documents'] }),
     onError: (e) => enqueueSnackbar(extractError(e), { variant: 'error' }),
   });
   const deleteM = useMutation({
@@ -242,6 +249,7 @@ export default function DocumentsPage() {
                       onClick={() => {
                         setRenameDoc(d);
                         setRenameValue(d.filename);
+                        setRenameGroup(d.group_id ?? null);
                       }}
                     >
                       <DriveFileRenameOutline fontSize="small" />
@@ -272,22 +280,33 @@ export default function DocumentsPage() {
             autoFocus
             fullWidth
             sx={{ mt: 1 }}
+            label="New filename"
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
           />
+          <Box sx={{ mt: 2 }}>
+            <GroupField value={renameGroup} onChange={setRenameGroup} />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRenameDoc(null)}>Cancel</Button>
           <Button
             variant="contained"
-            disabled={!renameValue.trim() || renameValue === renameDoc?.filename}
-            onClick={() =>
-              renameDoc &&
-              renameM.mutate({
+            disabled={
+              !renameValue.trim() ||
+              renameM.isPending ||
+              updateGroupM.isPending
+            }
+            onClick={async () => {
+              if (!renameDoc || !renameValue.trim()) return;
+              await renameM.mutateAsync({
                 filename: renameDoc.filename,
                 new_filename: renameValue.trim(),
-              })
-            }
+              });
+              if (renameGroup !== (renameDoc.group_id ?? null)) {
+                await updateGroupM.mutateAsync({ id: renameDoc.id, group_id: renameGroup });
+              }
+            }}
           >
             Rename
           </Button>

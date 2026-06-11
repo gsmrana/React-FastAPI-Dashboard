@@ -36,6 +36,7 @@ class CreateLlmSchema(BaseModel):
 
     is_starred: Optional[bool] = False
     tags: Optional[str] = ""
+    group_id: Optional[int] = None
 
 class UpdateLlmSchema(BaseModel):
     provider: Optional[int] = None
@@ -50,4 +51,5 @@ class UpdateLlmSchema(BaseModel):
     notes: Optional[str] = None
 
     is_starred: Optional[bool] = None
-    tags: Optional[str] = None  
+    tags: Optional[str] = None
+    group_id: Optional[int] = None  

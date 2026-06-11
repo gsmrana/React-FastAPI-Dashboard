@@ -296,7 +296,7 @@ export default function Groups() {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold">Group</h1>
+      {/* <h1 className="text-2xl font-semibold">Group</h1> */}
       <GroupHeader group={group} isOwner={isOwner} />
       <MembersPanel group={group} isOwner={isOwner} />
     </div>
