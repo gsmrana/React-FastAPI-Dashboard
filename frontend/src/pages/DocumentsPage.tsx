@@ -10,6 +10,7 @@ import {
   DialogTitle,
   IconButton,
   LinearProgress,
+  MenuItem,
   TextField,
   Tooltip,
   Typography,
@@ -48,6 +49,7 @@ export default function DocumentsPage() {
   const { user } = useAuth();
   const [uploadGroup, setUploadGroup] = useState<number | null>(user?.group_id ?? null);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('date-desc');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [renameDoc, setRenameDoc] = useState<Document | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -95,9 +97,27 @@ export default function DocumentsPage() {
     uploadM.mutate(Array.from(files));
   };
 
-  const filtered = (docs.data || []).filter((d) =>
-    d.filename.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const filtered = (docs.data || [])
+    .filter((d) => d.filename.toLowerCase().includes(search.trim().toLowerCase()))
+    .slice()
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name-desc': return b.filename.localeCompare(a.filename);
+        case 'size-asc':  return a.filesize - b.filesize;
+        case 'size-desc': return b.filesize - a.filesize;
+        case 'date-desc': {
+          const da = new Date(a.modified_at ?? a.created_at ?? 0).getTime();
+          const db = new Date(b.modified_at ?? b.created_at ?? 0).getTime();
+          return db - da;
+        }
+        case 'date-asc': {
+          const da = new Date(a.modified_at ?? a.created_at ?? 0).getTime();
+          const db = new Date(b.modified_at ?? b.created_at ?? 0).getTime();
+          return da - db;
+        }
+        default: return a.filename.localeCompare(b.filename);
+      }
+    });
 
   return (
     <Box>
@@ -113,6 +133,21 @@ export default function DocumentsPage() {
               onChange={(e) => setSearch(e.target.value)}
               sx={{ minWidth: { xs: '100%', sm: 220 } }}
             />
+            <TextField
+              select
+              size="small"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              sx={{ minWidth: 160 }}
+              label="Sort by"
+            >
+              <MenuItem value="date-desc">Date (Newest)</MenuItem>
+              <MenuItem value="date-asc">Date (Oldest)</MenuItem>
+              <MenuItem value="name-asc">Name (A → Z)</MenuItem>
+              <MenuItem value="name-desc">Name (Z → A)</MenuItem>
+              <MenuItem value="size-asc">Size (Smallest)</MenuItem>
+              <MenuItem value="size-desc">Size (Largest)</MenuItem>
+            </TextField>
             <Box sx={{ minWidth: 180 }}>
               <GroupField value={uploadGroup} onChange={setUploadGroup} />
             </Box>
@@ -138,7 +173,8 @@ export default function DocumentsPage() {
         }
       />
 
-      <Box
+      {/* drag and drop upload area */}
+      {/* <Box
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -174,8 +210,9 @@ export default function DocumentsPage() {
             </Typography>
           </Box>
         )}
-      </Box>
+      </Box> */}
 
+      {/* File list area */}
       {docs.isLoading ? (
         <LoadingScreen />
       ) : filtered.length === 0 ? (
@@ -185,14 +222,14 @@ export default function DocumentsPage() {
           icon={<InsertDriveFile fontSize="inherit" />}
         />
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           {filtered.map((d) => (
             <Grid key={d.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <Card variant="outlined" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Box
                   onClick={() => setPreviewDoc(d)}
                   sx={{
-                    height: 160,
+                    height: 240,
                     bgcolor: 'action.hover',
                     display: 'flex',
                     alignItems: 'center',
@@ -202,7 +239,7 @@ export default function DocumentsPage() {
                   }}
                 >
                   <img
-                    src={documentsApi.thumbnailUrl(d.id, 320, 320)}
+                    src={documentsApi.thumbnailUrl(d.id, 240, 240)}
                     alt={d.filename}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -210,51 +247,53 @@ export default function DocumentsPage() {
                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                   />
                 </Box>
-                <CardContent sx={{ flex: 1, pb: 1 }}>
+                <CardContent sx={{ pt: 1, flex: 1, pb: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap title={d.filename}>
                     {d.filename}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {formatBytes(d.filesize)}
                   </Typography>
-                  <Box sx={{ mt: 0.5 }}>
+                </CardContent>
+                <CardActions sx={{ pt: 0, display: 'flex', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: 1 }}>
                     <GroupChip groupId={d.group_id} />
                   </Box>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
-                  <Tooltip title="Preview">
-                    <IconButton size="small" onClick={() => setPreviewDoc(d)}>
-                      <Visibility fontSize="small" />
-                    </IconButton>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Tooltip title="Preview">
+                      <IconButton size="small" onClick={() => setPreviewDoc(d)}>
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Download">
+                      <IconButton
+                        size="small"
+                        component="a"
+                        href={documentsApi.downloadUrl(d.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Rename">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setRenameDoc(d);
+                          setRenameValue(d.filename);
+                          setRenameGroup(d.group_id ?? null);
+                        }}
+                      >
+                        <DriveFileRenameOutline fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton size="small" color="error" onClick={() => setDeleteDoc(d)}>
+                        <Delete fontSize="small" />
+                      </IconButton>
                   </Tooltip>
-                  <Tooltip title="Download">
-                    <IconButton
-                      size="small"
-                      component="a"
-                      href={documentsApi.downloadUrl(d.id)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Download fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Rename">
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setRenameDoc(d);
-                        setRenameValue(d.filename);
-                        setRenameGroup(d.group_id ?? null);
-                      }}
-                    >
-                      <DriveFileRenameOutline fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton size="small" color="error" onClick={() => setDeleteDoc(d)}>
-                      <Delete fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  </Box>
                 </CardActions>
               </Card>
             </Grid>

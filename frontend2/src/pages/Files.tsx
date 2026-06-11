@@ -35,6 +35,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { GroupSelect } from "@/components/group-select";
@@ -61,6 +68,7 @@ export default function Files() {
   const user = useAuthStore((s) => s.user);
   const [uploadGroup, setUploadGroup] = useState<number | null>(user?.group_id ?? null);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("date-desc");
   const [progress, setProgress] = useState<number | null>(null);
   const [previewing, setPreviewing] = useState<Document | null>(null);
   const [renaming, setRenaming] = useState<Document | null>(null);
@@ -70,10 +78,28 @@ export default function Files() {
 
   const filtered = useMemo(() => {
     const list = docs.data ?? [];
-    if (!search.trim()) return list;
-    const q = search.toLowerCase();
-    return list.filter((d) => d.filename.toLowerCase().includes(q));
-  }, [docs.data, search]);
+    const searched = !search.trim()
+      ? list
+      : list.filter((d) => d.filename.toLowerCase().includes(search.toLowerCase()));
+    return searched.slice().sort((a, b) => {
+      switch (sortBy) {
+        case "name-desc": return b.filename.localeCompare(a.filename);
+        case "size-asc":  return a.filesize - b.filesize;
+        case "size-desc": return b.filesize - a.filesize;
+        case "date-desc": {
+          const da = new Date(a.modified_at ?? a.created_at ?? 0).getTime();
+          const db = new Date(b.modified_at ?? b.created_at ?? 0).getTime();
+          return db - da;
+        }
+        case "date-asc": {
+          const da = new Date(a.modified_at ?? a.created_at ?? 0).getTime();
+          const db = new Date(b.modified_at ?? b.created_at ?? 0).getTime();
+          return da - db;
+        }
+        default: return a.filename.localeCompare(b.filename);
+      }
+    });
+  }, [docs.data, search, sortBy]);
 
   const handleUpload = async (files: File[]) => {
     if (!files.length) return;
@@ -108,6 +134,19 @@ export default function Files() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">Date (Newest)</SelectItem>
+            <SelectItem value="date-asc">Date (Oldest)</SelectItem>
+            <SelectItem value="name-asc">Name (A → Z)</SelectItem>
+            <SelectItem value="name-desc">Name (Z → A)</SelectItem>
+            <SelectItem value="size-asc">Size (Smallest)</SelectItem>
+            <SelectItem value="size-desc">Size (Largest)</SelectItem>
+          </SelectContent>
+        </Select>
         <div className="w-48">
           <GroupSelect value={uploadGroup} onChange={setUploadGroup} />
         </div>

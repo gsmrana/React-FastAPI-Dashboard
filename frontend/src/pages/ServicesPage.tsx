@@ -292,11 +292,11 @@ export default function ServicesPage() {
                           ))}
                       </Stack>
                     )}
-                    <Stack direction="row" gap={0.5} sx={{ mt: 1 }}>
-                      <GroupChip groupId={s.group_id} />
-                    </Stack>
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'flex-end', px: 2 }}>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ mr: 'auto' }}>
+                      <GroupChip groupId={s.group_id} />
+                    </Stack>
                     <IconButton size="small" onClick={() => openEdit(s)}>
                       <Edit fontSize="small" />
                     </IconButton>
