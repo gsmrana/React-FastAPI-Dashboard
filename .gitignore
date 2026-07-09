@@ -219,7 +219,6 @@ node_modules/
 *.m3u
 
 # project specific dir excludes
-.vscode/
 logs/
 data/
 datasets/

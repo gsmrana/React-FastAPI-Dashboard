@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run FastAPI Backend API",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.app:app",
+                "--host", "0.0.0.0",
+                "--port", "8000",
+                "--reload-dir", "app",
+                "--reload"
+            ],
+            "jinja": true
+        },
+        {
+            "name": "Run React Frontend App",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "cd frontend && npm run dev"
+        },
+        {
+            "name": "Run React Frontend App 2",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "cd frontend2 && npm run dev"
+        }
+    ]
+}

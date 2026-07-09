@@ -16,10 +16,12 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
-      open: false,
+      open: true,
       proxy: {
         '/api': { target: backendTarget, changeOrigin: true, secure: false },
         '/health': { target: backendTarget, changeOrigin: true, secure: false },
+        '/docs': { target: backendTarget, changeOrigin: true, secure: false },
+        '/openapi.json': { target: backendTarget, changeOrigin: true, secure: false },
       },
     },
     build: {
